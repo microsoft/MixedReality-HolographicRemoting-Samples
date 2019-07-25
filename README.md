@@ -10,13 +10,15 @@ This repository hosts the two sample applications for Holographic Remoting. (htt
 * Visual Studio 2017
     * With C++ Build Packages
     * With C++ UWP Build Packages
-    * With Spectre Libraries Packages
+    * With Spectre Mitigation Libraries Packages (for release builds only)
     * With ARM and ARM64 C++ Packages
 * Windows SDK 10.0.18362.0 (for Windows 10, version 1903)
 
 ## Getting Started
 
-Open one of the vcxproj files either under ```player/``` or ```hostsampleapp/```. Then build and run.
+1. Open one of the ```.sln``` files either under ```player/``` or ```hostsampleapp/```. 
+2. On first use ensure to restore any missing nuget packages. 
+3. Then build and run.
 
 ## Contributing
 
