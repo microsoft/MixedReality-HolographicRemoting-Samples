@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.645
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SamplePlayer", "SamplePlayer.vcxproj", "{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+		RelWithDebInfo|ARM = RelWithDebInfo|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.Debug|ARM.ActiveCfg = Debug|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.Debug|ARM.Build.0 = Debug|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.Debug|ARM.Deploy.0 = Debug|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.Release|ARM.ActiveCfg = Release|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.Release|ARM.Build.0 = Release|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.Release|ARM.Deploy.0 = Release|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.RelWithDebInfo|ARM.ActiveCfg = RelWithDebInfo|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.RelWithDebInfo|ARM.Build.0 = RelWithDebInfo|ARM
+		{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}.RelWithDebInfo|ARM.Deploy.0 = RelWithDebInfo|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3BBCE82D-2F1E-41BA-87D5-26E8C41FFA4B}
+	EndGlobalSection
+EndGlobal
+
