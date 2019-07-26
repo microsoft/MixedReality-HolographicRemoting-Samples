@@ -623,6 +623,7 @@ void SamplePlayerMain::OnCustomDataChannelDataReceived()
     {
         uint8_t data[] = {1};
         m_customDataChannel.SendData(data, true);
+        OutputDebugString(TEXT("Response Sent.\n"));
     }
 }
 

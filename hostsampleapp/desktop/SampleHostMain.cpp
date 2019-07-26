@@ -192,7 +192,7 @@ HolographicFrame SampleHostMain::Update()
             m_customDataChannel.SendData(
                 winrt::array_view<const uint8_t>(reinterpret_cast<const uint8_t*>(&data), reinterpret_cast<const uint8_t*>(&data + 1)),
                 true);
-            OutputDebugString(TEXT("Ping Sent.\n"));
+            OutputDebugString(TEXT("Request Sent.\n"));
         }
     }
 #endif

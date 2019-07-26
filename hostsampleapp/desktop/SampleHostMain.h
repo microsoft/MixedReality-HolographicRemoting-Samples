@@ -35,6 +35,7 @@
 #define TITLE_ENABLE_PREVIEW_TEXT L"Preview Disabled (press P to enable)"
 #define TITLE_DISABLE_PREVIEW_TEXT L"Preview Enabled (press P to disable)"
 
+// #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
 
 class SampleHostMain : public std::enable_shared_from_this<SampleHostMain>, public DXHelper::IDeviceNotify
 {

@@ -15,8 +15,6 @@
 
 #include "SampleHostMain.h"
 
-// #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-
 class SampleHostWindowWin32 : public std::enable_shared_from_this<SampleHostWindowWin32>, public SampleHostMain::IWindow
 {
 public:
