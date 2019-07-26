@@ -29,22 +29,4 @@
     <rescap:Capability Name="perceptionMonitoring" />
     <DeviceCapability Name="microphone" />
   </Capabilities>
-  <Extensions>
-    <!--Extension Category="windows.activatableClass.inProcessServer">
-      <InProcessServer>
-        <Path>SceneUnderstanding.dll</Path>
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Transform" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Id" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.QuadToolkit" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.SpatialCoordinateSystem" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Quad" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Toolkit" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.SpatialComponent" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Component" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Entity" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Mesh" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.SceneProcessor" ThreadingModel="both" />
-      </InProcessServer>
-    </Extension-->
-  </Extensions>
 </Package>
