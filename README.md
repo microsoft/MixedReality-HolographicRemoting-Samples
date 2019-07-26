@@ -19,6 +19,7 @@ This repository hosts the two sample applications for Holographic Remoting. (htt
 1. Open one of the ```.sln``` files either under ```player/``` or ```hostsampleapp/```. 
 2. On first use ensure to restore any missing nuget packages. 
 3. Then build and run.
+    * When running the hostsampleapp pass the ip address of your HoloLens device as first argument to the application.
 
 ## Contributing
 
