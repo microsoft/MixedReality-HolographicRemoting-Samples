@@ -461,14 +461,7 @@ void SampleHostMain::InitializeRemoteContextAndConnectOrListen()
                     {
                         DebugLog(L"Reconnecting...");
 
-                        try
-                        {
-                            ConnectOrListen();
-                        }
-                        catch (winrt::hresult_error& e)
-                        {
-                            DebugLog(L"Connect failed with hr = 0x%08X", e.code());
-                        }
+                        ConnectOrListen();
                     }
                     // Failure reason None indicates a normal disconnect.
                     else if (failureReason != ConnectionFailureReason::None)
@@ -528,14 +521,7 @@ void SampleHostMain::InitializeRemoteContextAndConnectOrListen()
             });
 #endif
 
-        try
-        {
-            ConnectOrListen();
-        }
-        catch (winrt::hresult_error& e)
-        {
-            DebugLog(L"Connect failed with hr = 0x%08X", e.code());
-        }
+        ConnectOrListen();
     }
 }
 
@@ -578,31 +564,46 @@ void SampleHostMain::CreateHolographicSpaceAndDeviceResources()
 
 void SampleHostMain::ConnectOrListen()
 {
-    m_remoteContext.Disconnect();
-
-    // Request access to eyes pose data on every connection/listen attempt.
-    RequestEyesPoseAccess();
-
-    if (m_port == 0)
+    // Try to establish a connection.
+    try
     {
-        m_port = 8265;
-    }
+        m_remoteContext.Disconnect();
 
-    if (m_listen)
-    {
-        if (m_hostname.empty())
+        // Request access to eyes pose data on every connection/listen attempt.
+        RequestEyesPoseAccess();
+
+        if (m_port == 0)
         {
-            m_hostname = L"0.0.0.0";
+            m_port = 8265;
         }
-        m_remoteContext.Listen(m_hostname, m_port, m_port + 1);
-    }
-    else
-    {
-        if (m_hostname.empty())
+
+        if (m_listen)
         {
-            m_hostname = L"127.0.0.1";
+            if (m_hostname.empty())
+            {
+                m_hostname = L"0.0.0.0";
+            }
+            m_remoteContext.Listen(m_hostname, m_port, m_port + 1);
         }
-        m_remoteContext.Connect(m_hostname, m_port);
+        else
+        {
+            if (m_hostname.empty())
+            {
+                m_hostname = L"127.0.0.1";
+            }
+            m_remoteContext.Connect(m_hostname, m_port);
+        }
+    }
+    catch (winrt::hresult_error& e)
+    {
+        if (m_listen)
+        {
+            DebugLog(L"Listen failed with hr = 0x%08X", e.code());
+        }
+        else
+        {
+            DebugLog(L"Connect failed with hr = 0x%08X", e.code());
+        }
     }
 }
 
