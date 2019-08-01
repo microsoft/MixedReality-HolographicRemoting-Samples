@@ -5,7 +5,7 @@ This repository hosts the two sample applications for Holographic Remoting. (htt
 * The hostsampleapp sample shows how to write an application streaming content to a Microsoft HoloLens 2.
 * The player sample shows how to write an application running on your Microsoft HoloLens 2 and recieving streamed content. The player sample is very similar to the Holographic Remoting Player available in the store.
 
-## Prequisites
+## Prerequisites
 
 * Visual Studio 2017
     * With C++ Build Packages
