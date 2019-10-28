@@ -271,8 +271,8 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
     applicationView.Activated({this, &SamplePlayerMain::OnViewActivated});
 
     // Register event handlers for app lifecycle.
-    m_suspendingEventToken = CoreApplication::Suspending({this, &SamplePlayerMain::OnSuspending});
-    m_resumingEventToken = CoreApplication::Resuming({this, &SamplePlayerMain::OnResuming});
+    m_suspendingEventRevoker = CoreApplication::Suspending(winrt::auto_revoke, {this, &SamplePlayerMain::OnSuspending});
+    m_resumingEventRevoker = CoreApplication::Resuming(winrt::auto_revoke, {this, &SamplePlayerMain::OnResuming});
 
     m_deviceResources = std::make_shared<DXHelper::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
@@ -280,7 +280,8 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
     m_spatialLocator = SpatialLocator::GetDefault();
     if (m_spatialLocator != nullptr)
     {
-        m_locatabilityChangedToken = m_spatialLocator.LocatabilityChanged({this, &SamplePlayerMain::OnLocatabilityChanged});
+        m_locatabilityChangedRevoker =
+            m_spatialLocator.LocatabilityChanged(winrt::auto_revoke, {this, &SamplePlayerMain::OnLocatabilityChanged});
         m_attachedFrameOfReference = m_spatialLocator.CreateAttachedFrameOfReferenceAtCurrentHeading();
     }
 
@@ -291,12 +292,15 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
     // Register to the PlayerContext connection events
     m_playerContext.OnConnected({this, &SamplePlayerMain::OnConnected});
     m_playerContext.OnDisconnected({this, &SamplePlayerMain::OnDisconnected});
+
+    // Set the BlitRemoteFrame timeout to 0.5s
+    m_playerContext.BlitRemoteFrameTimeout(500ms);
 }
 
 void SamplePlayerMain::SetWindow(const CoreWindow& window)
 {
-    m_windowClosedEventToken = window.Closed({this, &SamplePlayerMain::OnWindowClosed});
-    m_visibilityChangedEventToken = window.VisibilityChanged({this, &SamplePlayerMain::OnVisibilityChanged});
+    m_windowClosedEventRevoker = window.Closed(winrt::auto_revoke, {this, &SamplePlayerMain::OnWindowClosed});
+    m_visibilityChangedEventRevoker = window.VisibilityChanged(winrt::auto_revoke, {this, &SamplePlayerMain::OnVisibilityChanged});
 
     // Forward the window to the device resources, so that it can create a holographic space for the window.
     m_deviceResources->SetWindow(window);
@@ -376,17 +380,11 @@ void SamplePlayerMain::Uninitialize()
         m_deviceResources.reset();
     }
 
-    if (m_spatialLocator != nullptr)
-    {
-        m_spatialLocator.LocatabilityChanged(m_locatabilityChangedToken);
-    }
-
-    CoreApplication::Suspending(m_suspendingEventToken);
-    CoreApplication::Resuming(m_resumingEventToken);
-
-    const auto& window = CoreWindow::GetForCurrentThread();
-    window.Closed(m_windowClosedEventToken);
-    window.VisibilityChanged(m_visibilityChangedEventToken);
+    m_locatabilityChangedRevoker.revoke();
+    m_suspendingEventRevoker.revoke();
+    m_resumingEventRevoker.revoke();
+    m_windowClosedEventRevoker.revoke();
+    m_visibilityChangedEventRevoker.revoke();
 }
 
 #pragma endregion IFrameworkView methods
@@ -623,7 +621,6 @@ void SamplePlayerMain::OnCustomDataChannelDataReceived()
     {
         uint8_t data[] = {1};
         m_customDataChannel.SendData(data, true);
-        OutputDebugString(TEXT("Response Sent.\n"));
     }
 }
 

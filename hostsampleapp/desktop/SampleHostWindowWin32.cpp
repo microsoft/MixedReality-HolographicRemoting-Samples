@@ -30,8 +30,7 @@ LRESULT CALLBACK wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     switch (msg)
     {
-        case WM_CREATE:
-        {
+        case WM_CREATE: {
             CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
             s_sampleHostWindow = reinterpret_cast<SampleHostWindowWin32*>(cs->lpCreateParams);
 
@@ -42,8 +41,7 @@ LRESULT CALLBACK wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             result = 0;
         }
         break;
-        case WM_WINDOWPOSCHANGED:
-        {
+        case WM_WINDOWPOSCHANGED: {
             auto windowPos = reinterpret_cast<WINDOWPOS*>(lParam);
             if ((windowPos->flags & SWP_NOSIZE) == 0)
             {
@@ -55,21 +53,18 @@ LRESULT CALLBACK wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             result = 0;
         }
         break;
-        case WM_DESTROY:
-        {
+        case WM_DESTROY: {
             s_sampleHostWindow = nullptr;
             result = 0;
             PostQuitMessage(0);
         }
         break;
-        case WM_CLOSE:
-        {
+        case WM_CLOSE: {
             DestroyWindow(hWnd);
             result = 0;
         }
         break;
-        case WM_CHAR:
-        {
+        case WM_CHAR: {
             const int key = tolower(static_cast<int>(wParam));
             s_sampleHostWindow->OnKeyPress(static_cast<char>(key));
         }
