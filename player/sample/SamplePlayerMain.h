@@ -151,10 +151,10 @@ private:
     bool m_windowClosed = false;
     bool m_windowVisible = true;
 
-    // Event registration tokens
-    winrt::event_token m_locatabilityChangedToken;
-    winrt::event_token m_suspendingEventToken;
-    winrt::event_token m_resumingEventToken;
-    winrt::event_token m_windowClosedEventToken;
-    winrt::event_token m_visibilityChangedEventToken;
+    // Event registration revokers
+    winrt::Windows::Perception::Spatial::SpatialLocator::LocatabilityChanged_revoker m_locatabilityChangedRevoker;
+    winrt::Windows::ApplicationModel::Core::CoreApplication::Suspending_revoker m_suspendingEventRevoker;
+    winrt::Windows::ApplicationModel::Core::CoreApplication::Resuming_revoker m_resumingEventRevoker;
+    winrt::Windows::UI::Core::CoreWindow::Closed_revoker m_windowClosedEventRevoker;
+    winrt::Windows::UI::Core::CoreWindow::VisibilityChanged_revoker m_visibilityChangedEventRevoker;
 };

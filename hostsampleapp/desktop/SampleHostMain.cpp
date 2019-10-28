@@ -24,6 +24,9 @@
 #include <winrt/Microsoft.Holographic.AppRemoting.h>
 #include <winrt/Windows.Perception.People.h>
 
+#include <iosfwd>
+#include <sstream>
+
 
 using namespace concurrency;
 
@@ -115,6 +118,7 @@ HolographicFrame SampleHostMain::Update()
 
         // When the Tapped spatial input event is received, the sample hologram will be repositioned two meters in front of the user.
         m_spinningCubeRenderer->PositionHologram(pointerPose);
+
     }
     else
     {
@@ -192,7 +196,7 @@ HolographicFrame SampleHostMain::Update()
             m_customDataChannel.SendData(
                 winrt::array_view<const uint8_t>(reinterpret_cast<const uint8_t*>(&data), reinterpret_cast<const uint8_t*>(&data + 1)),
                 true);
-            OutputDebugString(TEXT("Request Sent.\n"));
+            OutputDebugString(TEXT("Ping Sent.\n"));
         }
     }
 #endif
@@ -338,6 +342,7 @@ void SampleHostMain::OnKeyPress(char key)
         case 's':
             SavePosition();
             break;
+
 
         case 'c':
             m_spinningCubeRenderer->TogglePauseState();
@@ -657,6 +662,7 @@ void SampleHostMain::SavePosition()
         }
     });
 }
+
 
 void SampleHostMain::RequestEyesPoseAccess()
 {

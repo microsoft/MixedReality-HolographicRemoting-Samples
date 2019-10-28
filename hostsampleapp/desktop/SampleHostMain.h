@@ -35,7 +35,6 @@
 #define TITLE_ENABLE_PREVIEW_TEXT L"Preview Disabled (press P to enable)"
 #define TITLE_DISABLE_PREVIEW_TEXT L"Preview Enabled (press P to disable)"
 
-// #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
 
 class SampleHostMain : public std::enable_shared_from_this<SampleHostMain>, public DXHelper::IDeviceNotify
 {
@@ -95,6 +94,7 @@ private:
 
     // Saves the position of the spinning cube.
     void SavePosition();
+
 
     // Request access for eyes pose data.
     void RequestEyesPoseAccess();
@@ -207,4 +207,5 @@ private:
     winrt::Microsoft::Holographic::AppRemoting::IDataChannel::OnClosed_revoker m_customChannelClosedEventRevoker;
     std::chrono::high_resolution_clock::time_point m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
 #endif
+
 };

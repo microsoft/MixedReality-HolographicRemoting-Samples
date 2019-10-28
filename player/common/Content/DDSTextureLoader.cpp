@@ -21,8 +21,8 @@
 
 #include "pch.h"
 
-#include <algorithm>
 #include <assert.h>
+#include <algorithm>
 #include <memory>
 
 #include "DDSTextureLoader.h"
