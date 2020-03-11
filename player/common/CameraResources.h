@@ -12,7 +12,7 @@
 
 namespace DXHelper
 {
-    class DeviceResources;
+    class DeviceResourcesUWP;
 
     // Constant buffer used to send the view-projection matrices to the shader pipeline.
     struct ViewProjectionConstantBuffer
@@ -33,16 +33,16 @@ namespace DXHelper
         CameraResources(winrt::Windows::Graphics::Holographic::HolographicCamera const& holographicCamera);
 
         void CreateResourcesForBackBuffer(
-            DeviceResources* pDeviceResources,
+            DeviceResourcesUWP* pDeviceResources,
             winrt::Windows::Graphics::Holographic::HolographicCameraRenderingParameters const& cameraParameters);
-        void ReleaseResourcesForBackBuffer(DeviceResources* pDeviceResources);
+        void ReleaseResourcesForBackBuffer(DeviceResourcesUWP* pDeviceResources);
 
         void UpdateViewProjectionBuffer(
-            std::shared_ptr<DeviceResources> deviceResources,
+            std::shared_ptr<DeviceResourcesUWP> deviceResources,
             winrt::Windows::Graphics::Holographic::HolographicCameraPose const& cameraPose,
             winrt::Windows::Perception::Spatial::SpatialCoordinateSystem const& coordinateSystem);
 
-        bool AttachViewProjectionBuffer(std::shared_ptr<DeviceResources>& deviceResources);
+        bool AttachViewProjectionBuffer(std::shared_ptr<DeviceResourcesUWP>& deviceResources);
 
         // Direct3D device resources.
         ID3D11RenderTargetView* GetBackBufferRenderTargetView() const
@@ -86,6 +86,12 @@ namespace DXHelper
             return m_holographicCamera;
         }
 
+        winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface GetDepthStencilTextureInteropObject();
+        winrt::Windows::Graphics::Holographic::HolographicStereoTransform GetProjectionTransform()
+        {
+            return m_cameraProjectionTransform;
+        }
+
     private:
         // Direct3D rendering objects. Required for 3D.
         winrt::com_ptr<ID3D11RenderTargetView> m_d3dRenderTargetView;
@@ -109,5 +115,7 @@ namespace DXHelper
 
         // Pointer to the holographic camera these resources are for.
         winrt::Windows::Graphics::Holographic::HolographicCamera m_holographicCamera = nullptr;
+
+        winrt::Windows::Graphics::Holographic::HolographicStereoTransform m_cameraProjectionTransform;
     };
 } // namespace DXHelper

@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "..\Common\DeviceResources.h"
+#include "..\Common\DeviceResourcesCommon.h"
 #include "ShaderStructures.h"
 
 #include <string>
@@ -27,6 +27,7 @@ public:
         Small = 0,
         Large,
         LargeBold,
+        Medium,
 
         TextFormatCount
     };
@@ -52,7 +53,7 @@ public:
     };
 
 public:
-    StatusDisplay(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources);
+    StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesCommon>& deviceResources);
 
     void Update(float deltaTimeInSeconds);
 
@@ -102,6 +103,29 @@ public:
         return m_positionImage;
     }
 
+    void UpdateTextScale(
+        winrt::Windows::Graphics::Holographic::HolographicStereoTransform holoTransform,
+        float screenWidth,
+        float screenHeight,
+        float quadFov,
+        float heightRatio = 1.0f);
+
+    // Get default FOV for the text quad in degree.
+    float GetDefaultQuadFov()
+    {
+        return m_defaultQuadFov;
+    }
+    // Get statistics FOV for the text quad in degree.
+    float GetStatisticsFov()
+    {
+        return m_statisticsFov;
+    }
+    // Get the statistics height ratio.
+    float GetStatisticsHeightRatio()
+    {
+        return m_statisticsHeightRatio;
+    }
+
 private:
     // Runtime representation of a text line.
     struct RuntimeLine
@@ -124,14 +148,13 @@ private:
         winrt::Windows::Foundation::Numerics::float3 position,
         winrt::Windows::Foundation::Numerics::float3 lastPosition);
 
-
     winrt::com_ptr<ID2D1SolidColorBrush> m_brushes[TextColorCount] = {};
     winrt::com_ptr<IDWriteTextFormat> m_textFormats[TextFormatCount] = {};
     std::vector<RuntimeLine> m_lines;
     std::mutex m_lineMutex;
 
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesCommon> m_deviceResources;
 
     // Resources related to text rendering.
     winrt::com_ptr<ID3D11Texture2D> m_textTexture;
@@ -155,6 +178,7 @@ private:
 
     winrt::com_ptr<ID3D11SamplerState> m_textSamplerState;
     winrt::com_ptr<ID3D11BlendState> m_textAlphaBlendState;
+    winrt::com_ptr<ID3D11DepthStencilState> m_depthStencilState;
 
     // System resources for quad geometry.
     ModelConstantBuffer m_modelConstantBufferDataImage = {};
@@ -178,4 +202,28 @@ private:
     const float c_lerpRate = 4.0f;
 
     bool m_imageEnabled = true;
+
+    // The distance to the camera in fwd-direction.
+    float m_statusDisplayDistance = 1.0f;
+    // The view Projection matrix.
+    DirectX::XMFLOAT4X4 m_projection;
+
+    // Default size, gets adjusted based on HMD.
+    int m_textTextureWidth = 128;
+    int m_textTextureHeight = 128;
+
+    // Default size, gets adjusted based on the HMD and FOV.
+    float m_virtualDisplaySizeInchX = 10.0f;
+    float m_virtualDisplaySizeInchY = 10.0f;
+
+    // The current FOV for the text quad in degree.
+    float m_currentQuadFov{};
+    // The current height ratio of the quad.
+    float m_currentHeightRatio{};
+    // The default FOV for the text quad in degree.
+    float m_defaultQuadFov = 25.0f;
+    // The statistics FOV for the text quad in degree.
+    float m_statisticsFov = 23.0f;
+    // The height ratio for the statistics quad in percent.
+    float m_statisticsHeightRatio = 0.4f;
 };

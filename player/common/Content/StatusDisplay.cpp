@@ -18,13 +18,14 @@
 #include <shaders\VPRTVertexShader.h>
 #include <shaders\VertexShader.h>
 
-#define TEXTURE_WIDTH 650
-#define TEXTURE_HEIGHT 650
-
-#define Font L"Segoe UI"
-#define FontSizeLarge 32.0f
-#define FontSizeSmall 22.0f
-#define FontLanguage L"en-US"
+constexpr const wchar_t Font[] = L"Segoe UI";
+// Font size in percent.
+constexpr float FontSizeLarge = 0.06f;
+constexpr float FontSizeMedium = 0.04f;
+constexpr float FontSizeSmall = 0.035f;
+constexpr const wchar_t FontLanguage[] = L"en-US";
+constexpr const float Degree2Rad = 3.14159265359f / 180.0f;
+constexpr const float Meter2Inch = 39.37f;
 
 using namespace DirectX;
 using namespace Concurrency;
@@ -32,7 +33,7 @@ using namespace winrt::Windows::Foundation::Numerics;
 using namespace winrt::Windows::UI::Input::Spatial;
 
 // Initializes D2D resources used for text rendering.
-StatusDisplay::StatusDisplay(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources)
+StatusDisplay::StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesCommon>& deviceResources)
     : m_deviceResources(deviceResources)
 {
     CreateDeviceDependentResources();
@@ -55,141 +56,148 @@ void StatusDisplay::Render()
         return;
     }
 
-    // First render all text using direct2D
-    m_deviceResources->UseD3DDeviceContext(
-        [&](auto context) { context->ClearRenderTargetView(m_textRenderTarget.get(), DirectX::Colors::Transparent); });
+    bool linesChanged = false;
 
-    m_d2dTextRenderTarget->BeginDraw();
-
+    // First render all text using direct2D.
     {
         std::scoped_lock lock(m_lineMutex);
         if (m_lines.size() > 0)
         {
-            float top = m_lines[0].metrics.height;
+            linesChanged = true;
+            m_deviceResources->UseD3DDeviceContext(
+                [&](auto context) { context->ClearRenderTargetView(m_textRenderTarget.get(), DirectX::Colors::Transparent); });
+
+            m_d2dTextRenderTarget->BeginDraw();
+            float height = 0;
+            for (auto& line : m_lines)
+            {
+                height += line.metrics.height * line.lineHeightMultiplier;
+            }
+
+            // Vertical centered for the whole text with ~1/4 logical inch offset. In DIP.
+            float top = ((m_virtualDisplaySizeInchY / 2.0f) * 96.0f) - (height / 2.0f) - 48;
 
             for (auto& line : m_lines)
             {
                 if (line.alignBottom)
                 {
-                    top = TEXTURE_HEIGHT - line.metrics.height;
+                    top = m_textTextureHeight - line.metrics.height;
                 }
+
                 m_d2dTextRenderTarget->DrawTextLayout(D2D1::Point2F(0, top), line.layout.get(), m_brushes[line.color].get());
                 top += line.metrics.height * line.lineHeightMultiplier;
+            }
+
+            // Ignore D2DERR_RECREATE_TARGET here. This error indicates that the device
+            // is lost. It will be handled during the next call to Present.
+            const HRESULT hr = m_d2dTextRenderTarget->EndDraw();
+            if (hr != D2DERR_RECREATE_TARGET)
+            {
+                winrt::check_hresult(hr);
             }
         }
     }
 
-    // Ignore D2DERR_RECREATE_TARGET here. This error indicates that the device
-    // is lost. It will be handled during the next call to Present.
-    const HRESULT hr = m_d2dTextRenderTarget->EndDraw();
-    if (hr != D2DERR_RECREATE_TARGET)
-    {
-        winrt::check_hresult(hr);
-    }
-
     // Now render the quads into 3d space
     m_deviceResources->UseD3DDeviceContext([&](auto context) {
-        // Each vertex is one instance of the VertexBufferElement struct.
-        const UINT stride = sizeof(VertexBufferElement);
-        const UINT offset = 0;
-        ID3D11Buffer* pBufferToSet = m_vertexBufferImage.get();
-        context->IASetVertexBuffers(0, 1, &pBufferToSet, &stride, &offset);
-        context->IASetIndexBuffer(
-            m_indexBuffer.get(),
-            DXGI_FORMAT_R16_UINT, // Each index is one 16-bit unsigned integer (short).
-            0);
+        DXHelper::D3D11StoreAndRestoreState(context, [&]() {
+            // Each vertex is one instance of the VertexBufferElement struct.
+            const UINT stride = sizeof(VertexBufferElement);
+            const UINT offset = 0;
+            ID3D11Buffer* pBufferToSet = m_vertexBufferImage.get();
+            context->IASetVertexBuffers(0, 1, &pBufferToSet, &stride, &offset);
+            context->IASetIndexBuffer(m_indexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
 
-        context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        context->IASetInputLayout(m_inputLayout.get());
-        context->OMSetBlendState(m_textAlphaBlendState.get(), nullptr, 0xffffffff);
+            context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            context->IASetInputLayout(m_inputLayout.get());
+            context->OMSetBlendState(m_textAlphaBlendState.get(), nullptr, 0xffffffff);
+            context->OMSetDepthStencilState(m_depthStencilState.get(), 0);
 
-        // Attach the vertex shader.
-        context->VSSetShader(m_vertexShader.get(), nullptr, 0);
+            context->UpdateSubresource(m_modelConstantBuffer.get(), 0, nullptr, &m_modelConstantBufferDataImage, 0, 0);
 
-        context->UpdateSubresource(m_modelConstantBuffer.get(), 0, nullptr, &m_modelConstantBufferDataImage, 0, 0);
+            // Apply the model constant buffer to the vertex shader.
+            pBufferToSet = m_modelConstantBuffer.get();
+            context->VSSetConstantBuffers(0, 1, &pBufferToSet);
 
-        // Apply the model constant buffer to the vertex shader.
-        pBufferToSet = m_modelConstantBuffer.get();
-        context->VSSetConstantBuffers(0, 1, &pBufferToSet);
+            // Attach the vertex shader.
+            context->VSSetShader(m_vertexShader.get(), nullptr, 0);
 
-        // On devices that do not support the D3D11_FEATURE_D3D11_OPTIONS3::
-        // VPAndRTArrayIndexFromAnyShaderFeedingRasterizer optional feature,
-        // a pass-through geometry shader sets the render target ID.
-        context->GSSetShader(!m_usingVprtShaders ? m_geometryShader.get() : nullptr, nullptr, 0);
+            // On devices that do not support the D3D11_FEATURE_D3D11_OPTIONS3::
+            // VPAndRTArrayIndexFromAnyShaderFeedingRasterizer optional feature,
+            // a pass-through geometry shader sets the render target ID.
+            context->GSSetShader(!m_usingVprtShaders ? m_geometryShader.get() : nullptr, nullptr, 0);
 
-        // Attach the pixel shader.
-        context->PSSetShader(m_pixelShader.get(), nullptr, 0);
+            // Attach the pixel shader.
+            context->PSSetShader(m_pixelShader.get(), nullptr, 0);
 
-        // Draw the image.
-        if (m_imageEnabled && m_imageView)
-        {
-            ID3D11ShaderResourceView* pShaderViewToSet = m_imageView.get();
-            context->PSSetShaderResources(0, 1, &pShaderViewToSet);
+            // Draw the image.
+            if (m_imageEnabled && m_imageView)
+            {
+                ID3D11ShaderResourceView* pShaderViewToSet = m_imageView.get();
+                context->PSSetShaderResources(0, 1, &pShaderViewToSet);
 
-            ID3D11SamplerState* pSamplerToSet = m_imageSamplerState.get();
-            context->PSSetSamplers(0, 1, &pSamplerToSet);
+                ID3D11SamplerState* pSamplerToSet = m_imageSamplerState.get();
+                context->PSSetSamplers(0, 1, &pSamplerToSet);
 
-            context->DrawIndexedInstanced(
-                m_indexCount, // Index count per instance.
-                2,            // Instance count.
-                0,            // Start index location.
-                0,            // Base vertex location.
-                0             // Start instance location.
-            );
-        }
+                context->DrawIndexedInstanced(
+                    m_indexCount, // Index count per instance.
+                    2,            // Instance count.
+                    0,            // Start index location.
+                    0,            // Base vertex location.
+                    0             // Start instance location.
+                );
+            }
 
-        // Set up for rendering the texture that contains the text
-        pBufferToSet = m_vertexBufferText.get();
-        context->IASetVertexBuffers(0, 1, &pBufferToSet, &stride, &offset);
+            // Draw the text.
+            {
+                if (linesChanged == true)
+                {
+                    // Set up for rendering the texture that contains the text
+                    pBufferToSet = m_vertexBufferText.get();
+                    context->IASetVertexBuffers(0, 1, &pBufferToSet, &stride, &offset);
 
-        ID3D11ShaderResourceView* pShaderViewToSet = m_textShaderResourceView.get();
-        context->PSSetShaderResources(0, 1, &pShaderViewToSet);
+                    ID3D11ShaderResourceView* pShaderViewToSet = m_textShaderResourceView.get();
+                    context->PSSetShaderResources(0, 1, &pShaderViewToSet);
 
-        ID3D11SamplerState* pSamplerToSet = m_textSamplerState.get();
-        context->PSSetSamplers(0, 1, &pSamplerToSet);
+                    ID3D11SamplerState* pSamplerToSet = m_textSamplerState.get();
+                    context->PSSetSamplers(0, 1, &pSamplerToSet);
 
-        context->UpdateSubresource(m_modelConstantBuffer.get(), 0, nullptr, &m_modelConstantBufferDataText, 0, 0);
+                    context->UpdateSubresource(m_modelConstantBuffer.get(), 0, nullptr, &m_modelConstantBufferDataText, 0, 0);
 
-        // Draw the text.
-        context->DrawIndexedInstanced(
-            m_indexCount, // Index count per instance.
-            2,            // Instance count.
-            0,            // Start index location.
-            0,            // Base vertex location.
-            0             // Start instance location.
-        );
-
-        // Reset the blend state.
-        context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-
-        // Detach our texture.
-        ID3D11ShaderResourceView* emptyResource = nullptr;
-        context->PSSetShaderResources(0, 1, &emptyResource);
+                    context->DrawIndexedInstanced(
+                        m_indexCount, // Index count per instance.
+                        2,            // Instance count.
+                        0,            // Start index location.
+                        0,            // Base vertex location.
+                        0             // Start instance location.
+                    );
+                }
+            }
+        });
     });
 }
 
 void StatusDisplay::CreateDeviceDependentResources()
 {
-    CD3D11_SAMPLER_DESC desc(D3D11_DEFAULT);
+    auto device = m_deviceResources->GetD3DDevice();
 
     CD3D11_TEXTURE2D_DESC textureDesc(
-        DXGI_FORMAT_B8G8R8A8_UNORM, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
+        DXGI_FORMAT_B8G8R8A8_UNORM, m_textTextureWidth, m_textTextureHeight, 1, 1, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
 
     m_textTexture = nullptr;
-    m_deviceResources->GetD3DDevice()->CreateTexture2D(&textureDesc, nullptr, m_textTexture.put());
+    device->CreateTexture2D(&textureDesc, nullptr, m_textTexture.put());
 
     m_textShaderResourceView = nullptr;
-    m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_textTexture.get(), nullptr, m_textShaderResourceView.put());
+    device->CreateShaderResourceView(m_textTexture.get(), nullptr, m_textShaderResourceView.put());
 
     m_textRenderTarget = nullptr;
-    m_deviceResources->GetD3DDevice()->CreateRenderTargetView(m_textTexture.get(), nullptr, m_textRenderTarget.put());
+    device->CreateRenderTargetView(m_textTexture.get(), nullptr, m_textRenderTarget.put());
 
     D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
         D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED), 96, 96);
 
     winrt::com_ptr<IDXGISurface> dxgiSurface;
     m_textTexture.as(dxgiSurface);
-
 
     m_d2dTextRenderTarget = nullptr;
     winrt::check_hresult(
@@ -206,78 +214,38 @@ void StatusDisplay::CreateDeviceDependentResources()
     const auto vertexShaderDataSize = m_usingVprtShaders ? sizeof(VPRTVertexShader) : sizeof(VertexShader);
 
     // create the vertex shader and input layout.
-    task<void> createVSTask = task<void>([this, vertexShaderData, vertexShaderDataSize]() {
-        winrt::check_hresult(
-            m_deviceResources->GetD3DDevice()->CreateVertexShader(vertexShaderData, vertexShaderDataSize, nullptr, m_vertexShader.put()));
+    task<void> createVSTask = task<void>([this, device, vertexShaderData, vertexShaderDataSize]() {
+        winrt::check_hresult(device->CreateVertexShader(vertexShaderData, vertexShaderDataSize, nullptr, m_vertexShader.put()));
 
         static const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = {
             {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
             {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
         };
 
-        winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateInputLayout(
-            vertexDesc, ARRAYSIZE(vertexDesc), vertexShaderData, vertexShaderDataSize, m_inputLayout.put()));
+        winrt::check_hresult(
+            device->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), vertexShaderData, vertexShaderDataSize, m_inputLayout.put()));
     });
 
     // create the pixel shader and constant buffer.
-    task<void> createPSTask([this]() {
-        winrt::check_hresult(
-            m_deviceResources->GetD3DDevice()->CreatePixelShader(PixelShader, sizeof(PixelShader), nullptr, m_pixelShader.put()));
+    task<void> createPSTask([this, device]() {
+        winrt::check_hresult(device->CreatePixelShader(PixelShader, sizeof(PixelShader), nullptr, m_pixelShader.put()));
 
         const CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
-        winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateBuffer(&constantBufferDesc, nullptr, m_modelConstantBuffer.put()));
+        winrt::check_hresult(device->CreateBuffer(&constantBufferDesc, nullptr, m_modelConstantBuffer.put()));
     });
 
     task<void> createGSTask;
     if (!m_usingVprtShaders)
     {
         // create the geometry shader.
-        createGSTask = task<void>([this]() {
-            winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateGeometryShader(
-                GeometryShader, sizeof(GeometryShader), nullptr, m_geometryShader.put()));
+        createGSTask = task<void>([this, device]() {
+            winrt::check_hresult(device->CreateGeometryShader(GeometryShader, sizeof(GeometryShader), nullptr, m_geometryShader.put()));
         });
     }
 
     // Once all shaders are loaded, create the mesh.
     task<void> shaderTaskGroup = m_usingVprtShaders ? (createPSTask && createVSTask) : (createPSTask && createVSTask && createGSTask);
-    task<void> createQuadTask = shaderTaskGroup.then([this]() {
-        // Load mesh vertices. Each vertex has a position and a color.
-        // Note that the quad size has changed from the default DirectX app
-        // template. Windows Holographic is scaled in meters, so to draw the
-        // quad at a comfortable size we made the quad width 0.2 m (20 cm).
-        static const float imageQuadExtent = 0.23f;
-        static const VertexBufferElement quadVertices[] = {
-            {XMFLOAT3(-imageQuadExtent, imageQuadExtent, 0.f), XMFLOAT2(0.f, 0.f)},
-            {XMFLOAT3(imageQuadExtent, imageQuadExtent, 0.f), XMFLOAT2(1.f, 0.f)},
-            {XMFLOAT3(imageQuadExtent, -imageQuadExtent, 0.f), XMFLOAT2(1.f, 1.f)},
-            {XMFLOAT3(-imageQuadExtent, -imageQuadExtent, 0.f), XMFLOAT2(0.f, 1.f)},
-        };
-
-        D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
-        vertexBufferData.pSysMem = quadVertices;
-        vertexBufferData.SysMemPitch = 0;
-        vertexBufferData.SysMemSlicePitch = 0;
-        const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(quadVertices), D3D11_BIND_VERTEX_BUFFER);
-        winrt::check_hresult(
-            m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBufferImage.put()));
-
-        static const float textQuadExtent = 0.3f;
-        static const VertexBufferElement quadVerticesText[] = {
-            {XMFLOAT3(-textQuadExtent, textQuadExtent, 0.f), XMFLOAT2(0.f, 0.f)},
-            {XMFLOAT3(textQuadExtent, textQuadExtent, 0.f), XMFLOAT2(1.f, 0.f)},
-            {XMFLOAT3(textQuadExtent, -textQuadExtent, 0.f), XMFLOAT2(1.f, 1.f)},
-            {XMFLOAT3(-textQuadExtent, -textQuadExtent, 0.f), XMFLOAT2(0.f, 1.f)},
-        };
-
-        D3D11_SUBRESOURCE_DATA vertexBufferDataText = {0};
-        vertexBufferDataText.pSysMem = quadVerticesText;
-        vertexBufferDataText.SysMemPitch = 0;
-        vertexBufferDataText.SysMemSlicePitch = 0;
-        const CD3D11_BUFFER_DESC vertexBufferDescText(sizeof(quadVerticesText), D3D11_BIND_VERTEX_BUFFER);
-        winrt::check_hresult(
-            m_deviceResources->GetD3DDevice()->CreateBuffer(&vertexBufferDescText, &vertexBufferDataText, m_vertexBufferText.put()));
-
-
+    task<void> createQuadTask = shaderTaskGroup.then([this, device]() {
         // Load mesh indices. Each trio of indices represents
         // a triangle to be rendered on the screen.
         // For example: 2,1,0 means that the vertices with indexes
@@ -300,34 +268,32 @@ void StatusDisplay::CreateDeviceDependentResources()
         indexBufferData.SysMemPitch = 0;
         indexBufferData.SysMemSlicePitch = 0;
         const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(quadIndices), D3D11_BIND_INDEX_BUFFER);
-        winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateBuffer(&indexBufferDesc, &indexBufferData, m_indexBuffer.put()));
+        winrt::check_hresult(device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_indexBuffer.put()));
     });
 
     // Create image sampler state
     {
-        D3D11_SAMPLER_DESC desc = {};
-
-        desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-        desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-        desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-        desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-        desc.MaxAnisotropy = 1;
-        desc.MinLOD = 0;
-        desc.MaxLOD = 3;
-        desc.MipLODBias = 0.f;
-        desc.BorderColor[0] = 0.f;
-        desc.BorderColor[1] = 0.f;
-        desc.BorderColor[2] = 0.f;
-        desc.BorderColor[3] = 0.f;
-        desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-
-        winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateSamplerState(&desc, m_imageSamplerState.put()));
+        D3D11_SAMPLER_DESC samplerDesc = {};
+        samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        samplerDesc.MaxAnisotropy = 1;
+        samplerDesc.MinLOD = 0;
+        samplerDesc.MaxLOD = 3;
+        samplerDesc.MipLODBias = 0.f;
+        samplerDesc.BorderColor[0] = 0.f;
+        samplerDesc.BorderColor[1] = 0.f;
+        samplerDesc.BorderColor[2] = 0.f;
+        samplerDesc.BorderColor[3] = 0.f;
+        samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+        winrt::check_hresult(device->CreateSamplerState(&samplerDesc, m_imageSamplerState.put()));
     }
 
     // Create text sampler state
     {
         CD3D11_SAMPLER_DESC samplerDesc(D3D11_DEFAULT);
-        winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateSamplerState(&samplerDesc, m_textSamplerState.put()));
+        winrt::check_hresult(device->CreateSamplerState(&samplerDesc, m_textSamplerState.put()));
     }
 
     // Create the blend state.  This sets up a blend state for pre-multiplied alpha produced by TextRenderer.cpp's Direct2D text
@@ -352,7 +318,10 @@ void StatusDisplay::CreateDeviceDependentResources()
         blendStateDesc.RenderTarget[i] = rtBlendDesc;
     }
 
-    winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateBlendState(&blendStateDesc, m_textAlphaBlendState.put()));
+    winrt::check_hresult(device->CreateBlendState(&blendStateDesc, m_textAlphaBlendState.put()));
+
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+    device->CreateDepthStencilState(&depthStencilDesc, m_depthStencilState.put());
 
     // Once the quad is loaded, the object is ready to be rendered.
     auto loadCompleteCallback = createQuadTask.then([this]() { m_loadingComplete = true; });
@@ -412,7 +381,10 @@ void StatusDisplay::SetLines(winrt::array_view<Line> lines)
 void StatusDisplay::UpdateLineText(size_t index, std::wstring text)
 {
     std::scoped_lock lock(m_lineMutex);
-    assert(index < m_lines.size() && "Line index out of bounds");
+    if (index >= m_lines.size())
+    {
+        return;
+    }
 
     auto& runtimeLine = m_lines[index];
 
@@ -423,7 +395,7 @@ void StatusDisplay::UpdateLineText(size_t index, std::wstring text)
 size_t StatusDisplay::AddLine(const Line& line)
 {
     std::scoped_lock lock(m_lineMutex);
-    auto newIndex = m_lines.size();
+    size_t newIndex = m_lines.size();
     m_lines.resize(newIndex + 1);
     UpdateLineInternal(m_lines[newIndex], line);
     return newIndex;
@@ -437,6 +409,11 @@ bool StatusDisplay::HasLine(size_t index)
 
 void StatusDisplay::CreateFonts()
 {
+    // DIP font size, based on the horizontal size of the virtual display.
+    float fontSizeLargeDIP = (m_virtualDisplaySizeInchX * FontSizeLarge) * 96;
+    float fontSizeMediumDIP = (m_virtualDisplaySizeInchX * FontSizeMedium) * 96;
+    float fontSizeSmallDIP = (m_virtualDisplaySizeInchX * FontSizeSmall) * 96;
+
     // Create Large font
     m_textFormats[Large] = nullptr;
     winrt::check_hresult(m_deviceResources->GetDWriteFactory()->CreateTextFormat(
@@ -445,7 +422,7 @@ void StatusDisplay::CreateFonts()
         DWRITE_FONT_WEIGHT_NORMAL,
         DWRITE_FONT_STYLE_NORMAL,
         DWRITE_FONT_STRETCH_NORMAL,
-        FontSizeLarge,
+        fontSizeLargeDIP,
         FontLanguage,
         m_textFormats[Large].put()));
     winrt::check_hresult(m_textFormats[Large]->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
@@ -459,7 +436,7 @@ void StatusDisplay::CreateFonts()
         DWRITE_FONT_WEIGHT_BOLD,
         DWRITE_FONT_STYLE_NORMAL,
         DWRITE_FONT_STRETCH_NORMAL,
-        FontSizeLarge,
+        fontSizeLargeDIP,
         FontLanguage,
         m_textFormats[LargeBold].put()));
     winrt::check_hresult(m_textFormats[LargeBold]->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
@@ -473,13 +450,27 @@ void StatusDisplay::CreateFonts()
         DWRITE_FONT_WEIGHT_MEDIUM,
         DWRITE_FONT_STYLE_NORMAL,
         DWRITE_FONT_STRETCH_NORMAL,
-        FontSizeSmall,
+        fontSizeSmallDIP,
         FontLanguage,
         m_textFormats[Small].put()));
     winrt::check_hresult(m_textFormats[Small]->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
     winrt::check_hresult(m_textFormats[Small]->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
 
-    static_assert(TextFormatCount == 3, "Expected 3 text formats");
+    // Create medium font
+    m_textFormats[Medium] = nullptr;
+    winrt::check_hresult(m_deviceResources->GetDWriteFactory()->CreateTextFormat(
+        Font,
+        nullptr,
+        DWRITE_FONT_WEIGHT_MEDIUM,
+        DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL,
+        fontSizeMediumDIP,
+        FontLanguage,
+        m_textFormats[Medium].put()));
+    winrt::check_hresult(m_textFormats[Medium]->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
+    winrt::check_hresult(m_textFormats[Medium]->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
+
+    static_assert(TextFormatCount == 4, "Expected 4 text formats");
 }
 
 void StatusDisplay::CreateBrushes()
@@ -504,13 +495,19 @@ void StatusDisplay::UpdateLineInternal(RuntimeLine& runtimeLine, const Line& lin
         runtimeLine.format = line.format;
         runtimeLine.text = line.text;
 
+        const float virtualDisplayDPIx = m_textTextureWidth / m_virtualDisplaySizeInchX;
+        const float virtualDisplayDPIy = m_textTextureHeight / m_virtualDisplaySizeInchY;
+
+        const float dpiScaleX = virtualDisplayDPIx / 96.0f;
+        const float dpiScaleY = virtualDisplayDPIy / 96.0f;
+
         runtimeLine.layout = nullptr;
         winrt::check_hresult(m_deviceResources->GetDWriteFactory()->CreateTextLayout(
             line.text.c_str(),
             static_cast<UINT32>(line.text.length()),
             m_textFormats[line.format].get(),
-            TEXTURE_WIDTH,  // Max width of the input text.
-            TEXTURE_HEIGHT, // Max height of the input text.
+            static_cast<float>(m_textTextureWidth / dpiScaleX),  // Max width of the input text.
+            static_cast<float>(m_textTextureHeight / dpiScaleY), // Max height of the input text.
             runtimeLine.layout.put()));
 
         winrt::check_hresult(runtimeLine.layout->GetMetrics(&runtimeLine.metrics));
@@ -536,11 +533,11 @@ void StatusDisplay::PositionDisplay(float deltaTimeInSeconds, const SpatialPoint
         const float3 headPosition = pointerPose.Head().Position();
         const float3 headDirection = pointerPose.Head().ForwardDirection();
 
-        const float3 offsetImage = float3(0.0f, -0.02f, 0.0f);
-        const float3 gazeAtTwoMetersImage = headPosition + (2.05f * (headDirection + offsetImage));
+        const float3 offsetImage = float3(0.0f, m_virtualDisplaySizeInchY * 0.002f, 0.0f);
+        const float3 gazeAtTwoMetersImage = headPosition + ((m_statusDisplayDistance + 0.05f) * (headDirection + offsetImage));
 
-        const float3 offsetText = float3(0.0f, -0.035f, 0.0f);
-        const float3 gazeAtTwoMetersText = headPosition + (2.0f * (headDirection + offsetText));
+        const float3 offsetText = float3(0.0f, 0.0f, 0.0f);
+        const float3 gazeAtTwoMetersText = headPosition + (m_statusDisplayDistance * (headDirection + offsetText));
 
         // Lerp the position, to keep the hologram comfortably stable.
         auto imagePosition = lerp(m_positionImage, gazeAtTwoMetersImage, deltaTimeInSeconds * c_lerpRate);
@@ -596,4 +593,160 @@ void StatusDisplay::UpdateConstantBuffer(
     // for image stabilization.
     auto& deltaX = position - lastPosition;   // meters
     m_velocity = deltaX / deltaTimeInSeconds; // meters per second
+}
+
+void StatusDisplay::UpdateTextScale(
+    winrt::Windows::Graphics::Holographic::HolographicStereoTransform holoTransform,
+    float screenWidth,
+    float screenHeight,
+    float quadFov,
+    float heightRatio)
+{
+    DirectX::XMMATRIX projMat = XMLoadFloat4x4(&holoTransform.Left);
+    DirectX::XMFLOAT4X4 proj;
+    DirectX::XMStoreFloat4x4(&proj, projMat);
+    // Check if the projection matrix has changed.
+    bool projHasChanged = false;
+    for (int x = 0; x < 4; ++x)
+    {
+        for (int y = 0; y < 4; ++y)
+        {
+            if (proj.m[x][y] != m_projection.m[x][y])
+            {
+                projHasChanged = true;
+                break;
+            }
+        }
+        if (projHasChanged)
+        {
+            break;
+        }
+    }
+
+    const float fovDiff = m_currentQuadFov - quadFov;
+    const float fovEpsilon = 0.1f;
+    const bool quadFovHasChanged = std::abs(fovDiff) > fovEpsilon;
+    m_currentQuadFov = quadFov;
+
+    const float heightRatioDiff = m_currentHeightRatio - heightRatio;
+    const float heightRatioEpsilon = 0.1f;
+    const bool quadRatioHasChanged = std::abs(heightRatioDiff) > heightRatioEpsilon;
+    m_currentHeightRatio = heightRatio;
+
+    // Only update the StatusDisplay resolution and size if something has changed.
+    if (projHasChanged || quadFovHasChanged || quadRatioHasChanged)
+    {
+        // Quad extent based on FOV.
+        const float quadExtentX = tan((m_currentQuadFov / 2.0f) * Degree2Rad) * m_statusDisplayDistance;
+        const float quadExtentY = m_currentHeightRatio * quadExtentX;
+
+        // Calculate the virtual display size in inch.
+        m_virtualDisplaySizeInchX = (quadExtentX * 2.0f) * Meter2Inch;
+        m_virtualDisplaySizeInchY = (quadExtentY * 2.0f) * Meter2Inch;
+
+        // Pixel perfect resolution.
+        const float resX = screenWidth * quadExtentX / m_statusDisplayDistance * proj._11;
+        const float resY = screenHeight * quadExtentY / m_statusDisplayDistance * proj._22;
+
+        // sample with double resolution for multi sampling.
+        m_textTextureWidth = static_cast<int>(resX * 2.0f);
+        m_textTextureHeight = static_cast<int>(resY * 2.0f);
+
+        m_projection = proj;
+
+        // Create the new texture.
+        auto device = m_deviceResources->GetD3DDevice();
+
+        // Load mesh vertices. Each vertex has a position and a color.
+        // Note that the quad size has changed from the default DirectX app
+        // template. The quad size is based on the target FOV.
+        const VertexBufferElement quadVerticesText[] = {
+            {XMFLOAT3(-quadExtentX, quadExtentY, 0.f), XMFLOAT2(0.f, 0.f)},
+            {XMFLOAT3(quadExtentX, quadExtentY, 0.f), XMFLOAT2(1.f, 0.f)},
+            {XMFLOAT3(quadExtentX, -quadExtentY, 0.f), XMFLOAT2(1.f, 1.f)},
+            {XMFLOAT3(-quadExtentX, -quadExtentY, 0.f), XMFLOAT2(0.f, 1.f)},
+        };
+
+        D3D11_SUBRESOURCE_DATA vertexBufferDataText = {0};
+        vertexBufferDataText.pSysMem = quadVerticesText;
+        vertexBufferDataText.SysMemPitch = 0;
+        vertexBufferDataText.SysMemSlicePitch = 0;
+        const CD3D11_BUFFER_DESC vertexBufferDescText(sizeof(quadVerticesText), D3D11_BIND_VERTEX_BUFFER);
+
+        m_vertexBufferText = nullptr;
+        winrt::check_hresult(device->CreateBuffer(&vertexBufferDescText, &vertexBufferDataText, m_vertexBufferText.put()));
+
+        // Create image buffer
+        // The image contains 50% of the textFOV.
+        const float imageFOVDegree = 0.4f * (m_currentQuadFov * 0.5f);
+        const float imageQuadExtent = m_statusDisplayDistance / tan((90.0f - imageFOVDegree) * Degree2Rad);
+
+        const VertexBufferElement quadVertices[] = {
+            {XMFLOAT3(-imageQuadExtent, imageQuadExtent, 0.f), XMFLOAT2(0.f, 0.f)},
+            {XMFLOAT3(imageQuadExtent, imageQuadExtent, 0.f), XMFLOAT2(1.f, 0.f)},
+            {XMFLOAT3(imageQuadExtent, -imageQuadExtent, 0.f), XMFLOAT2(1.f, 1.f)},
+            {XMFLOAT3(-imageQuadExtent, -imageQuadExtent, 0.f), XMFLOAT2(0.f, 1.f)},
+        };
+
+        D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
+        vertexBufferData.pSysMem = quadVertices;
+        vertexBufferData.SysMemPitch = 0;
+        vertexBufferData.SysMemSlicePitch = 0;
+        const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(quadVertices), D3D11_BIND_VERTEX_BUFFER);
+        m_vertexBufferImage = nullptr;
+        winrt::check_hresult(device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBufferImage.put()));
+
+        CD3D11_TEXTURE2D_DESC textureDesc(
+            DXGI_FORMAT_B8G8R8A8_UNORM,
+            m_textTextureWidth,
+            m_textTextureHeight,
+            1,
+            1,
+            D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
+
+        m_textTexture = nullptr;
+        device->CreateTexture2D(&textureDesc, nullptr, m_textTexture.put());
+
+        m_textShaderResourceView = nullptr;
+        device->CreateShaderResourceView(m_textTexture.get(), nullptr, m_textShaderResourceView.put());
+
+        m_textRenderTarget = nullptr;
+        device->CreateRenderTargetView(m_textTexture.get(), nullptr, m_textRenderTarget.put());
+
+        const float virtualDisplayDPIx = m_textTextureWidth / m_virtualDisplaySizeInchX;
+        const float virtualDisplayDPIy = m_textTextureHeight / m_virtualDisplaySizeInchY;
+
+        D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_DEFAULT,
+            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+            virtualDisplayDPIx,
+            virtualDisplayDPIy);
+
+        winrt::com_ptr<IDXGISurface> dxgiSurface;
+        m_textTexture.as(dxgiSurface);
+
+        m_d2dTextRenderTarget = nullptr;
+        winrt::check_hresult(
+            m_deviceResources->GetD2DFactory()->CreateDxgiSurfaceRenderTarget(dxgiSurface.get(), &props, m_d2dTextRenderTarget.put()));
+
+        // Update the fonts.
+        CreateFonts();
+
+        // Update the text layout.
+        for (RuntimeLine& runtimeLine : m_lines)
+        {
+
+            const float dpiScaleX = virtualDisplayDPIx / 96.0f;
+            const float dpiScaleY = virtualDisplayDPIy / 96.0f;
+            runtimeLine.layout = nullptr;
+            winrt::check_hresult(m_deviceResources->GetDWriteFactory()->CreateTextLayout(
+                runtimeLine.text.c_str(),
+                static_cast<UINT32>(runtimeLine.text.length()),
+                m_textFormats[runtimeLine.format].get(),
+                static_cast<float>(m_textTextureWidth / dpiScaleX),  // Max width of the input text.
+                static_cast<float>(m_textTextureHeight / dpiScaleY), // Max height of the input text.
+                runtimeLine.layout.put()));
+            winrt::check_hresult(runtimeLine.layout->GetMetrics(&runtimeLine.metrics));
+        }
+    }
 }

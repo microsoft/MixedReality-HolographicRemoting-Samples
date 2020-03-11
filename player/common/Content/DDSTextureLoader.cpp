@@ -21,8 +21,8 @@
 
 #include "pch.h"
 
-#include <assert.h>
 #include <algorithm>
+#include <assert.h>
 #include <memory>
 
 #include "DDSTextureLoader.h"
@@ -256,7 +256,6 @@ static HRESULT LoadTextureDataFromFile(
     return S_OK;
 }
 
-
 //--------------------------------------------------------------------------------------
 // Return the BPP for a particular format
 //--------------------------------------------------------------------------------------
@@ -419,7 +418,6 @@ static size_t BitsPerPixel(_In_ DXGI_FORMAT fmt)
     }
 }
 
-
 //--------------------------------------------------------------------------------------
 // Get surface information for a particular format
 //--------------------------------------------------------------------------------------
@@ -562,7 +560,6 @@ static void GetSurfaceInfo(
         *outNumRows = numRows;
     }
 }
-
 
 //--------------------------------------------------------------------------------------
 #define ISBITMASK(r, g, b, a) (ddpf.RBitMask == r && ddpf.GBitMask == g && ddpf.BBitMask == b && ddpf.ABitMask == a)
@@ -777,7 +774,6 @@ static DXGI_FORMAT GetDXGIFormat(const DDS_PIXELFORMAT& ddpf)
     return DXGI_FORMAT_UNKNOWN;
 }
 
-
 //--------------------------------------------------------------------------------------
 static DXGI_FORMAT MakeSRGB(_In_ DXGI_FORMAT format)
 {
@@ -808,7 +804,6 @@ static DXGI_FORMAT MakeSRGB(_In_ DXGI_FORMAT format)
             return format;
     }
 }
-
 
 //--------------------------------------------------------------------------------------
 static HRESULT FillInitData(
@@ -901,7 +896,6 @@ static HRESULT FillInitData(
 
     return (index > 0) ? S_OK : E_FAIL;
 }
-
 
 //--------------------------------------------------------------------------------------
 static HRESULT CreateD3DResources(
@@ -1121,7 +1115,6 @@ static HRESULT CreateD3DResources(
 
     return hr;
 }
-
 
 //--------------------------------------------------------------------------------------
 static HRESULT CreateTextureFromDDS(
@@ -1528,7 +1521,6 @@ static HRESULT CreateTextureFromDDS(
     return hr;
 }
 
-
 //--------------------------------------------------------------------------------------
 static DDS_ALPHA_MODE GetAlphaMode(_In_ const DDS_HEADER* header)
 {
@@ -1555,7 +1547,6 @@ static DDS_ALPHA_MODE GetAlphaMode(_In_ const DDS_HEADER* header)
 
     return DDS_ALPHA_MODE_UNKNOWN;
 }
-
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_ HRESULT DirectX::CreateDDSTextureFromMemory(

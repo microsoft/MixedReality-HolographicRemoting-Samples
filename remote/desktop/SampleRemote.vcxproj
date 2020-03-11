@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D22B424F-B259-356A-8E4C-4937C36E783E}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>SampleRemote</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+    <SpectreMitigation>Spectre</SpectreMitigation>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bin\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SampleRemote.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SampleRemote</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bin\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SampleRemote.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SampleRemote</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">bin\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">SampleRemote.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">SampleRemote</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
+      <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <CompileAsWinRT>true</CompileAsWinRT>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SDLCheck>true</SDLCheck>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;UNICODE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WIN32;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_INTEL;RDBUILD_ARCH_INTEL_X64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;UNICODE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WIN32;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_INTEL;RDBUILD_ARCH_INTEL_X64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>lib/Debug/SampleRemote.lib</ImportLibrary>
+      <OptimizeReferences>false</OptimizeReferences>
+      <ProgramDataBaseFile>bin/Debug/SampleRemote.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
+      <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <CompileAsWinRT>true</CompileAsWinRT>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SDLCheck>true</SDLCheck>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;UNICODE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WIN32;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_INTEL;RDBUILD_ARCH_INTEL_X64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;UNICODE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WIN32;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_INTEL;RDBUILD_ARCH_INTEL_X64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>lib/Release/SampleRemote.lib</ImportLibrary>
+      <ProgramDataBaseFile>bin/Release/SampleRemote.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
+      <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <CompileAsWinRT>true</CompileAsWinRT>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <SDLCheck>true</SDLCheck>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;UNICODE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WIN32;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_INTEL;RDBUILD_ARCH_INTEL_X64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;UNICODE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WIN32;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_INTEL;RDBUILD_ARCH_INTEL_X64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>lib/RelWithDebInfo/SampleRemote.lib</ImportLibrary>
+      <OptimizeReferences>false</OptimizeReferences>
+      <ProgramDataBaseFile>bin/RelWithDebInfo/SampleRemote.pdb</ProgramDataBaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include=".\SampleRemoteMain.cpp" />
+    <ClInclude Include=".\SampleRemoteMain.h" />
+    <ClInclude Include=".\pch.h" />
+    <ClCompile Include=".\pch.cpp" />
+    <ClCompile Include=".\SampleRemoteWindowWin32.cpp" />
+    <ClInclude Include=".\SampleRemoteWindowWin32.h" />
+    <ClCompile Include=".\Common\CameraResources.cpp" />
+    <ClInclude Include=".\Common\CameraResources.h" />
+    <ClInclude Include=".\Common\DbgLog.h" />
+    <ClCompile Include=".\Common\DeviceResources.cpp" />
+    <ClInclude Include=".\Common\DeviceResources.h" />
+    <ClInclude Include=".\Common\DirectXHelper.h" />
+    <ClCompile Include=".\Common\PerceptionTypes.cpp" />
+    <ClInclude Include=".\Common\PerceptionTypes.h" />
+    <ClInclude Include=".\Common\Utils.h" />
+    <ClCompile Include=".\Common\Speech.cpp" />
+    <ClInclude Include=".\Common\Speech.h" />
+    <ClCompile Include=".\Content\PerceptionDeviceHandler.cpp" />
+    <ClInclude Include=".\Content\PerceptionDeviceHandler.h" />
+    <ClCompile Include=".\Content\QRCodeRenderer.cpp" />
+    <ClInclude Include=".\Content\QRCodeRenderer.h" />
+    <ClCompile Include=".\Content\QRCodeTracker.cpp" />
+    <ClInclude Include=".\Content\QRCodeTracker.h" />
+    <ClCompile Include=".\Content\RenderableObject.cpp" />
+    <ClInclude Include=".\Content\RenderableObject.h" />
+    <ClInclude Include=".\Content\ShaderStructures.h" />
+    <ClCompile Include=".\Content\SpatialInputHandler.cpp" />
+    <ClInclude Include=".\Content\SpatialInputHandler.h" />
+    <ClCompile Include=".\Content\SpatialInputRenderer.cpp" />
+    <ClInclude Include=".\Content\SpatialInputRenderer.h" />
+    <ClCompile Include=".\Content\SpinningCubeRenderer.cpp" />
+    <ClInclude Include=".\Content\SpinningCubeRenderer.h" />
+    <ClCompile Include=".\Content\SpatialSurfaceMeshRenderer.cpp" />
+    <ClInclude Include=".\Content\SpatialSurfaceMeshRenderer.h" />
+    <Image Include=".\Assets\LockScreenLogo.scale-200.png" />
+    <Image Include=".\Assets\SplashScreen.scale-200.png" />
+    <Image Include=".\Assets\Square44x44Logo.scale-200.png" />
+    <Image Include=".\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Image Include=".\Assets\Square150x150Logo.scale-200.png" />
+    <Image Include=".\Assets\StoreLogo.png" />
+    <Image Include=".\Assets\Wide310x150Logo.scale-200.png" />
+    <AppxManifest Include=".\Package.appxmanifest" />
+    <FXCompile Include=".\Content\shaders\hsa_VertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>main</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\hsa_VPRTVertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>main</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\hsa_SRMeshVertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>main</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\hsa_PixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>main</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\hsa_SRMeshPixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>main</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\hsa_GeometryShader.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>main</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\hsa_SRMeshGeometryShader.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>main</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <None Include=".\SpeechGrammar.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.1.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.1.0\build\native\Microsoft.Holographic.Remoting.targets')" />
+  </ImportGroup>
+</Project>

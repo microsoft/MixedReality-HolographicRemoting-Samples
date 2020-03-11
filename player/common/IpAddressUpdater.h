@@ -13,21 +13,21 @@
 
 #include <winrt/Windows.Networking.Connectivity.h>
 
-
 class IpAddressUpdater
 {
 public:
     IpAddressUpdater();
     ~IpAddressUpdater();
 
-    winrt::hstring GetIpAddress();
+    winrt::hstring GetIpAddress(bool ipv6);
 
 private:
     void UpdateIpAddress(winrt::Windows::Foundation::IInspectable sender);
 
 private:
     std::mutex m_lock;
-    winrt::hstring m_ipAddress;
+    winrt::hstring m_ipAddressIpv6;
+    winrt::hstring m_ipAddressIpv4;
 
     winrt::Windows::Networking::Connectivity::NetworkInformation::NetworkStatusChanged_revoker m_networkStatusChangedRevoker;
 };

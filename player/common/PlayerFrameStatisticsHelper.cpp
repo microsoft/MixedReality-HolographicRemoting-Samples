@@ -15,9 +15,7 @@
 
 #include <sstream>
 
-
 using namespace winrt::Microsoft::Holographic::AppRemoting;
-
 
 std::wstring PlayerFrameStatisticsHelper::GetStatisticsString() const
 {
@@ -30,7 +28,6 @@ std::wstring PlayerFrameStatisticsHelper::GetStatisticsString() const
     float videoFrameMaxDelta = 0.0f;
     float latencyAvg = 0.0f;
     uint32_t videoFramesDiscarded = 0;
-
 
     for (const PlayerFrameStatistics& frameStatistics : m_lastWindowFrameStats)
     {
@@ -69,14 +66,14 @@ std::wstring PlayerFrameStatisticsHelper::GetStatisticsString() const
     std::wstringstream statisticsStringStream;
     statisticsStringStream.precision(3);
     statisticsStringStream << L"Render: " << frameStatsCount << L" fps - " << timeSinceLastPresentAvg * 1000 << L" / "
-                           << timeSinceLastPresentMax * 1000 << L" ms (avg / max)" << std::endl
+                           << timeSinceLastPresentMax * 1000 << L" ms (avg/max)" << std::endl
                            << L"Video frames: " << videoFramesSkipped << L" / " << videoFramesReused << L" / " << videoFramesReceived
-                           << L" skipped / reused / received" << std::endl
+                           << L" skipped/reused/received" << std::endl
                            << L"Video frames delta: " << videoFrameMinDelta * 1000 << L" / " << videoFrameMaxDelta * 1000
-                           << L" ms (min / max)" << std::endl
+                           << L" ms (min/max)" << std::endl
                            << L"Latency: " << latencyAvg * 1000 << L" ms (avg)" << std::endl
                            << L"Video frames discarded: " << videoFramesDiscarded << L" / " << m_videoFramesDiscardedTotal
-                           << L" frames (last sec / total)" << std::endl;
+                           << L" frames (last sec/total)" << std::endl;
 
     return statisticsStringStream.str();
 }

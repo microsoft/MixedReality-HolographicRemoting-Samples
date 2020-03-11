@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRemote", "SampleRemote.vcxproj", "{C3606530-114C-309C-B0D2-61F999097E21}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+		RelWithDebInfo|x64 = RelWithDebInfo|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C3606530-114C-309C-B0D2-61F999097E21}.Debug|x64.ActiveCfg = Debug|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.Debug|x64.Build.0 = Debug|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.Debug|x64.Deploy.0 = Debug|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.Release|x64.ActiveCfg = Release|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.Release|x64.Build.0 = Release|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.Release|x64.Deploy.0 = Release|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{C3606530-114C-309C-B0D2-61F999097E21}.RelWithDebInfo|x64.Deploy.0 = RelWithDebInfo|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E8A3A1EC-E636-40D6-9E3D-C22347CC8162}
+	EndGlobalSection
+EndGlobal
+

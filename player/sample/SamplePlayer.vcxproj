@@ -1,21 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|ARM">
+    <ProjectConfiguration Include="Debug|ARM64">
       <Configuration>Debug</Configuration>
-      <Platform>ARM</Platform>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|ARM">
+    <ProjectConfiguration Include="Release|ARM64">
       <Configuration>Release</Configuration>
-      <Platform>ARM</Platform>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="RelWithDebInfo|ARM">
+    <ProjectConfiguration Include="RelWithDebInfo|ARM64">
       <Configuration>RelWithDebInfo</Configuration>
-      <Platform>ARM</Platform>
+      <Platform>ARM64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B26EEC5F-BBFF-3973-A459-AD3E5A33EF70}</ProjectGuid>
+    <ProjectGuid>{B848F924-651A-3EC7-8166-E5565290E1FB}</ProjectGuid>
     <ApplicationType>Windows Store</ApplicationType>
     <DefaultLanguage>en-US</DefaultLanguage>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
@@ -24,67 +28,66 @@
     <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.17134.0</WindowsTargetPlatformMinVersion>
     <Keyword>Win32Proj</Keyword>
-    <Platform>ARM</Platform>
+    <Platform>ARM64</Platform>
     <ProjectName>SamplePlayer</ProjectName>
     <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.0.14\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.0.14\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.\bin\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">SamplePlayer.dir\Debug\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">SamplePlayer</TargetName>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.exe</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</LinkIncremental>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">.\bin\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">SamplePlayer.dir\Release\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">SamplePlayer</TargetName>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">.exe</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</LinkIncremental>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">.\bin\RelWithDebInfo\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">SamplePlayer.dir\RelWithDebInfo\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">SamplePlayer</TargetName>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">.exe</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</LinkIncremental>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">.\bin\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">SamplePlayer.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">SamplePlayer</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">.\bin\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">SamplePlayer.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">SamplePlayer</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">.\bin\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">SamplePlayer.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">SamplePlayer</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</GenerateManifest>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(UniversalCRTSdkDir)UnionMetadata</AdditionalUsingDirectories>
-      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4503;4311;4456;4458;4459;4499</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ForcedUsingFiles>;%(ForcedUsingFiles)</ForcedUsingFiles>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -98,11 +101,11 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM32;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;UNICODE;_UNICODE;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM32;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;UNICODE;_UNICODE;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -116,7 +119,7 @@
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:ARM</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /machine:ARM64</AdditionalOptions>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
@@ -130,17 +133,17 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(UniversalCRTSdkDir)UnionMetadata</AdditionalUsingDirectories>
-      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4503;4311;4456;4458;4459;4499</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ForcedUsingFiles>;%(ForcedUsingFiles)</ForcedUsingFiles>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -154,11 +157,11 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM32;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM32;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -172,7 +175,7 @@
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:ARM</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /machine:ARM64</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -184,16 +187,16 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">
     <ClCompile>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(UniversalCRTSdkDir)UnionMetadata</AdditionalUsingDirectories>
-      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4503;4311;4456;4458;4459;4499</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ForcedUsingFiles>;%(ForcedUsingFiles)</ForcedUsingFiles>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -207,11 +210,11 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM32;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM32;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;RDBUILD_PLATFORM_DEFINED;RDBUILD_PLATFORM_WINDOWS;RDBUILD_PLATFORM_WINDOWS_WINRT;RDBUILD_ARCHITECTURE_DEFINED;RDBUILD_ARCH_ARM;RDBUILD_ARCH_ARM_ARM64;RDBUILD_DEFAULT_CALL=;RDBUILD_FEATURE_OPENSSL=0;_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN=1;WINVER=0x0A00;_WIN32_WINNT=0x0A00;NTDDI_VERSION=0x0A000007;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -225,7 +228,7 @@
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:ARM</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /machine:ARM64</AdditionalOptions>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
@@ -246,12 +249,16 @@
     <ClCompile Include=".\SamplePlayerMain.cpp" />
     <ClCompile Include="..\common\CameraResources.cpp" />
     <ClInclude Include="..\common\CameraResources.h" />
-    <ClCompile Include="..\common\DeviceResources.cpp" />
-    <ClInclude Include="..\common\DeviceResources.h" />
+    <ClCompile Include="..\common\DeviceResourcesCommon.cpp" />
+    <ClInclude Include="..\common\DeviceResourcesCommon.h" />
+    <ClCompile Include="..\common\DeviceResourcesUWP.cpp" />
+    <ClInclude Include="..\common\DeviceResourcesUWP.h" />
     <ClInclude Include="..\common\IpAddressUpdater.h" />
     <ClCompile Include="..\common\IpAddressUpdater.cpp" />
     <ClInclude Include="..\common\PlayerFrameStatisticsHelper.h" />
     <ClCompile Include="..\common\PlayerFrameStatisticsHelper.cpp" />
+    <ClInclude Include="..\common\PlayerUtil.h" />
+    <ClCompile Include="..\common\PlayerUtil.cpp" />
     <ClCompile Include="..\common\Content\DDSTextureLoader.cpp" />
     <ClInclude Include="..\common\Content\DDSTextureLoader.h" />
     <ClInclude Include="..\common\Content\ErrorHelper.h" />
@@ -261,97 +268,101 @@
     <ClCompile Include="..\common\Content\StatusDisplay.cpp" />
     <None Include=".\Content\RemotingLogo.dds">
       <Link>.\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </None>
     <Image Include=".\Assets\LockScreenLogo.scale-200.png">
       <Link>Assets\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </Image>
     <Image Include=".\Assets\SplashScreen.scale-200.png">
       <Link>Assets\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </Image>
     <Image Include=".\Assets\Square44x44Logo.scale-200.png">
       <Link>Assets\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </Image>
     <Image Include=".\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
       <Link>Assets\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </Image>
     <Image Include=".\Assets\Square150x150Logo.scale-200.png">
       <Link>Assets\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </Image>
     <Image Include=".\Assets\StoreLogo.png">
       <Link>Assets\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </Image>
     <Image Include=".\Assets\Wide310x150Logo.scale-200.png">
       <Link>Assets\%(FileName)%(Extension)</Link>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">true</DeploymentContent>
     </Image>
     <AppxManifest Include=".\Package.appxmanifest" />
     <FXCompile Include="..\common\Shaders\VertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">%(Filename)</VariableName>
     </FXCompile>
     <FXCompile Include="..\common\Shaders\VPRTVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">%(Filename)</VariableName>
     </FXCompile>
     <FXCompile Include="..\common\Shaders\PixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">%(Filename)</VariableName>
     </FXCompile>
     <FXCompile Include="..\common\Shaders\GeometryShader.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">.\shaders\%(Filename).h</HeaderFileOutput>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">%(Filename)</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM'">%(Filename)</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">%(Filename)</VariableName>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">%(Filename)</VariableName>
     </FXCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.1.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.1.0\build\native\Microsoft.Holographic.Remoting.targets')" />
+  </ImportGroup>
 </Project>

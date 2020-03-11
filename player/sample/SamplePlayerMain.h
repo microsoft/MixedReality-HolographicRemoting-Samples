@@ -15,13 +15,11 @@
 
 #include "../common/Content/ErrorHelper.h"
 #include "../common/Content/StatusDisplay.h"
-#include "../common/DeviceResources.h"
+#include "../common/DeviceResourcesUWP.h"
 #include "../common/IpAddressUpdater.h"
 #include "../common/PlayerFrameStatisticsHelper.h"
 
 #include <winrt/Microsoft.Holographic.AppRemoting.h>
-
-
 
 class SamplePlayerMain : public winrt::implements<
                              SamplePlayerMain,
@@ -30,6 +28,7 @@ class SamplePlayerMain : public winrt::implements<
                          public DXHelper::IDeviceNotify
 {
 public:
+    SamplePlayerMain();
     ~SamplePlayerMain();
 
     // Try to (re-)connect to or listen on the hostname/port, that was set during activation of the app.
@@ -67,6 +66,7 @@ private:
         uint16_t m_port = 0;
         bool m_listen = true;
         bool m_showStatistics = false;
+        bool m_ipv6 = false;
     };
 
 private:
@@ -107,7 +107,7 @@ private:
 
 private:
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesUWP> m_deviceResources;
 
     // SpatialLocator that is attached to the default HolographicDisplay.
     winrt::Windows::Perception::Spatial::SpatialLocator m_spatialLocator = nullptr;
@@ -139,9 +139,9 @@ private:
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
     std::mutex m_customDataChannelLock;
-    winrt::Microsoft::Holographic::AppRemoting::IDataChannel m_customDataChannel = nullptr;
-    winrt::Microsoft::Holographic::AppRemoting::IDataChannel::OnDataReceived_revoker m_customChannelDataReceivedEventRevoker;
-    winrt::Microsoft::Holographic::AppRemoting::IDataChannel::OnClosed_revoker m_customChannelClosedEventRevoker;
+    winrt::Microsoft::Holographic::AppRemoting::IDataChannel2 m_customDataChannel = nullptr;
+    winrt::Microsoft::Holographic::AppRemoting::IDataChannel2::OnDataReceived_revoker m_customChannelDataReceivedEventRevoker;
+    winrt::Microsoft::Holographic::AppRemoting::IDataChannel2::OnClosed_revoker m_customChannelClosedEventRevoker;
 #endif
 
     // Indicates that tracking has been lost
@@ -150,6 +150,8 @@ private:
     // CoreWindow status
     bool m_windowClosed = false;
     bool m_windowVisible = true;
+
+    bool m_canCommitDirect3D11DepthBuffer = false;
 
     // Event registration revokers
     winrt::Windows::Perception::Spatial::SpatialLocator::LocatabilityChanged_revoker m_locatabilityChangedRevoker;
