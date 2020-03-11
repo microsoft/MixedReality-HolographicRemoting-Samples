@@ -22,7 +22,6 @@ static_assert(
     (sizeof(ModelConstantBuffer) % (sizeof(float) * 4)) == 0,
     "Model constant buffer size must be multiple of 16-bytes (16 bytes is the length of four floats).");
 
-
 // Used to send per-vertex data to the vertex shader.
 struct VertexBufferElement
 {

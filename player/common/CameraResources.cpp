@@ -12,7 +12,7 @@
 #include "pch.h"
 
 #include "CameraResources.h"
-#include "DeviceResources.h"
+#include "DeviceResourcesUWP.h"
 
 using namespace DirectX;
 using namespace winrt::Windows::Foundation::Numerics;
@@ -35,7 +35,7 @@ namespace DXHelper
     // The app does not access the swap chain directly, but it does create
     // resource views for the back buffer.
     void CameraResources::CreateResourcesForBackBuffer(
-        DeviceResources* pDeviceResources, HolographicCameraRenderingParameters const& cameraParameters)
+        DeviceResourcesUWP* pDeviceResources, HolographicCameraRenderingParameters const& cameraParameters)
     {
         ID3D11Device* device = pDeviceResources->GetD3DDevice();
 
@@ -105,6 +105,10 @@ namespace DXHelper
                 1,                  // Use a single mipmap level.
                 D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE);
 
+            // Allow sharing by default for easier interop with future D3D12 components for processing the remote or local frame.
+            // This is optional, but without the flag any D3D12 components need to perform an additional copy.
+            depthStencilDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+
             m_d3dDepthStencil = nullptr;
             winrt::check_hresult(device->CreateTexture2D(&depthStencilDesc, nullptr, m_d3dDepthStencil.put()));
 
@@ -119,12 +123,14 @@ namespace DXHelper
         {
             // Create a constant buffer to store view and projection matrices for the camera.
             CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+            constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+            constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
             winrt::check_hresult(device->CreateBuffer(&constantBufferDesc, nullptr, m_viewProjectionConstantBuffer.put()));
         }
     }
 
     // Releases resources associated with a back buffer.
-    void CameraResources::ReleaseResourcesForBackBuffer(DeviceResources* pDeviceResources)
+    void CameraResources::ReleaseResourcesForBackBuffer(DeviceResourcesUWP* pDeviceResources)
     {
         // Release camera-specific resources.
         m_d3dBackBuffer = nullptr;
@@ -144,7 +150,7 @@ namespace DXHelper
 
     // Updates the view/projection constant buffer for a holographic camera.
     void CameraResources::UpdateViewProjectionBuffer(
-        std::shared_ptr<DeviceResources> deviceResources,
+        std::shared_ptr<DeviceResourcesUWP> deviceResources,
         HolographicCameraPose const& cameraPose,
         SpatialCoordinateSystem const& coordinateSystem)
     {
@@ -153,7 +159,7 @@ namespace DXHelper
         m_d3dViewport = CD3D11_VIEWPORT(viewport.X, viewport.Y, viewport.Width, viewport.Height);
 
         // The projection transform for each frame is provided by the HolographicCameraPose.
-        HolographicStereoTransform cameraProjectionTransform = cameraPose.ProjectionTransform();
+        m_cameraProjectionTransform = cameraPose.ProjectionTransform();
 
         // Get a container object with the view and projection matrices for the given
         // pose in the given coordinate system.
@@ -166,6 +172,7 @@ namespace DXHelper
         // which case it is possible to use a SpatialLocatorAttachedFrameOfReference to render
         // content that is not world-locked instead.
         ViewProjectionConstantBuffer viewProjectionConstantBufferData;
+
         bool viewTransformAcquired = viewTransformContainer != nullptr;
         if (viewTransformAcquired)
         {
@@ -175,12 +182,14 @@ namespace DXHelper
             // Update the view matrices. Holographic cameras (such as Microsoft HoloLens) are
             // constantly moving relative to the world. The view matrices need to be updated
             // every frame.
+
             XMStoreFloat4x4(
                 &viewProjectionConstantBufferData.viewProjection[0],
-                XMMatrixTranspose(XMLoadFloat4x4(&viewCoordinateSystemTransform.Left) * XMLoadFloat4x4(&cameraProjectionTransform.Left)));
+                XMMatrixTranspose(XMLoadFloat4x4(&viewCoordinateSystemTransform.Left) * XMLoadFloat4x4(&m_cameraProjectionTransform.Left)));
             XMStoreFloat4x4(
                 &viewProjectionConstantBufferData.viewProjection[1],
-                XMMatrixTranspose(XMLoadFloat4x4(&viewCoordinateSystemTransform.Right) * XMLoadFloat4x4(&cameraProjectionTransform.Right)));
+                XMMatrixTranspose(
+                    XMLoadFloat4x4(&viewCoordinateSystemTransform.Right) * XMLoadFloat4x4(&m_cameraProjectionTransform.Right)));
         }
 
         // Use the D3D device context to update Direct3D device-based resources.
@@ -193,7 +202,10 @@ namespace DXHelper
             else
             {
                 // Update the view and projection matrices.
-                context->UpdateSubresource(m_viewProjectionConstantBuffer.get(), 0, nullptr, &viewProjectionConstantBufferData, 0, 0);
+                D3D11_MAPPED_SUBRESOURCE resource;
+                context->Map(m_viewProjectionConstantBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+                memcpy(resource.pData, &viewProjectionConstantBufferData, sizeof(viewProjectionConstantBufferData));
+                context->Unmap(m_viewProjectionConstantBuffer.get(), 0);
 
                 m_framePending = true;
             }
@@ -202,7 +214,7 @@ namespace DXHelper
 
     // Gets the view-projection constant buffer for the HolographicCamera and attaches it
     // to the shader pipeline.
-    bool CameraResources::AttachViewProjectionBuffer(std::shared_ptr<DeviceResources>& deviceResources)
+    bool CameraResources::AttachViewProjectionBuffer(std::shared_ptr<DeviceResourcesUWP>& deviceResources)
     {
         // This method uses Direct3D device-based resources.
         return deviceResources->UseD3DDeviceContext([&](auto context) {
@@ -221,22 +233,22 @@ namespace DXHelper
             ID3D11Buffer* viewProjectionConstantBuffers[1] = {m_viewProjectionConstantBuffer.get()};
             context->VSSetConstantBuffers(1, 1, viewProjectionConstantBuffers);
 
-            // The template includes a pass-through geometry shader that is used by
-            // default on systems that don't support the D3D11_FEATURE_D3D11_OPTIONS3::
-            // VPAndRTArrayIndexFromAnyShaderFeedingRasterizer extension. The shader
-            // will be enabled at run-time on systems that require it.
-            // If your app will also use the geometry shader for other tasks and those
-            // tasks require the view/projection matrix, uncomment the following line
-            // of code to send the constant buffer to the geometry shader as well.
-            /*context->GSSetConstantBuffers(
-            1,
-            1,
-            m_viewProjectionConstantBuffer.GetAddressOf()
-            );*/
-
             m_framePending = false;
 
             return true;
         });
+    }
+
+    winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface CameraResources::GetDepthStencilTextureInteropObject()
+    {
+        // Direct3D interop APIs are used to provide the buffer to the WinRT API.
+        winrt::com_ptr<IDXGIResource1> depthStencilResource;
+        winrt::check_bool(m_d3dDepthStencil.try_as(depthStencilResource));
+        winrt::com_ptr<IDXGISurface2> depthDxgiSurface;
+        winrt::check_hresult(depthStencilResource->CreateSubresourceSurface(0, depthDxgiSurface.put()));
+        winrt::com_ptr<::IInspectable> inspectableSurface;
+        winrt::check_hresult(CreateDirect3D11SurfaceFromDXGISurface(
+            depthDxgiSurface.get(), reinterpret_cast<IInspectable**>(winrt::put_abi(inspectableSurface))));
+        return inspectableSurface.as<winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface>();
     }
 } // namespace DXHelper

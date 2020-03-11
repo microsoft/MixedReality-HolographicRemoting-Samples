@@ -13,6 +13,8 @@
 
 #include "IpAddressUpdater.h"
 
+using namespace winrt::Windows::Networking;
+using namespace winrt::Windows::Networking::Connectivity;
 
 IpAddressUpdater::IpAddressUpdater()
 {
@@ -24,27 +26,50 @@ IpAddressUpdater::IpAddressUpdater()
 
 IpAddressUpdater::~IpAddressUpdater() = default;
 
-winrt::hstring IpAddressUpdater::GetIpAddress()
+winrt::hstring IpAddressUpdater::GetIpAddress(bool ipv6)
 {
     std::lock_guard lockGuard(m_lock);
-    return m_ipAddress;
+    return ipv6 ? m_ipAddressIpv6 : m_ipAddressIpv4;
 }
 
 void IpAddressUpdater::UpdateIpAddress(winrt::Windows::Foundation::IInspectable sender)
 {
-    winrt::hstring ipAddress = L"(No Network Connection)";
-    winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Networking::HostName> hostnames =
-        winrt::Windows::Networking::Connectivity::NetworkInformation::GetHostNames();
+    winrt::hstring ipAddressIpv4 = L"";
+    winrt::hstring ipAddressIpv6 = L"";
+    winrt::Windows::Foundation::Collections::IVectorView<HostName> hostnames = NetworkInformation::GetHostNames();
 
     for (winrt::Windows::Networking::HostName hostname : hostnames)
     {
-        if (hostname.IPInformation() && hostname.IPInformation().NetworkAdapter() && hostname.CanonicalName().size() <= 15) // IPV4 only
+        auto hostNameType = hostname.Type();
+        if (hostNameType != HostNameType::Ipv4 && hostNameType != HostNameType::Ipv6)
         {
-            ipAddress = hostname.CanonicalName();
-            break;
+            continue;
+        }
+
+        if (hostname.IPInformation() && hostname.IPInformation().NetworkAdapter())
+        {
+            if (hostNameType == HostNameType::Ipv6 && ipAddressIpv6.empty())
+            {
+                ipAddressIpv6 = hostname.CanonicalName();
+            }
+            else if (hostNameType == HostNameType::Ipv4 && ipAddressIpv4.empty())
+            {
+                ipAddressIpv4 = hostname.CanonicalName();
+            }
         }
     }
 
+    if (ipAddressIpv6.empty())
+    {
+        ipAddressIpv6 = L"(No Network Connection)";
+    }
+
+    if (ipAddressIpv4.empty())
+    {
+        ipAddressIpv4 = L"(No Network Connection)";
+    }
+
     std::lock_guard lockGuard(m_lock);
-    m_ipAddress = ipAddress;
+    m_ipAddressIpv6 = ipAddressIpv6;
+    m_ipAddressIpv4 = ipAddressIpv4;
 };

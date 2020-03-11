@@ -13,9 +13,13 @@
 
 #include "SamplePlayerMain.h"
 
+#include "../common/CameraResources.h"
 #include "../common/Content/DDSTextureLoader.h"
+#include "../common/PlayerUtil.h"
 
 #include <sstream>
+
+#include <winrt/Windows.Foundation.Metadata.h>
 
 using namespace std::chrono_literals;
 
@@ -30,7 +34,11 @@ using namespace winrt::Windows::Perception::Spatial;
 using namespace winrt::Windows::UI::Core;
 using namespace winrt::Windows::UI::Input::Spatial;
 
-
+SamplePlayerMain::SamplePlayerMain()
+{
+    m_canCommitDirect3D11DepthBuffer = winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
+        L"Windows.Graphics.Holographic.HolographicCameraRenderingParameters", L"CommitDirect3D11DepthBuffer");
+}
 SamplePlayerMain::~SamplePlayerMain()
 {
     Uninitialize();
@@ -127,8 +135,8 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
                 HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
 
                 // Set the focus point for image stabilization to the center of the status display.
-                // NOTE: By doing this before the call to PlayerContext::BlitRemoteFrame (in the Render() method),
-                //       the focus point can be overriden by the remote side.
+                // NOTE: The focus point set here will be overwritten with the focus point from the remote side by BlitRemoteFrame or
+                //       ignored if a depth buffer is commited (see HolographicRemotingPlayerMain::Render for details).
                 renderingParameters.SetFocusPoint(coordinateSystem, m_statusDisplay->GetPosition());
             }
         }
@@ -147,7 +155,7 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
             }
             else
             {
-                StatusDisplay::Line line = {std::move(statisticsString), StatusDisplay::Small, StatusDisplay::Yellow, 1.0f, true};
+                StatusDisplay::Line line = {std::move(statisticsString), StatusDisplay::Medium, StatusDisplay::Yellow, 1.0f, true};
                 m_statusDisplay->AddLine(line);
             }
         }
@@ -156,7 +164,7 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
     {
         if (m_playerOptions.m_listen)
         {
-            auto deviceIpNew = m_ipAddressUpdater.GetIpAddress();
+            auto deviceIpNew = m_ipAddressUpdater.GetIpAddress(m_playerOptions.m_ipv6);
             if (m_deviceIp != deviceIpNew)
             {
                 m_deviceIp = deviceIpNew;
@@ -209,12 +217,30 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                 deviceContext->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
                 deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-                // The view and projection matrices for each holographic camera will change
-                // every frame. This function refreshes the data in the constant buffer for
-                // the holographic camera indicated by cameraPose.
                 if (coordinateSystem)
                 {
+                    // The view and projection matrices for each holographic camera will change
+                    // every frame. This function refreshes the data in the constant buffer for
+                    // the holographic camera indicated by cameraPose.
                     pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, coordinateSystem);
+
+                    const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
+
+                    // Reduce the fov of the statistics view.
+                    float quadFov = m_statusDisplay->GetDefaultQuadFov();
+                    float quadRatio = 1.0f;
+                    if (m_playerOptions.m_showStatistics && connected && !m_trackingLost)
+                    {
+                        quadFov = m_statusDisplay->GetStatisticsFov();
+                        quadRatio = m_statusDisplay->GetStatisticsHeightRatio();
+                    }
+                    // Pass data from the camera resources to the status display.
+                    m_statusDisplay->UpdateTextScale(
+                        pCameraResources->GetProjectionTransform(),
+                        pCameraResources->GetRenderTargetSize().Width,
+                        pCameraResources->GetRenderTargetSize().Height,
+                        quadFov,
+                        quadRatio);
                 }
 
                 // Attach the view/projection constant buffer for this camera to the graphics pipeline.
@@ -223,6 +249,8 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                 // Only render world-locked content when positional tracking is active.
                 if (cameraActive)
                 {
+                    bool depthAvailable = false;
+
                     try
                     {
                         if (m_playerContext.ConnectionState() == ConnectionState::Connected)
@@ -230,7 +258,11 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                             // Blit the remote frame into the backbuffer for the HolographicFrame.
                             // NOTE: This overwrites the focus point for the current frame, if the remote application
                             // has specified a focus point during the rendering of the remote frame.
-                            m_playerContext.BlitRemoteFrame();
+                            if (m_playerContext.BlitRemoteFrame() == BlitResult::Success_Color_Depth)
+                            {
+                                // In case of Success_Color_Depth a depth buffer has been committed by the remote application.
+                                depthAvailable = true;
+                            }
                         }
                     }
                     catch (winrt::hresult_error err)
@@ -240,8 +272,23 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                         UpdateStatusDisplay();
                     }
 
-                    // Draw connection status and/or statistics.
-                    m_statusDisplay->Render();
+                    // Render local content.
+                    {
+                        // NOTE: Any local custom content would be rendered here.
+
+                        // Draw connection status and/or statistics.
+                        m_statusDisplay->Render();
+                    }
+
+                    // Commit depth buffer if available.
+                    // NOTE: CommitDirect3D11DepthBuffer should be the last thing before the frame is presented. By doing so the depth
+                    //       buffer submitted include remote content and local content.
+                    if (m_canCommitDirect3D11DepthBuffer && depthAvailable)
+                    {
+                        auto interopSurface = pCameraResources->GetDepthStencilTextureInteropObject();
+                        HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
+                        renderingParameters.CommitDirect3D11DepthBuffer(interopSurface);
+                    }
                 }
 
                 atLeastOneCameraRendered = true;
@@ -274,7 +321,7 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
     m_suspendingEventRevoker = CoreApplication::Suspending(winrt::auto_revoke, {this, &SamplePlayerMain::OnSuspending});
     m_resumingEventRevoker = CoreApplication::Resuming(winrt::auto_revoke, {this, &SamplePlayerMain::OnResuming});
 
-    m_deviceResources = std::make_shared<DXHelper::DeviceResources>();
+    m_deviceResources = std::make_shared<DXHelper::DeviceResourcesUWP>();
     m_deviceResources->RegisterDeviceNotify(this);
 
     m_spatialLocator = SpatialLocator::GetDefault();
@@ -295,6 +342,9 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
 
     // Set the BlitRemoteFrame timeout to 0.5s
     m_playerContext.BlitRemoteFrameTimeout(500ms);
+
+    // Projection transform always reflects what has been configured on the remote side.
+    m_playerContext.ProjectionTransformConfig(ProjectionTransformMode::Remote);
 }
 
 void SamplePlayerMain::SetWindow(const CoreWindow& window)
@@ -315,7 +365,7 @@ void SamplePlayerMain::SetWindow(const CoreWindow& window)
     {
         m_playerContext.OnDataChannelCreated([this](const IDataChannel& dataChannel, uint8_t channelId) {
             std::lock_guard lock(m_customDataChannelLock);
-            m_customDataChannel = dataChannel;
+            m_customDataChannel = dataChannel.as<IDataChannel2>();
 
             m_customChannelDataReceivedEventRevoker = m_customDataChannel.OnDataReceived(
                 winrt::auto_revoke, [this](winrt::array_view<const uint8_t> dataView) { OnCustomDataChannelDataReceived(); });
@@ -436,7 +486,7 @@ void SamplePlayerMain::LoadLogoImage()
 SamplePlayerMain::PlayerOptions SamplePlayerMain::ParseActivationArgs(const IActivatedEventArgs& activationArgs)
 {
     std::wstring host = L"";
-    int32_t port = 0;
+    uint16_t port = 0;
     bool listen = false;
     bool showStatistics = false;
 
@@ -479,19 +529,7 @@ SamplePlayerMain::PlayerOptions SamplePlayerMain::ParseActivationArgs(const IAct
                         continue;
                     }
 
-                    size_t colonPos = arg.find(L':');
-                    if (colonPos != std::wstring::npos)
-                    {
-                        std::wstring portStr = arg.substr(colonPos + 1);
-
-                        host = arg.substr(0, colonPos);
-                        port = std::wcstol(portStr.c_str(), nullptr, 10);
-                    }
-                    else
-                    {
-                        host = arg.c_str();
-                        port = 0;
-                    }
+                    host = PlayerUtil::SplitHostnameAndPortString(arg, port);
                 }
                 break;
             }
@@ -558,6 +596,7 @@ SamplePlayerMain::PlayerOptions SamplePlayerMain::ParseActivationArgs(const IAct
     playerOptions.m_port = port;
     playerOptions.m_listen = listen;
     playerOptions.m_showStatistics = showStatistics;
+    playerOptions.m_ipv6 = hostname.front() == L'[';
 
     return playerOptions;
 }
@@ -568,12 +607,10 @@ void SamplePlayerMain::UpdateStatusDisplay()
 
     if (m_trackingLost)
     {
-        StatusDisplay::Line lines[] = {StatusDisplay::Line{L"Device Tracking Lost", StatusDisplay::LargeBold, StatusDisplay::White, 1.2f},
-                                       StatusDisplay::Line{L"Ensure your environment is properly lit\r\n"
-                                                           L"and the device's sensors are not covered.",
-                                                           StatusDisplay::Small,
-                                                           StatusDisplay::White,
-                                                           6.0f}};
+        StatusDisplay::Line lines[] = {
+            StatusDisplay::Line{L"Device Tracking Lost", StatusDisplay::LargeBold, StatusDisplay::White, 1.0f},
+            StatusDisplay::Line{L"Ensure your environment is properly lit", StatusDisplay::Small, StatusDisplay::White, 1.0f},
+            StatusDisplay::Line{L"and the device's sensors are not covered.", StatusDisplay::Small, StatusDisplay::White, 12.0f}};
         m_statusDisplay->SetLines(lines);
     }
     else
@@ -581,15 +618,14 @@ void SamplePlayerMain::UpdateStatusDisplay()
         if (m_playerContext.ConnectionState() != ConnectionState::Connected)
         {
             StatusDisplay::Line lines[] = {
-                StatusDisplay::Line{L"Sample Holographic Remoting Player", StatusDisplay::LargeBold, StatusDisplay::White, 1.2f},
-                StatusDisplay::Line{L"This app is a sample companion for Holographic Remoting apps.\r\n"
-                                    L"Connect from a compatible app to begin.",
-                                    StatusDisplay::Small,
-                                    StatusDisplay::White,
-                                    6.0f},
-                StatusDisplay::Line{m_playerOptions.m_listen ? L"Waiting for connection on" : L"Connecting to",
-                                    StatusDisplay::Large,
-                                    StatusDisplay::White}};
+                StatusDisplay::Line{L"Holographic Remoting Player", StatusDisplay::LargeBold, StatusDisplay::White, 1.0f},
+                StatusDisplay::Line{
+                    L"This app is a companion for Holographic Remoting apps.", StatusDisplay::Small, StatusDisplay::White, 1.0f},
+                StatusDisplay::Line{L"Connect from a compatible app to begin.", StatusDisplay::Small, StatusDisplay::White, 8.0f},
+                StatusDisplay::Line{
+                    m_playerOptions.m_listen ? L"Waiting for connection on" : L"Connecting to",
+                    StatusDisplay::Large,
+                    StatusDisplay::White}};
             m_statusDisplay->SetLines(lines);
 
             std::wostringstream addressLine;
@@ -598,13 +634,15 @@ void SamplePlayerMain::UpdateStatusDisplay()
             {
                 addressLine << L":" << m_playerOptions.m_port;
             }
-            m_statusDisplay->AddLine(StatusDisplay::Line{addressLine.str(), StatusDisplay::LargeBold, StatusDisplay::White});
-        }
-    }
+            m_statusDisplay->AddLine(StatusDisplay::Line{addressLine.str(), StatusDisplay::Large, StatusDisplay::White});
+            m_statusDisplay->AddLine(
+                StatusDisplay::Line{L"Get help at: https://aka.ms/holographicremotinghelp", StatusDisplay::Small, StatusDisplay::White});
 
-    if (m_playerOptions.m_showStatistics)
-    {
-        m_statusDisplay->AddLine(StatusDisplay::Line{L"Diagnostics Enabled", StatusDisplay::Small, StatusDisplay::Yellow});
+            if (m_playerOptions.m_showStatistics)
+            {
+                m_statusDisplay->AddLine(StatusDisplay::Line{L"Diagnostics Enabled", StatusDisplay::Small, StatusDisplay::Yellow});
+            }
+        }
     }
 
     m_errorHelper.Apply(m_statusDisplay);
@@ -619,8 +657,25 @@ void SamplePlayerMain::OnCustomDataChannelDataReceived()
     std::lock_guard customDataChannelLockGuard(m_customDataChannelLock);
     if (m_customDataChannel)
     {
-        uint8_t data[] = {1};
-        m_customDataChannel.SendData(data, true);
+        // Get send queue size. The send queue size returns the size of data, that has not been send yet, in bytes. A big number can
+        // indicate that more data is being queued for sending than is actually getting sent. If possible skip sending data in this
+        // case, to help the queue getting smaller again.
+        uint32_t sendQueueSize = m_customDataChannel.SendQueueSize();
+
+        // Only send the packet if the send queue is smaller than 1MiB
+        if (sendQueueSize < 1 * 1024 * 1024)
+        {
+            uint8_t data[] = {1};
+
+            try
+            {
+                m_customDataChannel.SendData(data, true);
+            }
+            catch (...)
+            {
+                // SendData might throw if channel is closed, but we did not get or process the async closed event yet.
+            }
+        }
     }
 }
 
@@ -751,6 +806,7 @@ void SamplePlayerMain::OnWindowClosed(const CoreWindow& sender, const CoreWindow
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
     winrt::init_apartment();
-    CoreApplication::Run(SamplePlayerMain());
+    winrt::com_ptr<SamplePlayerMain> main = winrt::make_self<SamplePlayerMain>();
+    CoreApplication::Run(*main);
     return 0;
 }
