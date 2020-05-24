@@ -94,7 +94,7 @@ void DXHelper::DeviceResourcesUWP::UseHolographicCameraResources(LCallback const
                 break;
 
             default:
-                throw err;
+                throw;
         }
     }
 }

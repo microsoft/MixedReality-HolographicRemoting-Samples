@@ -45,6 +45,8 @@ public:
     // A single line in the status display with all its properties
     struct Line
     {
+        bool operator==(const Line&) const;
+        bool operator!=(const Line&) const;
         std::wstring text;
         TextFormat format = Large;
         TextColor color = White;
@@ -95,36 +97,24 @@ public:
     }
 
     // Repositions the status display
-    void PositionDisplay(float deltaTimeInSeconds, const winrt::Windows::UI::Input::Spatial::SpatialPointerPose& pointerPose);
+    void PositionDisplay(
+        float deltaTimeInSeconds,
+        const winrt::Windows::UI::Input::Spatial::SpatialPointerPose& pointerPose,
+        float imageOffsetX,
+        float imageOffsetY);
 
     // Get the center position of the status display
     winrt::Windows::Foundation::Numerics::float3 GetPosition()
     {
-        return m_positionImage;
+        return m_positionContent;
     }
 
     void UpdateTextScale(
         winrt::Windows::Graphics::Holographic::HolographicStereoTransform holoTransform,
         float screenWidth,
         float screenHeight,
-        float quadFov,
-        float heightRatio = 1.0f);
-
-    // Get default FOV for the text quad in degree.
-    float GetDefaultQuadFov()
-    {
-        return m_defaultQuadFov;
-    }
-    // Get statistics FOV for the text quad in degree.
-    float GetStatisticsFov()
-    {
-        return m_statisticsFov;
-    }
-    // Get the statistics height ratio.
-    float GetStatisticsHeightRatio()
-    {
-        return m_statisticsHeightRatio;
-    }
+        bool isLandscape,
+        bool isOpaque);
 
 private:
     // Runtime representation of a text line.
@@ -146,11 +136,13 @@ private:
         float deltaTimeInSeconds,
         ModelConstantBuffer& buffer,
         winrt::Windows::Foundation::Numerics::float3 position,
-        winrt::Windows::Foundation::Numerics::float3 lastPosition);
+        winrt::Windows::Foundation::Numerics::float3 normal);
 
     winrt::com_ptr<ID2D1SolidColorBrush> m_brushes[TextColorCount] = {};
     winrt::com_ptr<IDWriteTextFormat> m_textFormats[TextFormatCount] = {};
-    std::vector<RuntimeLine> m_lines;
+    std::vector<Line> m_lines;
+    std::vector<Line> m_previousLines;
+    std::vector<RuntimeLine> m_runtimeLines;
     std::mutex m_lineMutex;
 
     // Cached pointer to device resources.
@@ -188,20 +180,19 @@ private:
     // Variables used with the rendering loop.
     bool m_loadingComplete = false;
     float m_degreesPerSecond = 45.f;
-    winrt::Windows::Foundation::Numerics::float3 m_positionImage = {0.f, 0.f, -2.f};
-    winrt::Windows::Foundation::Numerics::float3 m_lastPositionImage = {0.f, 0.f, -2.f};
-    winrt::Windows::Foundation::Numerics::float3 m_velocity = {0.f, 0.f, 0.f};
-    winrt::Windows::Foundation::Numerics::float3 m_positionText = {0.f, -0.1f, -0.1f};
-    winrt::Windows::Foundation::Numerics::float3 m_lastPositionText = {0.f, -0.1f, -0.1f};
+    winrt::Windows::Foundation::Numerics::float3 m_positionOffset = {0.0f, 0.0f, 0.0f};
+    winrt::Windows::Foundation::Numerics::float3 m_positionContent = {0.0f, 0.0f, 0.0f};
+    winrt::Windows::Foundation::Numerics::float3 m_normalContent = {0.0f, 0.0f, 0.0f};
 
     // If the current D3D Device supports VPRT, we can avoid using a geometry
     // shader just to set the render target array index.
     bool m_usingVprtShaders = false;
 
     // This is the rate at which the hologram position is interpolated ("lerped") to the current location.
-    const float c_lerpRate = 4.0f;
+    const float c_lerpRate = 8.0f;
 
     bool m_imageEnabled = true;
+    bool m_isOpaque = false;
 
     // The distance to the camera in fwd-direction.
     float m_statusDisplayDistance = 1.0f;
@@ -223,7 +214,7 @@ private:
     // The default FOV for the text quad in degree.
     float m_defaultQuadFov = 25.0f;
     // The statistics FOV for the text quad in degree.
-    float m_statisticsFov = 23.0f;
+    float m_landscapeQuadFov = 23.0f;
     // The height ratio for the statistics quad in percent.
-    float m_statisticsHeightRatio = 0.4f;
+    float m_landscapeHeightRatio = 0.3f;
 };

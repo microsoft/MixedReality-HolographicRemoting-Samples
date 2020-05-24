@@ -25,6 +25,7 @@ namespace DXHelper
     CameraResources::CameraResources(HolographicCamera const& camera)
         : m_holographicCamera(camera)
         , m_isStereo(camera.IsStereo())
+        , m_isOpaque(camera.Display().IsOpaque())
         , m_d3dRenderTargetSize(camera.RenderTargetSize())
         , m_dxgiFormat(DXGI_FORMAT_UNKNOWN)
     {

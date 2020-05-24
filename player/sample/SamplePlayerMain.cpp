@@ -128,7 +128,9 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
         SpatialPointerPose pose = SpatialPointerPose::TryGetAtTimestamp(coordinateSystem, prediction.Timestamp());
         if (pose)
         {
-            m_statusDisplay->PositionDisplay(deltaTimeInSeconds, pose);
+            const float imageOffsetX = m_trackingLost ? -0.0095f : -0.0125f;
+            const float imageOffsetY = 0.0111f;
+            m_statusDisplay->PositionDisplay(deltaTimeInSeconds, pose, imageOffsetX, imageOffsetY);
 
             for (const HolographicCameraPose& cameraPose : prediction.CameraPoses())
             {
@@ -227,20 +229,15 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                     const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
 
                     // Reduce the fov of the statistics view.
-                    float quadFov = m_statusDisplay->GetDefaultQuadFov();
-                    float quadRatio = 1.0f;
-                    if (m_playerOptions.m_showStatistics && connected && !m_trackingLost)
-                    {
-                        quadFov = m_statusDisplay->GetStatisticsFov();
-                        quadRatio = m_statusDisplay->GetStatisticsHeightRatio();
-                    }
+                    bool isLandscape = m_playerOptions.m_showStatistics && connected && !m_trackingLost;
+
                     // Pass data from the camera resources to the status display.
                     m_statusDisplay->UpdateTextScale(
                         pCameraResources->GetProjectionTransform(),
                         pCameraResources->GetRenderTargetSize().Width,
                         pCameraResources->GetRenderTargetSize().Height,
-                        quadFov,
-                        quadRatio);
+                        isLandscape,
+                        pCameraResources->IsOpaque());
                 }
 
                 // Attach the view/projection constant buffer for this camera to the graphics pipeline.
@@ -621,10 +618,10 @@ void SamplePlayerMain::UpdateStatusDisplay()
                 StatusDisplay::Line{L"Holographic Remoting Player", StatusDisplay::LargeBold, StatusDisplay::White, 1.0f},
                 StatusDisplay::Line{
                     L"This app is a companion for Holographic Remoting apps.", StatusDisplay::Small, StatusDisplay::White, 1.0f},
-                StatusDisplay::Line{L"Connect from a compatible app to begin.", StatusDisplay::Small, StatusDisplay::White, 8.0f},
+                StatusDisplay::Line{L"Connect from a compatible app to begin.", StatusDisplay::Small, StatusDisplay::White, 17.0f},
                 StatusDisplay::Line{
                     m_playerOptions.m_listen ? L"Waiting for connection on" : L"Connecting to",
-                    StatusDisplay::Large,
+                    StatusDisplay::Small,
                     StatusDisplay::White}};
             m_statusDisplay->SetLines(lines);
 
@@ -634,7 +631,7 @@ void SamplePlayerMain::UpdateStatusDisplay()
             {
                 addressLine << L":" << m_playerOptions.m_port;
             }
-            m_statusDisplay->AddLine(StatusDisplay::Line{addressLine.str(), StatusDisplay::Large, StatusDisplay::White});
+            m_statusDisplay->AddLine(StatusDisplay::Line{addressLine.str(), StatusDisplay::Medium, StatusDisplay::Yellow});
             m_statusDisplay->AddLine(
                 StatusDisplay::Line{L"Get help at: https://aka.ms/holographicremotinghelp", StatusDisplay::Small, StatusDisplay::White});
 

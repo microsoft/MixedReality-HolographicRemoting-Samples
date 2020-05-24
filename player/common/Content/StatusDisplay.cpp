@@ -20,9 +20,9 @@
 
 constexpr const wchar_t Font[] = L"Segoe UI";
 // Font size in percent.
-constexpr float FontSizeLarge = 0.06f;
-constexpr float FontSizeMedium = 0.04f;
-constexpr float FontSizeSmall = 0.035f;
+constexpr float FontSizeLarge = 0.045f;
+constexpr float FontSizeMedium = 0.035f;
+constexpr float FontSizeSmall = 0.03f;
 constexpr const wchar_t FontLanguage[] = L"en-US";
 constexpr const float Degree2Rad = 3.14159265359f / 180.0f;
 constexpr const float Meter2Inch = 39.37f;
@@ -43,8 +43,9 @@ StatusDisplay::StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesComm
 // relative to the position transform indicated by hologramPositionTransform.
 void StatusDisplay::Update(float deltaTimeInSeconds)
 {
-    UpdateConstantBuffer(deltaTimeInSeconds, m_modelConstantBufferDataImage, m_positionImage, m_lastPositionImage);
-    UpdateConstantBuffer(deltaTimeInSeconds, m_modelConstantBufferDataText, m_positionText, m_lastPositionText);
+    UpdateConstantBuffer(
+        deltaTimeInSeconds, m_modelConstantBufferDataImage, m_isOpaque ? m_positionContent : m_positionOffset, m_normalContent);
+    UpdateConstantBuffer(deltaTimeInSeconds, m_modelConstantBufferDataText, m_positionContent, m_normalContent);
 }
 
 // Renders a frame to the screen.
@@ -56,28 +57,30 @@ void StatusDisplay::Render()
         return;
     }
 
-    bool linesChanged = false;
-
     // First render all text using direct2D.
     {
         std::scoped_lock lock(m_lineMutex);
-        if (m_lines.size() > 0)
+        if (m_lines.size() > 0 && m_lines != m_previousLines)
         {
-            linesChanged = true;
+            m_previousLines.resize(m_lines.size());
+            m_runtimeLines.resize(m_lines.size());
+
+            for (int i = 0; i < m_lines.size(); ++i)
+            {
+                if (m_lines[i] != m_previousLines[i])
+                {
+                    UpdateLineInternal(m_runtimeLines[i], m_lines[i]);
+                    m_previousLines[i] = m_lines[i];
+                }
+            }
+
             m_deviceResources->UseD3DDeviceContext(
                 [&](auto context) { context->ClearRenderTargetView(m_textRenderTarget.get(), DirectX::Colors::Transparent); });
 
             m_d2dTextRenderTarget->BeginDraw();
-            float height = 0;
-            for (auto& line : m_lines)
-            {
-                height += line.metrics.height * line.lineHeightMultiplier;
-            }
 
-            // Vertical centered for the whole text with ~1/4 logical inch offset. In DIP.
-            float top = ((m_virtualDisplaySizeInchY / 2.0f) * 96.0f) - (height / 2.0f) - 48;
-
-            for (auto& line : m_lines)
+            float top = 0.0f;
+            for (auto& line : m_runtimeLines)
             {
                 if (line.alignBottom)
                 {
@@ -99,58 +102,59 @@ void StatusDisplay::Render()
     }
 
     // Now render the quads into 3d space
-    m_deviceResources->UseD3DDeviceContext([&](auto context) {
-        DXHelper::D3D11StoreAndRestoreState(context, [&]() {
-            // Each vertex is one instance of the VertexBufferElement struct.
-            const UINT stride = sizeof(VertexBufferElement);
-            const UINT offset = 0;
-            ID3D11Buffer* pBufferToSet = m_vertexBufferImage.get();
-            context->IASetVertexBuffers(0, 1, &pBufferToSet, &stride, &offset);
-            context->IASetIndexBuffer(m_indexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
+    if (m_imageEnabled && m_imageView || !m_lines.empty())
+    {
+        m_deviceResources->UseD3DDeviceContext([&](auto context) {
+            DXHelper::D3D11StoreAndRestoreState(context, [&]() {
+                // Each vertex is one instance of the VertexBufferElement struct.
+                const UINT stride = sizeof(VertexBufferElement);
+                const UINT offset = 0;
+                ID3D11Buffer* pBufferToSet = m_vertexBufferImage.get();
+                context->IASetVertexBuffers(0, 1, &pBufferToSet, &stride, &offset);
+                context->IASetIndexBuffer(m_indexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
 
-            context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            context->IASetInputLayout(m_inputLayout.get());
-            context->OMSetBlendState(m_textAlphaBlendState.get(), nullptr, 0xffffffff);
-            context->OMSetDepthStencilState(m_depthStencilState.get(), 0);
+                context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                context->IASetInputLayout(m_inputLayout.get());
+                context->OMSetBlendState(m_textAlphaBlendState.get(), nullptr, 0xffffffff);
+                context->OMSetDepthStencilState(m_depthStencilState.get(), 0);
 
-            context->UpdateSubresource(m_modelConstantBuffer.get(), 0, nullptr, &m_modelConstantBufferDataImage, 0, 0);
+                context->UpdateSubresource(m_modelConstantBuffer.get(), 0, nullptr, &m_modelConstantBufferDataImage, 0, 0);
 
-            // Apply the model constant buffer to the vertex shader.
-            pBufferToSet = m_modelConstantBuffer.get();
-            context->VSSetConstantBuffers(0, 1, &pBufferToSet);
+                // Apply the model constant buffer to the vertex shader.
+                pBufferToSet = m_modelConstantBuffer.get();
+                context->VSSetConstantBuffers(0, 1, &pBufferToSet);
 
-            // Attach the vertex shader.
-            context->VSSetShader(m_vertexShader.get(), nullptr, 0);
+                // Attach the vertex shader.
+                context->VSSetShader(m_vertexShader.get(), nullptr, 0);
 
-            // On devices that do not support the D3D11_FEATURE_D3D11_OPTIONS3::
-            // VPAndRTArrayIndexFromAnyShaderFeedingRasterizer optional feature,
-            // a pass-through geometry shader sets the render target ID.
-            context->GSSetShader(!m_usingVprtShaders ? m_geometryShader.get() : nullptr, nullptr, 0);
+                // On devices that do not support the D3D11_FEATURE_D3D11_OPTIONS3::
+                // VPAndRTArrayIndexFromAnyShaderFeedingRasterizer optional feature,
+                // a pass-through geometry shader sets the render target ID.
+                context->GSSetShader(!m_usingVprtShaders ? m_geometryShader.get() : nullptr, nullptr, 0);
 
-            // Attach the pixel shader.
-            context->PSSetShader(m_pixelShader.get(), nullptr, 0);
+                // Attach the pixel shader.
+                context->PSSetShader(m_pixelShader.get(), nullptr, 0);
 
-            // Draw the image.
-            if (m_imageEnabled && m_imageView)
-            {
-                ID3D11ShaderResourceView* pShaderViewToSet = m_imageView.get();
-                context->PSSetShaderResources(0, 1, &pShaderViewToSet);
+                // Draw the image.
+                if (m_imageEnabled && m_imageView)
+                {
+                    ID3D11ShaderResourceView* pShaderViewToSet = m_imageView.get();
+                    context->PSSetShaderResources(0, 1, &pShaderViewToSet);
 
-                ID3D11SamplerState* pSamplerToSet = m_imageSamplerState.get();
-                context->PSSetSamplers(0, 1, &pSamplerToSet);
+                    ID3D11SamplerState* pSamplerToSet = m_imageSamplerState.get();
+                    context->PSSetSamplers(0, 1, &pSamplerToSet);
 
-                context->DrawIndexedInstanced(
-                    m_indexCount, // Index count per instance.
-                    2,            // Instance count.
-                    0,            // Start index location.
-                    0,            // Base vertex location.
-                    0             // Start instance location.
-                );
-            }
+                    context->DrawIndexedInstanced(
+                        m_indexCount, // Index count per instance.
+                        2,            // Instance count.
+                        0,            // Start index location.
+                        0,            // Base vertex location.
+                        0             // Start instance location.
+                    );
+                }
 
-            // Draw the text.
-            {
-                if (linesChanged == true)
+                // Draw the text.
+                if (!m_lines.empty())
                 {
                     // Set up for rendering the texture that contains the text
                     pBufferToSet = m_vertexBufferText.get();
@@ -172,9 +176,9 @@ void StatusDisplay::Render()
                         0             // Start instance location.
                     );
                 }
-            }
+            });
         });
-    });
+    }
 }
 
 void StatusDisplay::CreateDeviceDependentResources()
@@ -374,7 +378,7 @@ void StatusDisplay::SetLines(winrt::array_view<Line> lines)
     for (uint32_t i = 0; i < numLines; i++)
     {
         assert((!lines[i].alignBottom || i == numLines - 1) && "Only the last line can use alignBottom = true");
-        UpdateLineInternal(m_lines[i], lines[i]);
+        m_lines[i] = lines[i];
     }
 }
 
@@ -386,10 +390,7 @@ void StatusDisplay::UpdateLineText(size_t index, std::wstring text)
         return;
     }
 
-    auto& runtimeLine = m_lines[index];
-
-    Line line = {std::move(text), runtimeLine.format, runtimeLine.color, runtimeLine.lineHeightMultiplier};
-    UpdateLineInternal(runtimeLine, line);
+    m_lines[index].text = text;
 }
 
 size_t StatusDisplay::AddLine(const Line& line)
@@ -397,7 +398,7 @@ size_t StatusDisplay::AddLine(const Line& line)
     std::scoped_lock lock(m_lineMutex);
     size_t newIndex = m_lines.size();
     m_lines.resize(newIndex + 1);
-    UpdateLineInternal(m_lines[newIndex], line);
+    m_lines[newIndex] = line;
     return newIndex;
 }
 
@@ -525,7 +526,7 @@ void StatusDisplay::SetImage(const winrt::com_ptr<ID3D11ShaderResourceView>& ima
 
 // This function uses a SpatialPointerPose to position the world-locked hologram
 // two meters in front of the user's heading.
-void StatusDisplay::PositionDisplay(float deltaTimeInSeconds, const SpatialPointerPose& pointerPose)
+void StatusDisplay::PositionDisplay(float deltaTimeInSeconds, const SpatialPointerPose& pointerPose, float imageOffsetX, float imageOffsetY)
 {
     if (pointerPose != nullptr)
     {
@@ -533,21 +534,15 @@ void StatusDisplay::PositionDisplay(float deltaTimeInSeconds, const SpatialPoint
         const float3 headPosition = pointerPose.Head().Position();
         const float3 headDirection = pointerPose.Head().ForwardDirection();
 
-        const float3 offsetImage = float3(0.0f, m_virtualDisplaySizeInchY * 0.002f, 0.0f);
-        const float3 gazeAtTwoMetersImage = headPosition + ((m_statusDisplayDistance + 0.05f) * (headDirection + offsetImage));
+        const float3 contentPosition = headPosition + (headDirection * m_statusDisplayDistance);
 
-        const float3 offsetText = float3(0.0f, 0.0f, 0.0f);
-        const float3 gazeAtTwoMetersText = headPosition + (m_statusDisplayDistance * (headDirection + offsetText));
+        const float3 headRight = normalize(cross(headDirection, float3(0, 1, 0)));
+        const float3 headUp = normalize(cross(headRight, headDirection));
 
-        // Lerp the position, to keep the hologram comfortably stable.
-        auto imagePosition = lerp(m_positionImage, gazeAtTwoMetersImage, deltaTimeInSeconds * c_lerpRate);
-        auto textPosition = lerp(m_positionText, gazeAtTwoMetersText, deltaTimeInSeconds * c_lerpRate);
-
-        m_lastPositionImage = m_positionImage;
-        m_positionImage = imagePosition;
-
-        m_lastPositionText = m_positionText;
-        m_positionText = textPosition;
+        m_positionContent = lerp(m_positionContent, contentPosition, deltaTimeInSeconds * c_lerpRate);
+        m_positionOffset = m_positionContent + (headRight * m_virtualDisplaySizeInchX * imageOffsetX) +
+                           (headUp * m_virtualDisplaySizeInchY * imageOffsetY);
+        m_normalContent = headDirection;
     }
 }
 
@@ -555,11 +550,11 @@ void StatusDisplay::UpdateConstantBuffer(
     float deltaTimeInSeconds,
     ModelConstantBuffer& buffer,
     winrt::Windows::Foundation::Numerics::float3 position,
-    winrt::Windows::Foundation::Numerics::float3 lastPosition)
+    winrt::Windows::Foundation::Numerics::float3 normal)
 {
     // Create a direction normal from the hologram's position to the origin of person space.
     // This is the z-axis rotation.
-    XMVECTOR facingNormal = XMVector3Normalize(-XMLoadFloat3(&position));
+    XMVECTOR facingNormal = XMVector3Normalize(-XMLoadFloat3(&normal));
 
     // Rotate the x-axis around the y-axis.
     // This is a 90-degree angle from the normal, in the xz-plane.
@@ -587,20 +582,14 @@ void StatusDisplay::UpdateConstantBuffer(
     // Here, we provide the model transform for the sample hologram. The model transform
     // matrix is transposed to prepare it for the shader.
     XMStoreFloat4x4(&buffer.model, XMMatrixTranspose(rotationMatrix * modelTranslation));
-
-    // Determine velocity.
-    // Even though the motion is spherical, the velocity is still linear
-    // for image stabilization.
-    auto& deltaX = position - lastPosition;   // meters
-    m_velocity = deltaX / deltaTimeInSeconds; // meters per second
 }
 
 void StatusDisplay::UpdateTextScale(
     winrt::Windows::Graphics::Holographic::HolographicStereoTransform holoTransform,
     float screenWidth,
     float screenHeight,
-    float quadFov,
-    float heightRatio)
+    bool isLandscape,
+    bool isOpaque)
 {
     DirectX::XMMATRIX projMat = XMLoadFloat4x4(&holoTransform.Left);
     DirectX::XMFLOAT4X4 proj;
@@ -621,6 +610,21 @@ void StatusDisplay::UpdateTextScale(
         {
             break;
         }
+    }
+
+    m_isOpaque = isOpaque;
+
+    float quadFov = m_defaultQuadFov;
+    float heightRatio = 1.0f;
+    if (isLandscape)
+    {
+        quadFov = m_landscapeQuadFov;
+        heightRatio = m_landscapeHeightRatio;
+    }
+
+    if (m_isOpaque)
+    {
+        quadFov *= 1.5f;
     }
 
     const float fovDiff = m_currentQuadFov - quadFov;
@@ -678,7 +682,7 @@ void StatusDisplay::UpdateTextScale(
 
         // Create image buffer
         // The image contains 50% of the textFOV.
-        const float imageFOVDegree = 0.4f * (m_currentQuadFov * 0.5f);
+        const float imageFOVDegree = (m_isOpaque ? 0.75f : 0.2f) * (m_currentQuadFov * 0.5f);
         const float imageQuadExtent = m_statusDisplayDistance / tan((90.0f - imageFOVDegree) * Degree2Rad);
 
         const VertexBufferElement quadVertices[] = {
@@ -732,21 +736,19 @@ void StatusDisplay::UpdateTextScale(
         // Update the fonts.
         CreateFonts();
 
-        // Update the text layout.
-        for (RuntimeLine& runtimeLine : m_lines)
-        {
-
-            const float dpiScaleX = virtualDisplayDPIx / 96.0f;
-            const float dpiScaleY = virtualDisplayDPIy / 96.0f;
-            runtimeLine.layout = nullptr;
-            winrt::check_hresult(m_deviceResources->GetDWriteFactory()->CreateTextLayout(
-                runtimeLine.text.c_str(),
-                static_cast<UINT32>(runtimeLine.text.length()),
-                m_textFormats[runtimeLine.format].get(),
-                static_cast<float>(m_textTextureWidth / dpiScaleX),  // Max width of the input text.
-                static_cast<float>(m_textTextureHeight / dpiScaleY), // Max height of the input text.
-                runtimeLine.layout.put()));
-            winrt::check_hresult(runtimeLine.layout->GetMetrics(&runtimeLine.metrics));
-        }
+        // Trigger full recreation in the next frame
+        m_previousLines.clear();
+        m_runtimeLines.clear();
     }
+}
+
+bool StatusDisplay::Line::operator==(const Line& line) const
+{
+    return std::tie(text, format, color, lineHeightMultiplier, alignBottom) ==
+           std::tie(line.text, line.format, line.color, line.lineHeightMultiplier, line.alignBottom);
+}
+
+bool StatusDisplay::Line::operator!=(const Line& line) const
+{
+    return !operator==(line);
 }
