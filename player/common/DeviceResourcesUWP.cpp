@@ -199,7 +199,7 @@ void DeviceResourcesUWP::Present(HolographicFrame frame)
                             break;
 
                         default:
-                            throw err2;
+                            throw;
                     }
                 }
                 break;

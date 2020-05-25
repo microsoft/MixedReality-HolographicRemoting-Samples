@@ -75,9 +75,15 @@ namespace DXHelper
         {
             return m_d3dRenderTargetSize;
         }
+
         bool IsRenderingStereoscopic() const
         {
             return m_isStereo;
+        }
+
+        bool IsOpaque() const
+        {
+            return m_isOpaque;
         }
 
         // The holographic camera these resources are for.
@@ -109,6 +115,7 @@ namespace DXHelper
 
         // Indicates whether the camera supports stereoscopic rendering.
         bool m_isStereo = false;
+        bool m_isOpaque = false;
 
         // Indicates whether this camera has a pending frame.
         bool m_framePending = false;
