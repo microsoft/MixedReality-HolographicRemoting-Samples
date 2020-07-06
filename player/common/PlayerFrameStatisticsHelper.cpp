@@ -82,9 +82,13 @@ void PlayerFrameStatisticsHelper::Update(const PlayerFrameStatistics& frameStati
 {
     using namespace std::chrono;
 
+    m_statsHasChanged = false;
+
     TimePoint now = Clock::now();
     if (now > m_currWindowStartTime + 1s)
     {
+        m_statsHasChanged = true;
+
         m_lastWindowFrameStats.swap(m_currWindowFrameStats);
         m_currWindowFrameStats.clear();
 
@@ -96,4 +100,9 @@ void PlayerFrameStatisticsHelper::Update(const PlayerFrameStatistics& frameStati
 
     m_currWindowFrameStats.push_back(frameStatistics);
     m_videoFramesDiscardedTotal += frameStatistics.VideoFramesDiscarded;
+}
+
+bool PlayerFrameStatisticsHelper::StatisticsHaveChanged()
+{
+    return m_statsHasChanged;
 }

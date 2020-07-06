@@ -9,7 +9,7 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
 #include <Content/SpinningCubeRenderer.h>
 
@@ -17,6 +17,8 @@
 
 #include <winrt/Windows.Perception.People.h>
 #include <winrt/Windows.Storage.Streams.h>
+
+#include <Content/FrustumCulling.h>
 
 using namespace DirectX;
 
@@ -115,9 +117,6 @@ void SpinningCubeRenderer::Update(
         // class is responsible for rendering this content in a consistent manner.
         const XMMATRIX modelTransform = XMMatrixMultiply(modelRotation, modelTranslation);
 
-        // Store the normal transform.
-        XMStoreFloat4x4(&m_modelConstantBufferData.normal, XMMatrixTranspose(modelRotation));
-
         // The view and projection matrices are provided by the system; they are associated
         // with holographic cameras, and updated on a per-camera basis.
         // Here, we provide the model transform for the sample hologram. The model transform
@@ -143,10 +142,16 @@ void SpinningCubeRenderer::Update(
 // VPAndRTArrayIndexFromAnyShaderFeedingRasterizer optional feature,
 // a pass-through geometry shader is also used to set the render
 // target array index.
-void SpinningCubeRenderer::Render(bool isStereo)
+void SpinningCubeRenderer::Render(bool isStereo, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum)
 {
     // Loading is asynchronous. Resources must be created before drawing can occur.
     if (!m_loadingComplete)
+    {
+        return;
+    }
+
+    // Frustum culling
+    if (!FrustumCulling::SphereInFrustum(GetPosition(), m_boundingSphereRadius, cullingFrustum))
     {
         return;
     }
@@ -185,7 +190,7 @@ void SpinningCubeRenderer::Render(bool isStereo)
         context->UpdateSubresource(m_filterColorBuffer.get(), 0, nullptr, &m_filterColorData, 0, 0);
 
         pBufferToSet = m_filterColorBuffer.get();
-        context->PSSetConstantBuffers(2, 1, &pBufferToSet);
+        context->PSSetConstantBuffers(0, 1, &pBufferToSet);
 
         // Attach the pixel shader.
         context->PSSetShader(m_pixelShader.get(), nullptr, 0);
@@ -223,7 +228,7 @@ std::future<void> SpinningCubeRenderer::CreateDeviceDependentResources()
     winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateVertexShader(
         vertexShaderFileData.data(), vertexShaderFileData.size(), nullptr, m_vertexShader.put()));
 
-    constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 3> vertexDesc = {{
+    std::array<D3D11_INPUT_ELEMENT_DESC, 3> vertexDesc = {{
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -241,7 +246,6 @@ std::future<void> SpinningCubeRenderer::CreateDeviceDependentResources()
         pixelShaderFileData.data(), pixelShaderFileData.size(), nullptr, m_pixelShader.put()));
 
     const ModelConstantBuffer constantBuffer{
-        reinterpret_cast<DirectX::XMFLOAT4X4&>(winrt::Windows::Foundation::Numerics::float4x4::identity()),
         reinterpret_cast<DirectX::XMFLOAT4X4&>(winrt::Windows::Foundation::Numerics::float4x4::identity()),
     };
 
@@ -266,14 +270,14 @@ std::future<void> SpinningCubeRenderer::CreateDeviceDependentResources()
     // template. Windows Holographic is scaled in meters, so to draw the
     // cube at a comfortable size we made the cube width 0.2 m (20 cm).
     static const VertexPositionNormalColor cubeVertices[] = {
-        {XMFLOAT3(-0.1f, -0.1f, -0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)}, // vertex 0 non-debug
-        {XMFLOAT3(-0.1f, -0.1f, 0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
-        {XMFLOAT3(-0.1f, 0.1f, -0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
-        {XMFLOAT3(-0.1f, 0.1f, 0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
-        {XMFLOAT3(0.1f, -0.1f, -0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
-        {XMFLOAT3(0.1f, -0.1f, 0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
-        {XMFLOAT3(0.1f, 0.1f, -0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
-        {XMFLOAT3(0.1f, 0.1f, 0.1f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
+        {XMFLOAT3(-m_cubeExtent, -m_cubeExtent, -m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f)},
+        {XMFLOAT3(-m_cubeExtent, -m_cubeExtent, m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f)},
+        {XMFLOAT3(-m_cubeExtent, m_cubeExtent, -m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)},
+        {XMFLOAT3(-m_cubeExtent, m_cubeExtent, m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 1.0f)},
+        {XMFLOAT3(m_cubeExtent, -m_cubeExtent, -m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f)},
+        {XMFLOAT3(m_cubeExtent, -m_cubeExtent, m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 1.0f)},
+        {XMFLOAT3(m_cubeExtent, m_cubeExtent, -m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 0.0f)},
+        {XMFLOAT3(m_cubeExtent, m_cubeExtent, m_cubeExtent), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 1.0f, 1.0f)},
     };
 
     D3D11_SUBRESOURCE_DATA vertexBufferData = {0};

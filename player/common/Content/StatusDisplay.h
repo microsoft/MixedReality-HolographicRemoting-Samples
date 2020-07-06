@@ -96,10 +96,10 @@ public:
         m_imageEnabled = enabled;
     }
 
-    // Repositions the status display
+    // Repositions the status display centered in the given frustum
     void PositionDisplay(
         float deltaTimeInSeconds,
-        const winrt::Windows::UI::Input::Spatial::SpatialPointerPose& pointerPose,
+        const winrt::Windows::Perception::Spatial::SpatialBoundingFrustum& frustum,
         float imageOffsetX,
         float imageOffsetY);
 

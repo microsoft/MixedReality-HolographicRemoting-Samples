@@ -9,10 +9,10 @@
 //
 //*********************************************************
 
-#include "../pch.h"
+#include <pch.h>
 
 // -- important: preserve order of these two includes (initguid before PerceptionTypes)!
 #include <initguid.h>
 
-#include "PerceptionTypes.h"
+#include <Common/PerceptionTypes.h>
 // --

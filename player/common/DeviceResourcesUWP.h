@@ -11,6 +11,7 @@ namespace DXHelper
     class DeviceResourcesUWP : public DeviceResourcesCommon
     {
     public:
+        DeviceResourcesUWP();
         ~DeviceResourcesUWP();
 
         void HandleDeviceLost();
@@ -50,7 +51,19 @@ namespace DXHelper
             winrt::Windows::Graphics::Holographic::HolographicSpace const& sender,
             winrt::Windows::Graphics::Holographic::HolographicSpaceCameraRemovedEventArgs const& args);
 
+        void OnIsAvailableChanged(
+            const winrt::Windows::Foundation::IInspectable& sender, const winrt::Windows::Foundation::IInspectable& args);
+
         void UnregisterHolographicEventHandlers();
+
+        enum class WaitResult
+        {
+            Success,
+            Failure,
+            DeviceLost
+        };
+
+        WaitResult WaitForNextFrameReady(winrt::Windows::Graphics::Holographic::HolographicFrame frame);
 
         // Direct3D interop objects.
         winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_d3dInteropDevice;
@@ -59,6 +72,7 @@ namespace DXHelper
         winrt::Windows::Graphics::Holographic::HolographicSpace m_holographicSpace = nullptr;
 
         bool m_useLegacyWaitBehavior = false;
+        bool m_nextPresentMustWait = false;
 
         // Back buffer resources, etc. for attached holographic cameras.
         std::map<UINT32, std::unique_ptr<CameraResources>> m_cameraResources;
@@ -66,6 +80,7 @@ namespace DXHelper
 
         winrt::event_token m_cameraAddedToken;
         winrt::event_token m_cameraRemovedToken;
+        winrt::Windows::Graphics::Holographic::HolographicSpace::IsAvailableChanged_revoker m_isAvailableChangedRevoker;
     };
 } // namespace DXHelper
 

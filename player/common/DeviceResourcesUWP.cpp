@@ -3,6 +3,8 @@
 #include "CameraResources.h"
 #include "DeviceResourcesUWP.h"
 
+#include <winrt/Windows.Foundation.Metadata.h>
+
 using namespace D2D1;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Graphics::Display;
@@ -20,6 +22,9 @@ void DeviceResourcesUWP::SetWindow(const winrt::Windows::UI::Core::CoreWindow& w
 
     m_cameraAddedToken = m_holographicSpace.CameraAdded({this, &DeviceResourcesUWP::OnCameraAdded});
     m_cameraRemovedToken = m_holographicSpace.CameraRemoved({this, &DeviceResourcesUWP::OnCameraRemoved});
+
+    m_isAvailableChangedRevoker =
+        m_holographicSpace.IsAvailableChanged(winrt::auto_revoke, {this, &DeviceResourcesUWP::OnIsAvailableChanged});
 }
 
 void DeviceResourcesUWP::InitializeUsingHolographicSpace()
@@ -113,6 +118,20 @@ void DeviceResourcesUWP::EnsureCameraResources(HolographicFrame frame, Holograph
     });
 }
 
+DXHelper::DeviceResourcesUWP::DeviceResourcesUWP()
+{
+    try
+    {
+        // WaitForNextFrameReadyWithHeadStart has been added in 10.0.17763.0.
+        m_useLegacyWaitBehavior = !winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
+            L"Windows.Graphics.Holographic.HolographicSpace", L"WaitForNextFrameReadyWithHeadStart");
+    }
+    catch (const winrt::hresult_error&)
+    {
+        m_useLegacyWaitBehavior = true;
+    }
+}
+
 DeviceResourcesUWP::~DeviceResourcesUWP()
 {
     UnregisterHolographicEventHandlers();
@@ -155,21 +174,73 @@ void DeviceResourcesUWP::CreateDeviceResources()
 // Locks the set of holographic camera resources until the function exits.
 void DeviceResourcesUWP::Present(HolographicFrame frame)
 {
-    HolographicFramePresentResult presentResult =
-        frame.PresentUsingCurrentPrediction(HolographicFramePresentWaitBehavior::DoNotWaitForFrameToFinish);
+    if (m_nextPresentMustWait)
+    {
+        switch (WaitForNextFrameReady(frame))
+        {
+            case WaitResult::Success:
+                break;
+            case WaitResult::Failure:
+                return; // We failed to wait for the next frame ready. Do not present.
+            case WaitResult::DeviceLost:
+                HandleDeviceLost();
+                return;
+        }
+    }
 
     // Note, by not waiting on PresentUsingCurrentPrediction and instead using WaitForNextFrameReadyWithHeadStart we avoid going into
     // pipelined mode.
+    HolographicFramePresentResult presentResult =
+        frame.PresentUsingCurrentPrediction(HolographicFramePresentWaitBehavior::DoNotWaitForFrameToFinish);
+
+    if (presentResult == HolographicFramePresentResult::Success)
+    {
+        // Only wait if the device was not removed.
+        switch (WaitForNextFrameReady(frame))
+        {
+            case WaitResult::Success:
+                m_nextPresentMustWait = false;
+                break;
+            case WaitResult::Failure:
+                m_nextPresentMustWait = true;
+                break;
+            case WaitResult::DeviceLost:
+                m_nextPresentMustWait = true;
+                HandleDeviceLost();
+                break;
+        }
+    }
+    else
+    {
+        m_nextPresentMustWait = true;
+        HandleDeviceLost();
+    }
+}
+
+void DXHelper::DeviceResourcesUWP::OnIsAvailableChanged(
+    const winrt::Windows::Foundation::IInspectable& sender, const winrt::Windows::Foundation::IInspectable& args)
+{
+    if (m_holographicSpace.IsAvailable() == false)
+    {
+        // Next present must wait.
+        m_nextPresentMustWait = true;
+    }
+}
+
+DXHelper::DeviceResourcesUWP::WaitResult DXHelper::DeviceResourcesUWP::WaitForNextFrameReady(HolographicFrame frame)
+{
     try
     {
         // WaitForNextFrameReadyWithHeadStart has been added in 10.0.17763.0.
         if (!m_useLegacyWaitBehavior)
         {
             m_holographicSpace.WaitForNextFrameReadyWithHeadStart(winrt::Windows::Foundation::TimeSpan(0));
+            return WaitResult::Success;
         }
         else
         {
             frame.WaitForFrameToFinish();
+            return WaitResult::Success;
         }
     }
     catch (winrt::hresult_error& err)
@@ -179,39 +250,11 @@ void DeviceResourcesUWP::Present(HolographicFrame frame)
             case DXGI_ERROR_DEVICE_HUNG:
             case DXGI_ERROR_DEVICE_REMOVED:
             case DXGI_ERROR_DEVICE_RESET:
-                presentResult = HolographicFramePresentResult::DeviceRemoved;
-                break;
+                return WaitResult::DeviceLost;
 
             default:
-                try
-                {
-                    m_useLegacyWaitBehavior = true;
-                    frame.WaitForFrameToFinish();
-                }
-                catch (winrt::hresult_error& err2)
-                {
-                    switch (err2.code())
-                    {
-                        case DXGI_ERROR_DEVICE_HUNG:
-                        case DXGI_ERROR_DEVICE_REMOVED:
-                        case DXGI_ERROR_DEVICE_RESET:
-                            presentResult = HolographicFramePresentResult::DeviceRemoved;
-                            break;
-
-                        default:
-                            throw;
-                    }
-                }
                 break;
         }
-
-        // The PresentUsingCurrentPrediction API will detect when the graphics device
-        // changes or becomes invalid. When this happens, it is considered a Direct3D
-        // device lost scenario.
-        if (presentResult == HolographicFramePresentResult::DeviceRemoved)
-        {
-            // The Direct3D device, context, and resources should be recreated.
-            HandleDeviceLost();
-        }
     }
+    return WaitResult::Failure;
 }

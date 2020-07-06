@@ -13,7 +13,6 @@
 cbuffer ModelConstantBuffer : register(b0)
 {
     float4x4 model;
-    float4x4 normal;
 };
 
 // A constant buffer that stores each set of view and projection matrices in column-major format.

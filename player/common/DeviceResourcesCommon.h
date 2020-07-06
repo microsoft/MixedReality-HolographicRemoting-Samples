@@ -15,6 +15,8 @@
 
 #include <winrt/base.h>
 
+#include <mutex>
+
 #define ARRAY_SIZE(a) (std::extent<decltype(a)>::value)
 
 struct ID3D11Device4;

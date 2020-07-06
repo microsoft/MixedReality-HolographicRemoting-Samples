@@ -9,11 +9,11 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "SpatialSurfaceMeshRenderer.h"
+#include <Content/SpatialSurfaceMeshRenderer.h>
 
-#include "Common\DirectXHelper.h"
+#include <Common\DirectXHelper.h>
 
 using namespace winrt::Windows;
 using namespace winrt::Windows::Perception::Spatial;

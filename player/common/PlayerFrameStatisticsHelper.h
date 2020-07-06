@@ -27,6 +27,8 @@ public:
     // Updates the statistics with the provided statistics data.
     void Update(const winrt::Microsoft::Holographic::AppRemoting::PlayerFrameStatistics& frameStatistics);
 
+    bool StatisticsHaveChanged();
+
 private:
     using Clock = std::chrono::high_resolution_clock;
     using TimePoint = Clock::time_point;
@@ -36,4 +38,5 @@ private:
     std::vector<winrt::Microsoft::Holographic::AppRemoting::PlayerFrameStatistics> m_currWindowFrameStats;
     std::vector<winrt::Microsoft::Holographic::AppRemoting::PlayerFrameStatistics> m_lastWindowFrameStats;
     uint32_t m_videoFramesDiscardedTotal = 0;
+    bool m_statsHasChanged = true;
 };

@@ -9,7 +9,7 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
 #include <windows.graphics.holographic.h>
 #include <windows.ui.input.spatial.h>
@@ -26,6 +26,7 @@
 #include <codecvt>
 #include <regex>
 
+#include <shellapi.h>
 #include <windows.graphics.directx.direct3d11.interop.h>
 
 #define WINDOWCLASSNAME L"SampleRemoteWindowWin32Class"
@@ -123,10 +124,9 @@ void SampleRemoteWindowWin32::InitializeHwnd(HWND hWnd)
     m_hWnd = hWnd;
 }
 
-void SampleRemoteWindowWin32::ConfigureRemoting(
-    bool listen, const std::wstring& hostname, uint16_t port, uint16_t transportPort, bool ephemeralPort)
+void SampleRemoteWindowWin32::ConfigureRemoting(const SampleRemoteMain::Options& options)
 {
-    m_main->ConfigureRemoting(listen, hostname, port, transportPort, ephemeralPort);
+    m_main->ConfigureRemoting(options);
 }
 
 void SampleRemoteWindowWin32::Connect()
@@ -218,24 +218,26 @@ winrt::Windows::UI::Input::Spatial::SpatialInteractionManager SampleRemoteWindow
     return spSpatialInteractionManager.as<SpatialInteractionManager>();
 }
 
-int main(Platform::Array<Platform::String ^> ^ args)
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
     winrt::init_apartment();
 
-    bool listen{false};
-    std::wstring host;
-    uint16_t port{0};
-    uint16_t transportPort{0};
+    SampleRemoteMain::Options options;
+
     bool isStandalone = false;
     bool noUserWait = false;
-    bool useEphemeralPort = false;
 
-    for (unsigned int i = 1; i < args->Length; ++i)
+    LPWSTR* args;
+    int argCount;
+    args = CommandLineToArgvW(GetCommandLineW(), &argCount);
+    for (int argIndex = 1; argIndex < argCount; ++argIndex)
     {
-        if (args[i]->Length() == 0)
+        if (wcslen(args[argIndex]) == 0)
+        {
             continue;
+        }
 
-        std::wstring arg = args[i]->Data();
+        std::wstring arg = args[argIndex];
         if (arg[0] == '-')
         {
             std::wstring param = arg.substr(1);
@@ -243,7 +245,7 @@ int main(Platform::Array<Platform::String ^> ^ args)
 
             if (param == L"listen")
             {
-                listen = true;
+                options.listen = true;
                 continue;
             }
 
@@ -259,29 +261,42 @@ int main(Platform::Array<Platform::String ^> ^ args)
                 continue;
             }
 
+            if (param == L"noautoreconnect")
+            {
+                options.autoReconnect = false;
+                continue;
+            }
+
             if (param == L"ephemeralport")
             {
-                useEphemeralPort = true;
+                options.ephemeralPort = true;
                 continue;
             }
 
             if (param == L"transportport")
             {
-                if (args->Length > i + 1)
+                if (argIndex + 1 < argCount)
                 {
-                    std::wstring transportPortStr = args[i + 1]->Data();
-                    transportPort = std::stoi(transportPortStr);
-                    i++;
+                    std::wstring transportPortStr = args[argIndex + 1];
+                    try
+                    {
+                        options.transportPort = std::stoi(transportPortStr);
+                    }
+                    catch (const std::invalid_argument&)
+                    {
+                        // Ignore invalid transport port strings.
+                    }
+                    argIndex++;
                 }
                 continue;
             }
         }
 
-        host = SplitHostnameAndPortString(arg, port);
+        options.hostname = SplitHostnameAndPortString(arg, options.port);
     }
 
-    std::shared_ptr<SampleRemoteWindowWin32> sampleHostWindow = std::make_shared<SampleRemoteWindowWin32>();
-    sampleHostWindow->Initialize();
+    std::shared_ptr<SampleRemoteWindowWin32> sampleRemoteWindow = std::make_shared<SampleRemoteWindowWin32>();
+    sampleRemoteWindow->Initialize();
 
     WNDCLASSEXW wcex = {};
     wcex.cbSize = sizeof(wcex);
@@ -310,24 +325,24 @@ int main(Platform::Array<Platform::String ^> ^ args)
         nullptr,
         nullptr,
         0,
-        sampleHostWindow.get());
+        sampleRemoteWindow.get());
 
     RECT clientRect;
     GetClientRect(hWnd, &clientRect);
 
-    sampleHostWindow->InitializeHwnd(hWnd);
+    sampleRemoteWindow->InitializeHwnd(hWnd);
 
     if (!isStandalone)
     {
-        sampleHostWindow->ConfigureRemoting(listen, host, port, transportPort, useEphemeralPort);
+        sampleRemoteWindow->ConfigureRemoting(options);
         if (noUserWait)
         {
-            sampleHostWindow->Connect();
+            sampleRemoteWindow->Connect();
         }
     }
     else
     {
-        sampleHostWindow->InitializeStandalone();
+        sampleRemoteWindow->InitializeStandalone();
     }
 
     ShowWindow(hWnd, SW_SHOWNORMAL);
@@ -349,7 +364,7 @@ int main(Platform::Array<Platform::String ^> ^ args)
         {
             try
             {
-                sampleHostWindow->Tick();
+                sampleRemoteWindow->Tick();
             }
             catch (...)
             {

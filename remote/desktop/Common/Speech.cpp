@@ -9,10 +9,10 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "SampleRemoteMain.h"
-#include "Speech.h"
+#include <Common/Speech.h>
+#include <SampleRemoteMain.h>
 
 #include <windows.h>
 #include <winrt/Windows.ApplicationModel.h>

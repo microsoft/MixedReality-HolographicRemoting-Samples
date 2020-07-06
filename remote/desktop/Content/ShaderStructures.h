@@ -15,7 +15,6 @@
 struct ModelConstantBuffer
 {
     DirectX::XMFLOAT4X4 model;
-    DirectX::XMFLOAT4X4 normal; // Normal transform matrix.
 };
 
 // Assert that the constant buffer remains 16-byte aligned (best practice).
@@ -29,4 +28,10 @@ struct VertexPositionNormalColor
     DirectX::XMFLOAT3 pos;
     DirectX::XMFLOAT3 normal; // Normal.
     DirectX::XMFLOAT3 color;
+};
+
+struct VertexPositionUV
+{
+    DirectX::XMFLOAT3 pos;
+    DirectX::XMFLOAT2 uv;
 };

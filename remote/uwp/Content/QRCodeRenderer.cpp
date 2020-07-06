@@ -9,13 +9,16 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "../Common/DirectXHelper.h"
-#include "../Common/PerceptionTypes.h"
-#include "PerceptionDeviceHandler.h"
-#include "QRCodeRenderer.h"
-#include "QRCodeTracker.h"
+#include <Content/PerceptionDeviceHandler.h>
+#include <Content/QRCodeRenderer.h>
+#include <Content/QRCodeTracker.h>
+
+#include <Common/DirectXHelper.h>
+#include <Common/PerceptionTypes.h>
+
+#include <Content/FrustumCulling.h>
 
 #include <winrt/Windows.Perception.Spatial.h>
 
@@ -60,20 +63,13 @@ void QRCodeRenderer::Update(
         {
             return;
         }
-
-        auto codeToRenderingV = codeToRendering.Value();
-        winrt::Windows::Foundation::Numerics::float3 positions[4] = {
-            {0.0f, 0.0f, 0.0f}, {0.0f, size, 0.0f}, {size, size, 0.0f}, {size, 0.0f, 0.0f}};
-        for (int i = 0; i < 4; ++i)
+        else
         {
-            positions[i] = winrt::Windows::Foundation::Numerics::transform(positions[i], codeToRenderingV);
+            m_renderableQRCodes.push_back({size, codeToRendering.Value()});
         }
-
-        winrt::Windows::Foundation::Numerics::float3 col{1.0f, 1.0f, 0.0f};
-        AppendColoredTriangle(positions[0], positions[2], positions[1], col, m_vertices);
-        AppendColoredTriangle(positions[0], positions[3], positions[2], col, m_vertices);
     };
 
+    m_renderableQRCodes.clear();
     auto processQRCodeTracker = [this, processQRCode](QRCodeTracker& tracker) { tracker.ForEachQRCode(processQRCode); };
 
     m_vertices.clear();
@@ -83,8 +79,30 @@ void QRCodeRenderer::Update(
     UpdateModelConstantBuffer(modelTransform);
 }
 
-void QRCodeRenderer::Draw(unsigned int numInstances)
+void QRCodeRenderer::Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum)
 {
+    for (RenderableQRCode code : m_renderableQRCodes)
+    {
+        // Frustum culling
+        winrt::Windows::Foundation::Numerics::float3 center =
+            winrt::Windows::Foundation::Numerics::transform({0, 0, 0}, code.codeToRendering);
+        float radius = sqrtf(2 * code.size * code.size);
+
+        if (FrustumCulling::SphereInFrustum(center, radius, cullingFrustum))
+        {
+            winrt::Windows::Foundation::Numerics::float3 positions[4] = {
+                {0.0f, 0.0f, 0.0f}, {0.0f, code.size, 0.0f}, {code.size, code.size, 0.0f}, {code.size, 0.0f, 0.0f}};
+            for (int i = 0; i < 4; ++i)
+            {
+                positions[i] = winrt::Windows::Foundation::Numerics::transform(positions[i], code.codeToRendering);
+            }
+
+            winrt::Windows::Foundation::Numerics::float3 col{1.0f, 1.0f, 0.0f};
+            AppendColoredTriangle(positions[0], positions[2], positions[1], col, m_vertices);
+            AppendColoredTriangle(positions[0], positions[3], positions[2], col, m_vertices);
+        }
+    }
+
     if (m_vertices.empty())
     {
         return;

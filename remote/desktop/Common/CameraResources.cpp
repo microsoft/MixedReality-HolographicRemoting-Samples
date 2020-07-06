@@ -9,13 +9,15 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "CameraResources.h"
-#include "DeviceResources.h"
-#include "DirectXHelper.h"
+#include <Common/CameraResources.h>
+#include <Common/DeviceResources.h>
+#include <Common/DirectXHelper.h>
 
 #include <windows.graphics.directx.direct3d11.interop.h>
+
+#include <winrt/Windows.Perception.Spatial.h>
 
 using namespace DirectX;
 using namespace winrt::Windows::Graphics::Holographic;
@@ -102,6 +104,7 @@ namespace DXHelper
                 m_d3dRenderTargetSize = currentSize;
 
                 // A new depth stencil view is also needed.
+                m_d3dDepthStencil = nullptr;
                 m_d3dDepthStencilView = nullptr;
             }
         }
@@ -169,32 +172,39 @@ namespace DXHelper
         // The projection transform for each frame is provided by the HolographicCameraPose.
         auto cameraProjectionTransform = cameraPose.ProjectionTransform();
 
-        // Get a container object with the view and projection matrices for the given
-        // pose in the given coordinate system.
-        auto viewTransformContainer = cameraPose.TryGetViewTransform(coordinateSystem);
-
-        // If TryGetViewTransform returns a null pointer, that means the pose and coordinate
-        // system cannot be understood relative to one another; content cannot be rendered
-        // in this coordinate system for the duration of the current frame.
-        // This usually means that positional tracking is not active for the current frame, in
-        // which case it is possible to use a SpatialLocatorAttachedFrameOfReference to render
-        // content that is not world-locked instead.
         ViewProjectionConstantBuffer viewProjectionConstantBufferData = {};
-        bool viewTransformAcquired = viewTransformContainer != nullptr;
-        if (viewTransformAcquired)
-        {
-            // Otherwise, the set of view transforms can be retrieved.
-            auto viewCoordinateSystemTransform = viewTransformContainer.Value();
+        bool viewTransformAcquired = false;
 
-            // Update the view matrices. Holographic cameras (such as Microsoft HoloLens) are
-            // constantly moving relative to the world. The view matrices need to be updated
-            // every frame.
-            XMStoreFloat4x4(
-                &viewProjectionConstantBufferData.viewProjection[0],
-                XMMatrixTranspose(XMLoadFloat4x4(&viewCoordinateSystemTransform.Left) * XMLoadFloat4x4(&cameraProjectionTransform.Left)));
-            XMStoreFloat4x4(
-                &viewProjectionConstantBufferData.viewProjection[1],
-                XMMatrixTranspose(XMLoadFloat4x4(&viewCoordinateSystemTransform.Right) * XMLoadFloat4x4(&cameraProjectionTransform.Right)));
+        {
+
+            // Get a container object with the view and projection matrices for the given
+            // pose in the given coordinate system.
+            auto viewTransformContainer = cameraPose.TryGetViewTransform(coordinateSystem);
+
+            // If TryGetViewTransform returns a null pointer, that means the pose and coordinate
+            // system cannot be understood relative to one another; content cannot be rendered
+            // in this coordinate system for the duration of the current frame.
+            // This usually means that positional tracking is not active for the current frame, in
+            // which case it is possible to use a SpatialLocatorAttachedFrameOfReference to render
+            // content that is not world-locked instead.
+            viewTransformAcquired = viewTransformContainer != nullptr;
+            if (viewTransformAcquired)
+            {
+                // Otherwise, the set of view transforms can be retrieved.
+                auto viewCoordinateSystemTransform = viewTransformContainer.Value();
+
+                // Update the view matrices. Holographic cameras (such as Microsoft HoloLens) are
+                // constantly moving relative to the world. The view matrices need to be updated
+                // every frame.
+                XMStoreFloat4x4(
+                    &viewProjectionConstantBufferData.viewProjection[0],
+                    XMMatrixTranspose(
+                        XMLoadFloat4x4(&viewCoordinateSystemTransform.Left) * XMLoadFloat4x4(&cameraProjectionTransform.Left)));
+                XMStoreFloat4x4(
+                    &viewProjectionConstantBufferData.viewProjection[1],
+                    XMMatrixTranspose(
+                        XMLoadFloat4x4(&viewCoordinateSystemTransform.Right) * XMLoadFloat4x4(&cameraProjectionTransform.Right)));
+            }
         }
 
         // Use the D3D device context to update Direct3D device-based resources.

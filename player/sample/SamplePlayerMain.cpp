@@ -108,8 +108,6 @@ winrt::fire_and_forget SamplePlayerMain::ConnectOrListenAfter(std::chrono::syste
 
 HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
 {
-    const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
-
     HolographicSpace holographicSpace = m_deviceResources->GetHolographicSpace();
     HolographicFrame holographicFrame = holographicSpace.CreateNextFrame();
     HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
@@ -120,49 +118,42 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
     // Update the accumulated statistics with the statistics from the last frame
     m_statisticsHelper.Update(m_playerContext.LastFrameStatistics());
 
+    if (m_statisticsHelper.StatisticsHaveChanged())
+    {
+        UpdateStatusDisplay();
+    }
+
     // Update the position of the status and error display
     SpatialCoordinateSystem coordinateSystem = nullptr;
     if (m_attachedFrameOfReference != nullptr)
     {
         coordinateSystem = m_attachedFrameOfReference.GetStationaryCoordinateSystemAtTimestamp(prediction.Timestamp());
-        SpatialPointerPose pose = SpatialPointerPose::TryGetAtTimestamp(coordinateSystem, prediction.Timestamp());
-        if (pose)
+        auto poseIterator = prediction.CameraPoses().First();
+        if (poseIterator.HasCurrent())
         {
-            const float imageOffsetX = m_trackingLost ? -0.0095f : -0.0125f;
-            const float imageOffsetY = 0.0111f;
-            m_statusDisplay->PositionDisplay(deltaTimeInSeconds, pose, imageOffsetX, imageOffsetY);
-
-            for (const HolographicCameraPose& cameraPose : prediction.CameraPoses())
+            HolographicCameraPose cameraPose = poseIterator.Current();
+            if (auto visibleFrustumReference = cameraPose.TryGetVisibleFrustum(coordinateSystem))
             {
-                HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
+                const float imageOffsetX = m_trackingLost ? -0.0095f : -0.0125f;
+                const float imageOffsetY = 0.0111f;
+                m_statusDisplay->PositionDisplay(deltaTimeInSeconds, visibleFrustumReference.Value(), imageOffsetX, imageOffsetY);
 
-                // Set the focus point for image stabilization to the center of the status display.
-                // NOTE: The focus point set here will be overwritten with the focus point from the remote side by BlitRemoteFrame or
-                //       ignored if a depth buffer is commited (see HolographicRemotingPlayerMain::Render for details).
-                renderingParameters.SetFocusPoint(coordinateSystem, m_statusDisplay->GetPosition());
+                for (const HolographicCameraPose& cameraPose : prediction.CameraPoses())
+                {
+                    HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
+
+                    // Set the focus point for image stabilization to the center of the status display.
+                    // NOTE: The focus point set here will be overwritten with the focus point from the remote side by BlitRemoteFrame or
+                    //       ignored if a depth buffer is commited (see HolographicRemotingPlayerMain::Render for details).
+                    renderingParameters.SetFocusPoint(coordinateSystem, m_statusDisplay->GetPosition());
+                }
             }
         }
     }
 
+    const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
     // Update the content of the status and error display
-    if (connected && !m_trackingLost)
-    {
-        if (m_playerOptions.m_showStatistics)
-        {
-            const std::wstring statisticsString = m_statisticsHelper.GetStatisticsString();
-
-            if (m_statusDisplay->HasLine(0))
-            {
-                m_statusDisplay->UpdateLineText(0, std::move(statisticsString));
-            }
-            else
-            {
-                StatusDisplay::Line line = {std::move(statisticsString), StatusDisplay::Medium, StatusDisplay::Yellow, 1.0f, true};
-                m_statusDisplay->AddLine(line);
-            }
-        }
-    }
-    else
+    if (!(connected && !m_trackingLost))
     {
         if (m_playerOptions.m_listen)
         {
@@ -175,7 +166,8 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
             }
         }
     }
-    m_statusDisplay->SetImageEnabled(!connected || m_trackingLost);
+
+    m_statusDisplay->SetImageEnabled(!connected);
     m_statusDisplay->Update(deltaTimeInSeconds);
 
     m_errorHelper.Update(deltaTimeInSeconds, [this]() { UpdateStatusDisplay(); });
@@ -197,6 +189,19 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
         if (m_attachedFrameOfReference)
         {
             coordinateSystem = m_attachedFrameOfReference.GetStationaryCoordinateSystemAtTimestamp(prediction.Timestamp());
+        }
+
+        // Retrieve information about any pending render target size change requests
+        bool needRenderTargetSizeChange = false;
+        winrt::Windows::Foundation::Size newRenderTargetSize{};
+        {
+            std::lock_guard lock{m_renderTargetSizeChangeMutex};
+            if (m_needRenderTargetSizeChange)
+            {
+                needRenderTargetSizeChange = true;
+                newRenderTargetSize = m_newRenderTargetSize;
+                m_needRenderTargetSizeChange = false;
+            }
         }
 
         for (const HolographicCameraPose& cameraPose : prediction.CameraPoses())
@@ -290,6 +295,18 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
 
                 atLeastOneCameraRendered = true;
             });
+
+            if (needRenderTargetSizeChange)
+            {
+                if (HolographicViewConfiguration viewConfig = cameraPose.HolographicCamera().ViewConfiguration())
+                {
+                    // Only request new render target size if we are dealing with an opaque (i.e., VR) display
+                    if (cameraPose.HolographicCamera().Display().IsOpaque())
+                    {
+                        viewConfig.RequestRenderTargetSize(newRenderTargetSize);
+                    }
+                }
+            }
         }
     });
 
@@ -336,6 +353,7 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
     // Register to the PlayerContext connection events
     m_playerContext.OnConnected({this, &SamplePlayerMain::OnConnected});
     m_playerContext.OnDisconnected({this, &SamplePlayerMain::OnDisconnected});
+    m_playerContext.OnRequestRenderTargetSize({this, &SamplePlayerMain::OnRequestRenderTargetSize});
 
     // Set the BlitRemoteFrame timeout to 0.5s
     m_playerContext.BlitRemoteFrameTimeout(500ms);
@@ -604,10 +622,7 @@ void SamplePlayerMain::UpdateStatusDisplay()
 
     if (m_trackingLost)
     {
-        StatusDisplay::Line lines[] = {
-            StatusDisplay::Line{L"Device Tracking Lost", StatusDisplay::LargeBold, StatusDisplay::White, 1.0f},
-            StatusDisplay::Line{L"Ensure your environment is properly lit", StatusDisplay::Small, StatusDisplay::White, 1.0f},
-            StatusDisplay::Line{L"and the device's sensors are not covered.", StatusDisplay::Small, StatusDisplay::White, 12.0f}};
+        StatusDisplay::Line lines[] = {StatusDisplay::Line{L"Device Tracking Lost", StatusDisplay::Small, StatusDisplay::Yellow, 1.0f}};
         m_statusDisplay->SetLines(lines);
     }
     else
@@ -618,7 +633,7 @@ void SamplePlayerMain::UpdateStatusDisplay()
                 StatusDisplay::Line{L"Holographic Remoting Player", StatusDisplay::LargeBold, StatusDisplay::White, 1.0f},
                 StatusDisplay::Line{
                     L"This app is a companion for Holographic Remoting apps.", StatusDisplay::Small, StatusDisplay::White, 1.0f},
-                StatusDisplay::Line{L"Connect from a compatible app to begin.", StatusDisplay::Small, StatusDisplay::White, 17.0f},
+                StatusDisplay::Line{L"Connect from a compatible app to begin.", StatusDisplay::Small, StatusDisplay::White, 15.0f},
                 StatusDisplay::Line{
                     m_playerOptions.m_listen ? L"Waiting for connection on" : L"Connecting to",
                     StatusDisplay::Small,
@@ -638,6 +653,16 @@ void SamplePlayerMain::UpdateStatusDisplay()
             if (m_playerOptions.m_showStatistics)
             {
                 m_statusDisplay->AddLine(StatusDisplay::Line{L"Diagnostics Enabled", StatusDisplay::Small, StatusDisplay::Yellow});
+            }
+        }
+        else
+        {
+            if (m_playerOptions.m_showStatistics)
+            {
+                const std::wstring statisticsString = m_statisticsHelper.GetStatisticsString();
+
+                StatusDisplay::Line line = {std::move(statisticsString), StatusDisplay::Medium, StatusDisplay::Yellow, 1.0f, true};
+                m_statusDisplay->AddLine(line);
             }
         }
     }
@@ -715,6 +740,17 @@ void SamplePlayerMain::OnDisconnected(ConnectionFailureReason reason)
     }
 }
 
+void SamplePlayerMain::OnRequestRenderTargetSize(
+    winrt::Windows::Foundation::Size requestedSize, winrt::Windows::Foundation::Size providedSize)
+{
+    // Store the new remote render target size
+    // Note: We'll use the provided size as remote side content is going to be resampled/distorted anyway,
+    // so there is no point in resolving this information into a smaller backbuffer on the player side.
+    std::lock_guard lock{m_renderTargetSizeChangeMutex};
+    m_needRenderTargetSizeChange = true;
+    m_newRenderTargetSize = providedSize;
+}
+
 #pragma region Spatial locator event handlers
 
 void SamplePlayerMain::OnLocatabilityChanged(const SpatialLocator& sender, const winrt::Windows::Foundation::IInspectable& args)
@@ -745,6 +781,15 @@ void SamplePlayerMain::OnLocatabilityChanged(const SpatialLocator& sender, const
 void SamplePlayerMain::OnViewActivated(const CoreApplicationView& sender, const IActivatedEventArgs& activationArgs)
 {
     PlayerOptions playerOptionsNew = ParseActivationArgs(activationArgs);
+
+    // Prevent diagnostics to be turned off everytime the app went to background.
+    if (activationArgs.PreviousExecutionState() != ApplicationExecutionState::NotRunning)
+    {
+        if (!playerOptionsNew.m_showStatistics)
+        {
+            playerOptionsNew.m_showStatistics = m_playerOptions.m_showStatistics;
+        }
+    }
 
     bool connectionOptionsChanged =
         (playerOptionsNew.m_listen != m_playerOptions.m_listen || playerOptionsNew.m_hostname != m_playerOptions.m_hostname ||

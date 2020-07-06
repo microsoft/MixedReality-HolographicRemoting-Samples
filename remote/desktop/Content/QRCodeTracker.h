@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include "../Common/PerceptionTypes.h"
-#include "../Common/Utils.h"
-#include "PerceptionDeviceHandler.h"
+#include <Common/PerceptionTypes.h>
+#include <Common/Utils.h>
+#include <Content/PerceptionDeviceHandler.h>
 
 // Represents a single tracked QR code with position, size and last seen time.
 class QRCode

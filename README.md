@@ -2,8 +2,8 @@
 # Holographic Remoting Samples
 
 This repository hosts the two sample applications for Holographic Remoting. (https://docs.microsoft.com/en-us/windows/mixed-reality/holographic-remoting-player)
-* The hostsampleapp sample shows how to write an application streaming content to a Microsoft HoloLens 2.
-* The player sample shows how to write an application running on your Microsoft HoloLens 2 and recieving streamed content. The player sample is very similar to the Holographic Remoting Player available in the store.
+* The remote sample shows how to write an application streaming content to a Microsoft HoloLens 2 or a PC running Windows Mixed Reality.
+* The player sample shows how to write an application running on your Microsoft HoloLens 2 or a Windows Mixed Reality PC and recieving streamed content. The player sample is very similar to the Holographic Remoting Player available in the store.
 
 ## Prerequisites
 
@@ -16,10 +16,10 @@ This repository hosts the two sample applications for Holographic Remoting. (htt
 
 ## Getting Started
 
-1. Open one of the ```.sln``` files either under ```player/``` or ```hostsampleapp/```. 
+1. Open one of the ```.sln``` files either under ```player/``` or ```remote/```. 
 2. On first use ensure to restore any missing nuget packages. 
 3. Then build and run.
-    * When running the hostsampleapp pass the ip address of your HoloLens device as first argument to the application.
+    * When running the remote app, pass the ip address of your HoloLens device as first argument to the application.
 
 ## Contributing
 

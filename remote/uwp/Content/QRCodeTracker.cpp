@@ -9,11 +9,11 @@
 //
 //*********************************************************
 
-#include "..\pch.h"
+#include <pch.h>
 
 #include <winrt/Windows.Perception.Spatial.Preview.h>
 
-#include "QRCodeTracker.h"
+#include <Content/QRCodeTracker.h>
 
 #include <set>
 

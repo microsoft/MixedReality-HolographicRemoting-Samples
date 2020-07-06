@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "..\Common\DeviceResources.h"
-#include "..\Common\Utils.h"
+#include <Common\DeviceResources.h>
+#include <Common\Utils.h>
 
 #include <winrt/windows.perception.spatial.surfaces.h>
 

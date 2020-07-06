@@ -11,12 +11,18 @@
 
 #pragma once
 
-#include "RenderableObject.h"
+#include <Content/RenderableObject.h>
 #include <vector>
 
 #include <winrt/Windows.UI.Input.Spatial.h>
 
 class PerceptionDeviceHandler;
+
+struct RenderableQRCode
+{
+    float size;
+    winrt::Windows::Foundation::Numerics::float4x4 codeToRendering;
+};
 
 class QRCodeRenderer : public RenderableObject
 {
@@ -28,8 +34,9 @@ public:
         winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem);
 
 private:
-    void Draw(unsigned int numInstances) override;
+    void Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum) override;
 
 private:
     std::vector<VertexPositionNormalColor> m_vertices;
+    std::vector<RenderableQRCode> m_renderableQRCodes{};
 };

@@ -9,9 +9,9 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "SpatialInputHandler.h"
+#include <Content/SpatialInputHandler.h>
 
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Input.Spatial.h>
