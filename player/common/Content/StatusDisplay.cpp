@@ -32,6 +32,38 @@ using namespace Concurrency;
 using namespace winrt::Windows::Foundation::Numerics;
 using namespace winrt::Windows::UI::Input::Spatial;
 
+namespace
+{
+    float3 GetPlanesIntersectionPoint(const plane& p0, const plane& p1, const plane& p2)
+    {
+        const float3 n1(p0.normal);
+        const float3 n2(p1.normal);
+        const float3 n3(p2.normal);
+        const float det = dot(n1, cross(n2, n3));
+        return (-p0.d * cross(n2, n3) + -p1.d * cross(n3, n1) + -p2.d * cross(n1, n2)) / det;
+    }
+
+    std::tuple<float3, float3> GetOriginAndDirectionFromFrustum(const winrt::Windows::Perception::Spatial::SpatialBoundingFrustum& frustum)
+    {
+        float3 points[8];
+
+        points[0] = GetPlanesIntersectionPoint(frustum.Near, frustum.Top, frustum.Left);
+        points[1] = GetPlanesIntersectionPoint(frustum.Near, frustum.Top, frustum.Right);
+        points[2] = GetPlanesIntersectionPoint(frustum.Near, frustum.Bottom, frustum.Left);
+        points[3] = GetPlanesIntersectionPoint(frustum.Near, frustum.Bottom, frustum.Right);
+        float3 origin = (points[0] + points[1] + points[2] + points[3]) * 0.25f;
+
+        points[4] = GetPlanesIntersectionPoint(frustum.Far, frustum.Top, frustum.Left);
+        points[5] = GetPlanesIntersectionPoint(frustum.Far, frustum.Top, frustum.Right);
+        points[6] = GetPlanesIntersectionPoint(frustum.Far, frustum.Bottom, frustum.Left);
+        points[7] = GetPlanesIntersectionPoint(frustum.Far, frustum.Bottom, frustum.Right);
+        float3 direction = normalize((points[4] + points[5] + points[6] + points[7]) * 0.25f - origin);
+
+        return {origin, direction};
+    }
+
+} // namespace
+
 // Initializes D2D resources used for text rendering.
 StatusDisplay::StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesCommon>& deviceResources)
     : m_deviceResources(deviceResources)
@@ -79,12 +111,15 @@ void StatusDisplay::Render()
 
             m_d2dTextRenderTarget->BeginDraw();
 
+            const float virtualDisplayDPIy = m_textTextureHeight / m_virtualDisplaySizeInchY;
+            const float dpiScaleY = virtualDisplayDPIy / 96.0f;
+
             float top = 0.0f;
             for (auto& line : m_runtimeLines)
             {
                 if (line.alignBottom)
                 {
-                    top = m_textTextureHeight - line.metrics.height;
+                    top = m_textTextureHeight - (line.metrics.height * line.lineHeightMultiplier * dpiScaleY);
                 }
 
                 m_d2dTextRenderTarget->DrawTextLayout(D2D1::Point2F(0, top), line.layout.get(), m_brushes[line.color].get());
@@ -526,24 +561,23 @@ void StatusDisplay::SetImage(const winrt::com_ptr<ID3D11ShaderResourceView>& ima
 
 // This function uses a SpatialPointerPose to position the world-locked hologram
 // two meters in front of the user's heading.
-void StatusDisplay::PositionDisplay(float deltaTimeInSeconds, const SpatialPointerPose& pointerPose, float imageOffsetX, float imageOffsetY)
+void StatusDisplay::PositionDisplay(
+    float deltaTimeInSeconds,
+    const winrt::Windows::Perception::Spatial::SpatialBoundingFrustum& frustum,
+    float imageOffsetX,
+    float imageOffsetY)
 {
-    if (pointerPose != nullptr)
-    {
-        // Get the gaze direction relative to the given coordinate system.
-        const float3 headPosition = pointerPose.Head().Position();
-        const float3 headDirection = pointerPose.Head().ForwardDirection();
+    const auto [origin, direction] = GetOriginAndDirectionFromFrustum(frustum);
 
-        const float3 contentPosition = headPosition + (headDirection * m_statusDisplayDistance);
+    const float3 contentPosition = origin + (direction * m_statusDisplayDistance);
 
-        const float3 headRight = normalize(cross(headDirection, float3(0, 1, 0)));
-        const float3 headUp = normalize(cross(headRight, headDirection));
+    const float3 headRight = normalize(cross(direction, float3(0, 1, 0)));
+    const float3 headUp = normalize(cross(headRight, direction));
 
-        m_positionContent = lerp(m_positionContent, contentPosition, deltaTimeInSeconds * c_lerpRate);
-        m_positionOffset = m_positionContent + (headRight * m_virtualDisplaySizeInchX * imageOffsetX) +
-                           (headUp * m_virtualDisplaySizeInchY * imageOffsetY);
-        m_normalContent = headDirection;
-    }
+    m_positionContent = lerp(m_positionContent, contentPosition, deltaTimeInSeconds * c_lerpRate);
+    m_positionOffset =
+        m_positionContent + (headRight * m_virtualDisplaySizeInchX * imageOffsetX) + (headUp * m_virtualDisplaySizeInchY * imageOffsetY);
+    m_normalContent = direction;
 }
 
 void StatusDisplay::UpdateConstantBuffer(

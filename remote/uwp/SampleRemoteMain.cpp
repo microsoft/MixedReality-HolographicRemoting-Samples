@@ -9,13 +9,13 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "SampleRemoteMain.h"
+#include <SampleRemoteMain.h>
 
-#include "Common\DbgLog.h"
-#include "Common\DirectXHelper.h"
-#include "Common\Speech.h"
+#include <Common\DbgLog.h>
+#include <Common\DirectXHelper.h>
+#include <Common\Speech.h>
 
 #include <DirectXColors.h>
 
@@ -60,6 +60,7 @@ namespace
 
         return L"Unknown";
     }
+
 } // namespace
 
 SampleRemoteMain::SampleRemoteMain(std::weak_ptr<IWindow> window)
@@ -255,6 +256,9 @@ void SampleRemoteMain::Render(HolographicFrame holographicFrame)
                     continue;
                 }
 
+                winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum =
+                    cameraPose.TryGetCullingFrustum(coordinateSystem);
+
                 m_deviceResources->UseD3DDeviceContext([&](ID3D11DeviceContext3* context) {
                     // Clear the back buffer view.
                     context->ClearRenderTargetView(pCameraResources->GetBackBufferRenderTargetView(), DirectX::Colors::Transparent);
@@ -277,13 +281,13 @@ void SampleRemoteMain::Render(HolographicFrame holographicFrame)
                         context->OMSetRenderTargets(1, targets, pCameraResources->GetDepthStencilView());
 
                         // Render the scene objects.
-                        m_spinningCubeRenderer->Render(pCameraResources->IsRenderingStereoscopic());
+                        m_spinningCubeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
                         if (m_spatialSurfaceMeshRenderer != nullptr)
                         {
                             m_spatialSurfaceMeshRenderer->Render(pCameraResources->IsRenderingStereoscopic());
                         }
-                        m_spatialInputRenderer->Render(pCameraResources->IsRenderingStereoscopic());
-                        m_qrCodeRenderer->Render(pCameraResources->IsRenderingStereoscopic());
+                        m_spatialInputRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
+                        m_qrCodeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
 
                         // Commit depth buffer if available and enabled.
                         if (m_canCommitDirect3D11DepthBuffer && m_commitDirect3D11DepthBuffer)
@@ -353,16 +357,11 @@ void SampleRemoteMain::Render(HolographicFrame holographicFrame)
     m_framesPerSecond++;
 }
 
-void SampleRemoteMain::ConfigureRemoting(
-    bool listen, const std::wstring& hostname, uint16_t port, uint16_t transportPort, bool ephemeralPort)
+void SampleRemoteMain::ConfigureRemoting(const Options& options)
 {
     if (!m_isInitialized)
     {
-        m_listen = listen;
-        m_hostname = hostname;
-        m_port = port;
-        m_transportPort = transportPort;
-        m_ephemeralPort = ephemeralPort;
+        m_options = options;
     }
 }
 
@@ -395,7 +394,7 @@ void SampleRemoteMain::OnKeyPress(char key)
         break;
 
         case 'p':
-            m_showPreview = !m_showPreview;
+            m_options.showPreview = !m_options.showPreview;
             break;
 
         case 'l':
@@ -494,7 +493,16 @@ void SampleRemoteMain::InitializeRemoteContextAndConnectOrListen()
         CreateRemoteContext(m_remoteContext, 20000, true, PreferredVideoCodec::Any);
 
         // Configure for half-resolution depth.
-        m_remoteContext.ConfigureDepthVideoStream(DepthBufferStreamResolution::Half_Resolution);
+        auto depthResolution = DepthBufferStreamResolution::Half_Resolution;
+        if (m_depthDownscale == 1)
+        {
+            depthResolution = DepthBufferStreamResolution::Full_Resolution;
+        }
+        else if (m_depthDownscale == 4)
+        {
+            depthResolution = DepthBufferStreamResolution::Quarter_Resolution;
+        }
+        m_remoteContext.ConfigureDepthVideoStream(depthResolution);
 
         // Create the HolographicSpace
         CreateHolographicSpaceAndDeviceResources();
@@ -523,6 +531,7 @@ void SampleRemoteMain::InitializeRemoteContextAndConnectOrListen()
             if (auto remoteContext = remoteContextWeakRef.get())
             {
                 WindowUpdateTitle();
+
                 remoteContext.CreateDataChannel(0, DataChannelPriority::Low);
             }
 
@@ -543,7 +552,7 @@ void SampleRemoteMain::InitializeRemoteContextAndConnectOrListen()
 
         m_onSendFrameEventRevoker = m_remoteContext.OnSendFrame(
             winrt::auto_revoke, [this](const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture) {
-                if (m_showPreview)
+                if (m_options.showPreview)
                 {
                     winrt::com_ptr<ID3D11Device1> spDevice;
                     spDevice.copy_from(GetDeviceResources()->GetD3DDevice());
@@ -681,44 +690,55 @@ void SampleRemoteMain::ConnectOrListen()
         // Request access to eyes pose data on every connection/listen attempt.
         RequestEyesPoseAccess();
 
-        if (m_ephemeralPort)
+        if (m_options.ephemeralPort)
         {
-            m_port = 0;
+            m_options.port = 0;
         }
-        else if (m_port == 0)
+        else if (m_options.port == 0)
         {
-            m_port = 8265;
+            m_options.port = 8265;
         }
 
-        if (m_listen)
+        if (m_options.listen)
         {
-            if (m_ephemeralPort)
+            if (m_options.ephemeralPort)
             {
-                m_transportPort = 0;
+                m_options.transportPort = 0;
             }
-            else if (m_transportPort == 0)
+            else if (m_options.transportPort == 0)
             {
-                m_transportPort = m_port + 1;
+                m_options.transportPort = m_options.port + 1;
             }
 
-            if (m_hostname.empty())
+            if (m_options.hostname.empty())
             {
-                m_hostname = L"0.0.0.0";
+                m_options.hostname = L"0.0.0.0";
             }
-            m_remoteContext.Listen(m_hostname, m_port, m_transportPort);
+
+            {
+                m_remoteContext.Listen(m_options.hostname, m_options.port, m_options.transportPort);
+            }
         }
         else
         {
-            if (m_hostname.empty())
+            if (m_options.hostname.empty())
             {
-                m_hostname = L"127.0.0.1";
+                m_options.hostname = L"127.0.0.1";
             }
-            m_remoteContext.Connect(m_hostname, m_port);
+
+            {
+                m_remoteContext.Connect(m_options.hostname, m_options.port);
+            }
+            {
+                std::ostringstream message;
+                message << "Connection-State: Connecting\n";
+                OutputDebugStringA(message.str().c_str());
+            }
         }
     }
     catch (winrt::hresult_error& e)
     {
-        if (m_listen)
+        if (m_options.listen)
         {
             DebugLog(L"Listen failed with hr = 0x%08X", e.code());
         }
@@ -731,6 +751,12 @@ void SampleRemoteMain::ConnectOrListen()
 
 void SampleRemoteMain::LoadPosition()
 {
+    std::lock_guard remoteContextLock(m_remoteContextAccess);
+    if (!m_remoteContext)
+    {
+        return;
+    }
+
     auto storeRequest = SpatialAnchorManager::RequestStoreAsync();
     storeRequest.Completed([this](winrt::Windows::Foundation::IAsyncOperation<SpatialAnchorStore> result, auto asyncStatus) {
         if (result.Status() != winrt::Windows::Foundation::AsyncStatus::Completed)
@@ -759,6 +785,12 @@ void SampleRemoteMain::LoadPosition()
 
 void SampleRemoteMain::SavePosition()
 {
+    std::lock_guard remoteContextLock(m_remoteContextAccess);
+    if (!m_remoteContext)
+    {
+        return;
+    }
+
     auto position = SpatialAnchor::TryCreateRelativeTo(m_referenceFrame.CoordinateSystem(), m_spinningCubeRenderer->GetPosition());
 
     auto storeRequest = SpatialAnchorManager::RequestStoreAsync();
@@ -782,6 +814,19 @@ void SampleRemoteMain::SavePosition()
 
 winrt::fire_and_forget SampleRemoteMain::ExportPosition()
 {
+    // Keep this variable although it is not used directly! This variable ensures that there is at least one reference to the remoteContext.
+    winrt::Microsoft::Holographic::AppRemoting::RemoteContext remoteContext = nullptr;
+
+    {
+        std::lock_guard remoteContextLock(m_remoteContextAccess);
+
+        if (!m_remoteContext)
+        {
+            return;
+        }
+        remoteContext = m_remoteContext;
+    }
+
     const auto purpose = winrt::Windows::Perception::Spatial::SpatialAnchorExportPurpose::Sharing;
 
     auto position = SpatialAnchor::TryCreateRelativeTo(m_referenceFrame.CoordinateSystem(), m_spinningCubeRenderer->GetPosition());
@@ -818,7 +863,7 @@ winrt::fire_and_forget SampleRemoteMain::ExportPosition()
             }
 
             std::vector<uint8_t> data;
-            data.resize(size);
+            data.resize(static_cast<size_t>(size));
 
             DataReader reader(stream);
             reader.LoadAsync(static_cast<uint32_t>(size));
@@ -870,7 +915,7 @@ void SampleRemoteMain::RequestEyesPoseAccess()
 
 winrt::fire_and_forget SampleRemoteMain::CreatePerceptionDeviceHandler()
 {
-    AppCapabilityAccessStatus status;
+    AppCapability webcamCapability{nullptr};
     if (m_isStandalone)
     {
         if (!winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(
@@ -879,11 +924,19 @@ winrt::fire_and_forget SampleRemoteMain::CreatePerceptionDeviceHandler()
             return;
         }
 
-        AppCapability webcamCapability = AppCapability::Create(L"webcam");
+        webcamCapability = AppCapability::Create(L"webcam");
         if (!webcamCapability)
         {
             return;
         }
+    }
+
+    auto weakThis = weak_from_this();
+    co_await winrt::resume_background();
+
+    AppCapabilityAccessStatus status;
+    if (webcamCapability)
+    {
         auto webcamRequest = webcamCapability.RequestAccessAsync();
         status = webcamRequest.get();
     }
@@ -891,9 +944,6 @@ winrt::fire_and_forget SampleRemoteMain::CreatePerceptionDeviceHandler()
     {
         status = AppCapabilityAccessStatus::Allowed;
     }
-
-    auto weakThis = weak_from_this();
-    co_await winrt::resume_background();
 
     // Create the perception device if we have web cam access in standalone mode.
     // Create the perception device if we do not use the standalone mode. In this case, the decision is made on the player side, whereby the
@@ -1041,8 +1091,15 @@ void SampleRemoteMain::OnDisconnected(winrt::Microsoft::Holographic::AppRemoting
         failureReason == ConnectionFailureReason::HandshakeUnreachable || failureReason == ConnectionFailureReason::TransportUnreachable ||
         failureReason == ConnectionFailureReason::ConnectionLost)
     {
-        DebugLog(L"Reconnecting...");
-        ConnectOrListen();
+        if (m_options.autoReconnect)
+        {
+            DebugLog(L"Reconnecting...");
+            ConnectOrListen();
+        }
+        else
+        {
+            ShutdownRemoteContext();
+        }
     }
     // Failure reason None indicates a normal disconnect.
     else if (failureReason != ConnectionFailureReason::None)
@@ -1101,11 +1158,11 @@ void SampleRemoteMain::WindowUpdateTitle()
     std::wstring title = TITLE_TEXT;
     std::wstring separator = TITLE_SEPARATOR;
 
-    uint32_t fps = min(120, m_framesPerSecond);
+    uint32_t fps = std::min<uint32_t>(120, m_framesPerSecond);
     title += separator + std::to_wstring(fps) + L" fps";
 
     // Title | {ip} | {State} [| Press Space to Connect] [| Preview Disabled (p toggles)]
-    title += separator + m_hostname;
+    title += separator + m_options.hostname;
     {
         std::lock_guard remoteContextLock(m_remoteContextAccess);
         if (m_remoteContext)
@@ -1122,7 +1179,7 @@ void SampleRemoteMain::WindowUpdateTitle()
 
         if (!m_isStandalone)
         {
-            title += separator + (m_showPreview ? TITLE_DISABLE_PREVIEW_TEXT : TITLE_ENABLE_PREVIEW_TEXT);
+            title += separator + (m_options.showPreview ? TITLE_DISABLE_PREVIEW_TEXT : TITLE_ENABLE_PREVIEW_TEXT);
         }
     }
 

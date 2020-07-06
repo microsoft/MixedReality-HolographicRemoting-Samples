@@ -9,12 +9,12 @@
 //
 //*********************************************************
 
-#include "../pch.h"
+#include <pch.h>
 
-#include "../Common/PerceptionTypes.h"
-#include "../Common/Utils.h"
-#include "PerceptionDeviceHandler.h"
-#include "QRCodeTracker.h"
+#include <Common/PerceptionTypes.h>
+#include <Common/Utils.h>
+#include <Content/PerceptionDeviceHandler.h>
+#include <Content/QRCodeTracker.h>
 
 PerceptionRootObject::~PerceptionRootObject()
 {

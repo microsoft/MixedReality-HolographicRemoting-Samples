@@ -10,7 +10,7 @@
 //*********************************************************
 
 // A constant buffer that stores the model transform.
-cbuffer ModelConstantBuffer : register(b0)
+cbuffer SRMeshConstantBuffer : register(b0)
 {
     float4x4 model;
 };
@@ -24,9 +24,9 @@ cbuffer ViewProjectionConstantBuffer : register(b1)
 // Per-vertex data used as input to the vertex shader.
 struct VertexShaderInput
 {
-    float3      pos     : POSITION;
-    min16float3 color   : COLOR0;
-    uint        instId  : SV_InstanceID;
+    float3      pos      : POSITION;
+    float2      uv       : TEXCOORD0;
+    uint        instId   : SV_InstanceID;
 };
 
 // Per-vertex data passed to the geometry shader.
@@ -34,16 +34,18 @@ struct VertexShaderInput
 // using the value of viewId.
 struct VertexShaderOutput
 {
-    float4      pos     : SV_POSITION;
-    min16float3 color   : COLOR0;
-    uint        viewId  : TEXCOORD0;  // SV_InstanceID % 2
+    float4      pos      : SV_POSITION;
+    float2      uv       : TEXCOORD0;
+    uint        viewId   : TEXCOORD1;  // SV_InstanceID % 2
+    float3      worldPos : TEXCOORD2;
 };
 
 // Simple shader to do vertex processing on the GPU.
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    float4 pos = float4(input.pos, 1.0f);
+    output.worldPos = input.pos.xyz;
+    float4 pos = float4(output.worldPos, 1.0f);
 
     // Note which view this vertex has been sent to. Used for matrix lookup.
     // Taking the modulo of the instance ID allows geometry instancing to be used
@@ -55,17 +57,16 @@ VertexShaderOutput main(VertexShaderInput input)
     pos = mul(pos, model);
 
     // Correct for perspective and project the vertex position onto the screen.
-    pos = mul(pos, viewProjection[idx]);
+    output.pos = mul(pos, viewProjection[idx]);
+
+    output.uv = input.uv;
     
-    // Write minimum-precision floating-point data.
-    output.pos = pos;
-
-    // Pass the color through without modification.
-    output.color = input.color;
-
     // Set the instance ID. The pass-through geometry shader will set the
     // render target array index to whatever value is set here.
     output.viewId = idx;
+
+   
+  
 
     return output;
 }

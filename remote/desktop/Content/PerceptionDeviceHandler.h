@@ -16,6 +16,7 @@
 
 #include <winrt/Windows.UI.Input.Spatial.h>
 
+#include <Common/Utils.h>
 #include <PerceptionDevice.h>
 
 // Base class for perception root objects managed by the PerceptionDeviceHandler

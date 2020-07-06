@@ -220,9 +220,15 @@ void SampleRemoteWindowUWP::OnViewActivated(CoreApplicationView const& sender, I
     using namespace Activation;
     using namespace Core;
 
-    std::wstring host = L"127.0.0.1";
-    int32_t port = 8265;
+    SampleRemoteMain::Options options;
+    options.hostname = L"127.0.0.1";
+    options.port = 8265;
+
+#if _M_ARM || _M_ARM64
+    bool isStandalone = true;
+#else
     bool isStandalone = false;
+#endif
 
     if (activationArgs != nullptr)
     {
@@ -238,8 +244,11 @@ void SampleRemoteWindowUWP::OnViewActivated(CoreApplicationView const& sender, I
                 std::istream_iterator<std::wstring, wchar_t>(),
                 std::back_inserter(args));
 
-            for (const std::wstring& arg : args)
+            size_t argCount = args.size();
+            for (size_t argIndex = 0; argIndex < argCount; ++argIndex)
             {
+                const std::wstring& arg = args[argIndex];
+
                 if (arg.size() == 0)
                     continue;
 
@@ -249,17 +258,67 @@ void SampleRemoteWindowUWP::OnViewActivated(CoreApplicationView const& sender, I
                     continue;
                 }
 
+                if (arg == L"-noStandalone")
+                {
+                    isStandalone = false;
+                    continue;
+                }
+
+                if (arg == L"-listen")
+                {
+                    options.listen = true;
+                    continue;
+                }
+
+                if (arg == L"-noautoreconnect")
+                {
+                    options.autoReconnect = false;
+                    continue;
+                }
+
+                if (arg == L"-ephemeralport")
+                {
+                    options.ephemeralPort = true;
+                    continue;
+                }
+
+                if (arg == L"-transportport")
+                {
+                    if (argIndex + 1 < argCount)
+                    {
+                        std::wstring transportPortStr = args[argIndex + 1];
+                        try
+                        {
+                            options.transportPort = std::stoi(transportPortStr);
+                        }
+                        catch (const std::invalid_argument&)
+                        {
+                            // Ignore invalid transport port strings.
+                        }
+                        argIndex++;
+                    }
+                    continue;
+                }
+
                 size_t colonPos = arg.find(L':');
                 if (colonPos != std::wstring::npos)
                 {
                     std::wstring portStr = arg.substr(colonPos + 1);
 
-                    host = arg.substr(0, colonPos);
-                    port = std::wcstol(portStr.c_str(), nullptr, 10);
+                    options.hostname = arg.substr(0, colonPos);
+                    int32_t port = std::wcstol(portStr.c_str(), nullptr, 10);
+
+                    // check for invalid port numbers
+                    if (port < 0 || port > 65535)
+                    {
+                        port = 0;
+                    }
+
+                    options.port = port;
                 }
                 else
                 {
-                    host = arg.c_str();
+                    options.hostname = arg.c_str();
                 }
             }
         }
@@ -267,16 +326,11 @@ void SampleRemoteWindowUWP::OnViewActivated(CoreApplicationView const& sender, I
 
     if (!isStandalone)
     {
-        // check for invalid port numbers
-        if (port < 0 || port > 65535)
-        {
-            port = 0;
-        }
 
-        m_ipAddress = host;
-        m_port = port;
+        m_ipAddress = options.hostname;
+        m_port = options.port;
 
-        m_main->ConfigureRemoting(false, m_ipAddress, m_port);
+        m_main->ConfigureRemoting(options);
     }
     else
     {

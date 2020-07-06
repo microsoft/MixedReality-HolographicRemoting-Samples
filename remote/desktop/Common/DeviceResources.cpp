@@ -9,10 +9,10 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "DeviceResources.h"
-#include "DirectXHelper.h"
+#include <Common/DeviceResources.h>
+#include <Common/DirectXHelper.h>
 
 #include <winrt/Windows.Graphics.Display.h>
 

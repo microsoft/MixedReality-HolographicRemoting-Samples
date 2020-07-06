@@ -10,7 +10,7 @@
 //*********************************************************
 
 #pragma once
-#include "RenderableObject.h"
+#include <Content/RenderableObject.h>
 #include <vector>
 
 #include <winrt/Windows.UI.Input.Spatial.h>
@@ -29,6 +29,12 @@ struct QTransform
         : m_position(DirectX::XMLoadFloat3(&position))
         , m_orientation(DirectX::XMLoadQuaternion(&orientation))
     {
+    }
+    QTransform(const float4x4& mat)
+    {
+        DirectX::XMMATRIX xmmat = DirectX::XMLoadFloat4x4(&mat);
+        DirectX::XMVECTOR dummyScale;
+        XMMatrixDecompose(&dummyScale, &m_orientation, &m_position, xmmat);
     }
 
     DirectX::XMVECTOR TransformNormal(const DirectX::XMVECTOR& normal) const
@@ -100,11 +106,13 @@ private:
     static std::vector<VertexPositionNormalColor>
         CalculateJointVisualizationVertices(float3 jointPosition, quaternion jointOrientation, float jointLength, float jointRadius);
 
-    void Draw(unsigned int numInstances) override;
+    void Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum) override;
 
     winrt::Windows::UI::Input::Spatial::SpatialInteractionManager m_interactionManager{nullptr};
     winrt::Windows::Perception::Spatial::SpatialLocatorAttachedFrameOfReference m_referenceFrame{nullptr};
     std::vector<QTransform> m_transforms;
     std::vector<Joint> m_joints;
     std::vector<ColoredTransform> m_coloredTransforms;
+
+    winrt::Windows::Foundation::Numerics::float4x4 m_modelTransform;
 };

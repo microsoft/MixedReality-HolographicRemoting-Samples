@@ -87,6 +87,7 @@ private:
     // PlayerContext event handlers
     void OnConnected();
     void OnDisconnected(winrt::Microsoft::Holographic::AppRemoting::ConnectionFailureReason reason);
+    void OnRequestRenderTargetSize(winrt::Windows::Foundation::Size requestedSize, winrt::Windows::Foundation::Size providedSize);
 
     // SpatialLocator event handlers
     void OnLocatabilityChanged(
@@ -150,6 +151,11 @@ private:
     // CoreWindow status
     bool m_windowClosed = false;
     bool m_windowVisible = true;
+
+    // Indicates that the remote side has successfully requested a render target size change
+    bool m_needRenderTargetSizeChange = false;
+    winrt::Windows::Foundation::Size m_newRenderTargetSize;
+    std::mutex m_renderTargetSizeChangeMutex;
 
     bool m_canCommitDirect3D11DepthBuffer = false;
 

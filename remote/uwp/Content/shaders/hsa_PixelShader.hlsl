@@ -9,20 +9,7 @@
 //
 //*********************************************************
 
-// A constant buffer that stores the model transform.
-cbuffer ModelConstantBuffer : register(b0)
-{
-    float4x4 model;
-    float4x4 normal;
-};
-
-// A constant buffer that stores each set of view and projection matrices in column-major format.
-cbuffer ViewProjectionConstantBuffer : register(b1)
-{
-    float4x4 viewProjection[2];
-};
-
-cbuffer ColorFilterConstantBuffer : register(b2)
+cbuffer ColorFilterConstantBuffer : register(b0)
 {
     float4 colorFilter;
 };

@@ -32,7 +32,7 @@ public:
         winrt::Windows::Perception::PerceptionTimestamp timestamp,
         winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem);
     void SetColorFilter(DirectX::XMFLOAT4 color);
-    void Render(bool isStereo);
+    void Render(bool isStereo, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum);
 
     // Repositions the sample hologram.
     void PositionHologram(const winrt::Windows::UI::Input::Spatial::SpatialPointerPose& pointerPose);
@@ -97,4 +97,7 @@ private:
     // If the current D3D Device supports VPRT, we can avoid using a geometry
     // shader just to set the render target array index.
     bool m_usingVprtShaders = false;
+
+    const float m_cubeExtent = 0.1f;
+    const float m_boundingSphereRadius = sqrtf(3 * m_cubeExtent * m_cubeExtent);
 };

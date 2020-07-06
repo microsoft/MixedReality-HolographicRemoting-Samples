@@ -20,7 +20,7 @@ public:
 
     void InitializeHwnd(HWND hWnd);
 
-    void ConfigureRemoting(bool listen, const std::wstring& hostname, uint16_t port, uint16_t transportPort, bool ephemeralPort);
+    void ConfigureRemoting(const SampleRemoteMain::Options& options);
     void Connect();
 
     void InitializeStandalone();

@@ -11,14 +11,14 @@
 
 #pragma once
 
-#include "Common/DeviceResources.h"
+#include <Common/DeviceResources.h>
 
-#include "Content/PerceptionDeviceHandler.h"
-#include "Content/QRCodeRenderer.h"
-#include "Content/SpatialInputHandler.h"
-#include "Content/SpatialInputRenderer.h"
-#include "Content/SpatialSurfaceMeshRenderer.h"
-#include "Content/SpinningCubeRenderer.h"
+#include <Content/PerceptionDeviceHandler.h>
+#include <Content/QRCodeRenderer.h>
+#include <Content/SpatialInputHandler.h>
+#include <Content/SpatialInputRenderer.h>
+#include <Content/SpatialSurfaceMeshRenderer.h>
+#include <Content/SpinningCubeRenderer.h>
 
 #include <memory>
 
@@ -51,6 +51,17 @@ public:
         virtual void SetWindowTitle(std::wstring title) = 0;
     };
 
+    struct Options
+    {
+        std::wstring hostname;
+        uint16_t port = 0;
+        uint16_t transportPort = 0;
+        bool ephemeralPort = false;
+        bool showPreview = true;
+        bool listen = false;
+        bool autoReconnect = true;
+    };
+
 public:
     SampleRemoteMain(std::weak_ptr<IWindow> window);
     ~SampleRemoteMain();
@@ -67,8 +78,7 @@ public:
     }
 
     // Initialize SampleRemoteMain for remote rendering targeting a HolographicRemotingPlayer.
-    void
-        ConfigureRemoting(bool listen, const std::wstring& hostname, uint16_t port, uint16_t transportPort = 0, bool ephemeralPort = false);
+    void ConfigureRemoting(const Options& options);
 
     // Initialize SampleRemoteMain for local rendering targeting HoloLens or Windows Mixed Reality headsets.
     void InitializeStandalone();
@@ -206,12 +216,7 @@ private:
     winrt::Microsoft::Holographic::AppRemoting::IRemoteSpeech::OnRecognizedSpeech_revoker m_onRecognizedSpeechRevoker;
 
     // Host options
-    std::wstring m_hostname;
-    uint16_t m_port{0};
-    uint16_t m_transportPort{0};
-    bool m_ephemeralPort = false;
-    bool m_showPreview = true;
-    bool m_listen{false};
+    Options m_options = {};
 
     // Host window related variables
     std::weak_ptr<IWindow> m_window;
@@ -229,6 +234,8 @@ private:
     bool m_commitDirect3D11DepthBuffer = true;
 
     bool m_isStandalone = false;
+
+    uint32_t m_depthDownscale = 2;
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
     std::recursive_mutex m_customDataChannelLock;
