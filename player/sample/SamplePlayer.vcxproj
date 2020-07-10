@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0280C9B7-040F-3B12-A315-7EB2731732D9}</ProjectGuid>
+    <ProjectGuid>{8B60BA10-B86A-3FDE-BD7D-A276750CF59D}</ProjectGuid>
     <ApplicationType>Windows Store</ApplicationType>
     <DefaultLanguage>en-US</DefaultLanguage>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
@@ -355,6 +355,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200224.2\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.2.1\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.2.1\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.2.2\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.2.2\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>
