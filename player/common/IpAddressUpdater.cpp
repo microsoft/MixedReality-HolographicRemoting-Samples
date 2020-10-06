@@ -36,27 +36,36 @@ void IpAddressUpdater::UpdateIpAddress(winrt::Windows::Foundation::IInspectable 
 {
     winrt::hstring ipAddressIpv4 = L"";
     winrt::hstring ipAddressIpv6 = L"";
-    winrt::Windows::Foundation::Collections::IVectorView<HostName> hostnames = NetworkInformation::GetHostNames();
 
-    for (winrt::Windows::Networking::HostName hostname : hostnames)
+    try
     {
-        auto hostNameType = hostname.Type();
-        if (hostNameType != HostNameType::Ipv4 && hostNameType != HostNameType::Ipv6)
-        {
-            continue;
-        }
+        winrt::Windows::Foundation::Collections::IVectorView<HostName> hostnames = NetworkInformation::GetHostNames();
 
-        if (hostname.IPInformation() && hostname.IPInformation().NetworkAdapter())
+        for (winrt::Windows::Networking::HostName hostname : hostnames)
         {
-            if (hostNameType == HostNameType::Ipv6 && ipAddressIpv6.empty())
+            auto hostNameType = hostname.Type();
+            if (hostNameType != HostNameType::Ipv4 && hostNameType != HostNameType::Ipv6)
             {
-                ipAddressIpv6 = hostname.CanonicalName();
+                continue;
             }
-            else if (hostNameType == HostNameType::Ipv4 && ipAddressIpv4.empty())
+
+            if (hostname.IPInformation() && hostname.IPInformation().NetworkAdapter())
             {
-                ipAddressIpv4 = hostname.CanonicalName();
+                if (hostNameType == HostNameType::Ipv6 && ipAddressIpv6.empty())
+                {
+                    ipAddressIpv6 = hostname.CanonicalName();
+                }
+                else if (hostNameType == HostNameType::Ipv4 && ipAddressIpv4.empty())
+                {
+                    ipAddressIpv4 = hostname.CanonicalName();
+                }
             }
         }
+    }
+    catch (winrt::hresult_error&)
+    {
+        ipAddressIpv4.clear();
+        ipAddressIpv6.clear();
     }
 
     if (ipAddressIpv6.empty())

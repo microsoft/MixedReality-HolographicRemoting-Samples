@@ -99,7 +99,6 @@ private:
         const winrt::Windows::ApplicationModel::Activation::IActivatedEventArgs& args);
     void OnSuspending(
         const winrt::Windows::Foundation::IInspectable& sender, const winrt::Windows::ApplicationModel::SuspendingEventArgs& args);
-    void OnResuming(const winrt::Windows::Foundation::IInspectable& sender, const winrt::Windows::Foundation::IInspectable& args);
 
     // CoreWindow event handlers
     void OnVisibilityChanged(
@@ -150,7 +149,7 @@ private:
 
     // CoreWindow status
     bool m_windowClosed = false;
-    bool m_windowVisible = true;
+    bool m_windowVisible = false;
 
     // Indicates that the remote side has successfully requested a render target size change
     bool m_needRenderTargetSizeChange = false;
@@ -162,7 +161,7 @@ private:
     // Event registration revokers
     winrt::Windows::Perception::Spatial::SpatialLocator::LocatabilityChanged_revoker m_locatabilityChangedRevoker;
     winrt::Windows::ApplicationModel::Core::CoreApplication::Suspending_revoker m_suspendingEventRevoker;
-    winrt::Windows::ApplicationModel::Core::CoreApplication::Resuming_revoker m_resumingEventRevoker;
+    winrt::Windows::ApplicationModel::Core::CoreApplicationView::Activated_revoker m_viewActivatedRevoker;
     winrt::Windows::UI::Core::CoreWindow::Closed_revoker m_windowClosedEventRevoker;
     winrt::Windows::UI::Core::CoreWindow::VisibilityChanged_revoker m_visibilityChangedEventRevoker;
 };
