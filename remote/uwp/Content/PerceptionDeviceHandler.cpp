@@ -11,10 +11,11 @@
 
 #include <pch.h>
 
-#include <Common/PerceptionTypes.h>
-#include <Common/Utils.h>
-#include <Content/PerceptionDeviceHandler.h>
-#include <Content/QRCodeTracker.h>
+#include <content/PerceptionDeviceHandler.h>
+
+#include <Utils.h>
+#include <content/PerceptionTypes.h>
+#include <content/QRCodeTracker.h>
 
 PerceptionRootObject::~PerceptionRootObject()
 {
@@ -135,7 +136,7 @@ HRESULT PerceptionDeviceHandler::HandleRootObjectAdded(IPerceptionDeviceRootObje
         return S_FALSE; // Already have that root object; don't add it twice
     }
 
-    if (GUIDComparer::equals(key.propertyId, QRCodeTracker::GetStaticPropertyId()))
+    if (Utils::GUIDComparer::equals(key.propertyId, QRCodeTracker::GetStaticPropertyId()))
     {
         winrt::com_ptr<IPerceptionDevice> device;
         args->GetDevice(device.put());
@@ -195,7 +196,7 @@ STDMETHODIMP PerceptionDeviceHandler::RootObjectChangeHandler::Invoke(
 
 bool PerceptionDeviceHandler::RootObjectKey::operator<(const RootObjectKey& other) const
 {
-    const auto typeIdRes = GUIDComparer::compare(propertyId, other.propertyId);
+    const auto typeIdRes = Utils::GUIDComparer::compare(propertyId, other.propertyId);
     if (typeIdRes < 0)
     {
         return true;
@@ -206,6 +207,6 @@ bool PerceptionDeviceHandler::RootObjectKey::operator<(const RootObjectKey& othe
     }
     else
     {
-        return GUIDComparer::compare(objectId, other.objectId) < 0;
+        return Utils::GUIDComparer::compare(objectId, other.objectId) < 0;
     }
 }

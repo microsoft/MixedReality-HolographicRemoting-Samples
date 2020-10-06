@@ -11,7 +11,8 @@
 
 #pragma once
 
-#include <Content/RenderableObject.h>
+#include <holographic/RenderableObject.h>
+
 #include <vector>
 
 #include <winrt/Windows.UI.Input.Spatial.h>

@@ -11,11 +11,13 @@
 
 #include <pch.h>
 
-#include <winrt/Windows.Perception.Spatial.Preview.h>
+#include <content/QRCodeTracker.h>
 
-#include <Content/QRCodeTracker.h>
+#include <Utils.h>
 
 #include <set>
+
+#include <winrt/Windows.Perception.Spatial.Preview.h>
 
 QRCode::QRCode(
     const GUID& id,
@@ -170,7 +172,7 @@ HRESULT QRCodeTracker::HandleQRCodeListChange(const GUID* guids, UINT numGuids)
 
     // Duplicate the list of known QR code IDs. We'll remove all entries from it that we see in
     // the incoming list, and thus will end up with a list of the IDs of all removed QR codes.
-    std::set<GUID, GUIDComparer> codesNotInList;
+    std::set<GUID, Utils::GUIDComparer> codesNotInList;
     for (auto& kv : m_qrCodesByGUID)
     {
         codesNotInList.insert(kv.first);

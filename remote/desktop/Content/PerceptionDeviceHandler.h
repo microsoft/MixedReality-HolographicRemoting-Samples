@@ -16,8 +16,8 @@
 
 #include <winrt/Windows.UI.Input.Spatial.h>
 
-#include <Common/Utils.h>
 #include <PerceptionDevice.h>
+#include <Utils.h>
 
 // Base class for perception root objects managed by the PerceptionDeviceHandler
 class PerceptionRootObject
@@ -70,7 +70,7 @@ public:
         for (auto& rootObjectEntry : m_rootObjects)
         {
             PerceptionRootObject& rootObject = *rootObjectEntry.second.get();
-            if (GUIDComparer::equals(rootObject.GetPropertyId(), RootObjectType::GetStaticPropertyId()))
+            if (Utils::GUIDComparer::equals(rootObject.GetPropertyId(), RootObjectType::GetStaticPropertyId()))
             {
                 func(static_cast<RootObjectType&>(rootObject));
             }

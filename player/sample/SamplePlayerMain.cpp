@@ -54,7 +54,7 @@ void SamplePlayerMain::ConnectOrListen()
     // Try to establish a connection as specified in m_playerOptions
     try
     {
-
+        // Fallback to default port 8265, in case no valid port number was specified
         const uint16_t port = (m_playerOptions.m_port != 0) ? m_playerOptions.m_port : 8265;
 
         if (m_playerOptions.m_listen)
@@ -138,9 +138,10 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
                 const float imageOffsetY = 0.0111f;
                 m_statusDisplay->PositionDisplay(deltaTimeInSeconds, visibleFrustumReference.Value(), imageOffsetX, imageOffsetY);
 
-                for (const HolographicCameraPose& cameraPose : prediction.CameraPoses())
+                for (const HolographicCameraPose& predictionCameraPose : prediction.CameraPoses())
                 {
-                    HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
+                    HolographicCameraRenderingParameters renderingParameters =
+                        holographicFrame.GetRenderingParameters(predictionCameraPose);
 
                     // Set the focus point for image stabilization to the center of the status display.
                     // NOTE: The focus point set here will be overwritten with the focus point from the remote side by BlitRemoteFrame or
@@ -329,23 +330,6 @@ IFrameworkView SamplePlayerMain::CreateView()
 
 void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
 {
-    applicationView.Activated({this, &SamplePlayerMain::OnViewActivated});
-
-    // Register event handlers for app lifecycle.
-    m_suspendingEventRevoker = CoreApplication::Suspending(winrt::auto_revoke, {this, &SamplePlayerMain::OnSuspending});
-    m_resumingEventRevoker = CoreApplication::Resuming(winrt::auto_revoke, {this, &SamplePlayerMain::OnResuming});
-
-    m_deviceResources = std::make_shared<DXHelper::DeviceResourcesUWP>();
-    m_deviceResources->RegisterDeviceNotify(this);
-
-    m_spatialLocator = SpatialLocator::GetDefault();
-    if (m_spatialLocator != nullptr)
-    {
-        m_locatabilityChangedRevoker =
-            m_spatialLocator.LocatabilityChanged(winrt::auto_revoke, {this, &SamplePlayerMain::OnLocatabilityChanged});
-        m_attachedFrameOfReference = m_spatialLocator.CreateAttachedFrameOfReferenceAtCurrentHeading();
-    }
-
     // Create the player context
     // IMPORTANT: This must be done before creating the HolographicSpace (or any other call to the Holographic API).
     m_playerContext = PlayerContext::Create();
@@ -360,10 +344,28 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
 
     // Projection transform always reflects what has been configured on the remote side.
     m_playerContext.ProjectionTransformConfig(ProjectionTransformMode::Remote);
+
+    // Register event handlers for app lifecycle.
+    m_suspendingEventRevoker = CoreApplication::Suspending(winrt::auto_revoke, {this, &SamplePlayerMain::OnSuspending});
+
+    m_viewActivatedRevoker = applicationView.Activated(winrt::auto_revoke, {this, &SamplePlayerMain::OnViewActivated});
+
+    m_deviceResources = std::make_shared<DXHelper::DeviceResourcesUWP>();
+    m_deviceResources->RegisterDeviceNotify(this);
+
+    m_spatialLocator = SpatialLocator::GetDefault();
+    if (m_spatialLocator != nullptr)
+    {
+        m_locatabilityChangedRevoker =
+            m_spatialLocator.LocatabilityChanged(winrt::auto_revoke, {this, &SamplePlayerMain::OnLocatabilityChanged});
+        m_attachedFrameOfReference = m_spatialLocator.CreateAttachedFrameOfReferenceAtCurrentHeading();
+    }
 }
 
 void SamplePlayerMain::SetWindow(const CoreWindow& window)
 {
+    m_windowVisible = window.Visible();
+
     m_windowClosedEventRevoker = window.Closed(winrt::auto_revoke, {this, &SamplePlayerMain::OnWindowClosed});
     m_visibilityChangedEventRevoker = window.VisibilityChanged(winrt::auto_revoke, {this, &SamplePlayerMain::OnVisibilityChanged});
 
@@ -439,17 +441,17 @@ void SamplePlayerMain::Uninitialize()
     OnCustomDataChannelClosed();
 #endif
 
+    m_suspendingEventRevoker.revoke();
+    m_viewActivatedRevoker.revoke();
+    m_windowClosedEventRevoker.revoke();
+    m_visibilityChangedEventRevoker.revoke();
+    m_locatabilityChangedRevoker.revoke();
+
     if (m_deviceResources)
     {
         m_deviceResources->RegisterDeviceNotify(nullptr);
-        m_deviceResources.reset();
+        m_deviceResources = nullptr;
     }
-
-    m_locatabilityChangedRevoker.revoke();
-    m_suspendingEventRevoker.revoke();
-    m_resumingEventRevoker.revoke();
-    m_windowClosedEventRevoker.revoke();
-    m_visibilityChangedEventRevoker.revoke();
 }
 
 #pragma endregion IFrameworkView methods
@@ -500,6 +502,7 @@ void SamplePlayerMain::LoadLogoImage()
 
 SamplePlayerMain::PlayerOptions SamplePlayerMain::ParseActivationArgs(const IActivatedEventArgs& activationArgs)
 {
+    bool argsProvided = false;
     std::wstring host = L"";
     uint16_t port = 0;
     bool listen = false;
@@ -513,46 +516,55 @@ SamplePlayerMain::PlayerOptions SamplePlayerMain::ParseActivationArgs(const IAct
             case Activation::ActivationKind::Launch:
             {
                 LaunchActivatedEventArgs launchArgs = activationArgs.as<LaunchActivatedEventArgs>();
+                std::wstring launchArgsStr = launchArgs.Arguments().c_str();
 
-                std::vector<std::wstring> args;
-                std::wistringstream stream(std::wstring(launchArgs.Arguments()));
-                std::copy(
-                    std::istream_iterator<std::wstring, wchar_t>(stream),
-                    std::istream_iterator<std::wstring, wchar_t>(),
-                    std::back_inserter(args));
-
-                for (const std::wstring& arg : args)
+                if (launchArgsStr.length() > 0)
                 {
-                    if (arg.size() == 0)
-                        continue;
+                    argsProvided = true;
 
-                    if (arg[0] == '-')
+                    std::vector<std::wstring> args;
+                    std::wistringstream stream(launchArgsStr);
+                    std::copy(
+                        std::istream_iterator<std::wstring, wchar_t>(stream),
+                        std::istream_iterator<std::wstring, wchar_t>(),
+                        std::back_inserter(args));
+
+                    for (const std::wstring& arg : args)
                     {
-                        std::wstring param = arg.substr(1);
-                        std::transform(param.begin(), param.end(), param.begin(), ::tolower);
+                        if (arg.size() == 0)
+                            continue;
 
-                        if (param == L"stats")
+                        if (arg[0] == '-')
                         {
-                            showStatistics = true;
+                            std::wstring param = arg.substr(1);
+                            std::transform(param.begin(), param.end(), param.begin(), ::tolower);
+
+                            if (param == L"stats")
+                            {
+                                showStatistics = true;
+                            }
+
+                            if (param == L"listen")
+                            {
+                                listen = true;
+                            }
+
+                            continue;
                         }
 
-                        if (param == L"listen")
-                        {
-                            listen = true;
-                        }
-
-                        continue;
+                        host = PlayerUtil::SplitHostnameAndPortString(arg, port);
                     }
-
-                    host = PlayerUtil::SplitHostnameAndPortString(arg, port);
                 }
                 break;
             }
 
             case Activation::ActivationKind::Protocol:
             {
+                argsProvided = true;
+
                 ProtocolActivatedEventArgs protocolArgs = activationArgs.as<ProtocolActivatedEventArgs>();
-                if (auto uri = protocolArgs.Uri())
+                auto uri = protocolArgs.Uri();
+                if (uri)
                 {
                     host = uri.Host();
                     port = uri.Port();
@@ -583,35 +595,33 @@ SamplePlayerMain::PlayerOptions SamplePlayerMain::ParseActivationArgs(const IAct
         }
     }
 
-    // check for invalid port numbers
-    if (port < 0 || port > 65535)
+    PlayerOptions playerOptions;
+    if (argsProvided)
     {
-        port = 0;
-    }
-
-    winrt::hstring hostname = host.c_str();
-    if (hostname.empty())
-    {
-        if (listen == m_playerOptions.m_listen)
+        // check for invalid port numbers
+        if (port < 0 || port > 65535)
         {
-            // continue to use old hostname
-            hostname = m_playerOptions.m_hostname;
+            port = 0;
         }
 
-        else
+        winrt::hstring hostname = host.c_str();
+        if (hostname.empty())
         {
             // default to listen (as we can't connect to an unspecified host)
             hostname = L"0.0.0.0";
             listen = true;
         }
-    }
 
-    PlayerOptions playerOptions;
-    playerOptions.m_hostname = hostname;
-    playerOptions.m_port = port;
-    playerOptions.m_listen = listen;
-    playerOptions.m_showStatistics = showStatistics;
-    playerOptions.m_ipv6 = hostname.front() == L'[';
+        playerOptions.m_hostname = hostname;
+        playerOptions.m_port = port;
+        playerOptions.m_listen = listen;
+        playerOptions.m_showStatistics = showStatistics;
+        playerOptions.m_ipv6 = !hostname.empty() && hostname.front() == L'[';
+    }
+    else
+    {
+        playerOptions = m_playerOptions;
+    }
 
     return playerOptions;
 }
@@ -732,12 +742,8 @@ void SamplePlayerMain::OnDisconnected(ConnectionFailureReason reason)
         return;
     }
 
-    // Reconnect immediately if not an error unless disconnect was requested.
-    if (reason != ConnectionFailureReason::DisconnectRequest)
-    {
-        // Try to reconnect
-        ConnectOrListen();
-    }
+    // Reconnect quickly if not an error
+    ConnectOrListenAfter(200ms);
 }
 
 void SamplePlayerMain::OnRequestRenderTargetSize(
@@ -791,14 +797,9 @@ void SamplePlayerMain::OnViewActivated(const CoreApplicationView& sender, const 
         }
     }
 
-    bool connectionOptionsChanged =
-        (playerOptionsNew.m_listen != m_playerOptions.m_listen || playerOptionsNew.m_hostname != m_playerOptions.m_hostname ||
-         playerOptionsNew.m_port != m_playerOptions.m_port);
-
     m_playerOptions = playerOptionsNew;
 
-    bool disconnected = m_playerContext.ConnectionState() == ConnectionState::Disconnected;
-    if (disconnected || connectionOptionsChanged)
+    if (m_playerContext.ConnectionState() == ConnectionState::Disconnected)
     {
         // Try to connect to or listen on the provided hostname/port
         ConnectOrListen();
@@ -820,13 +821,6 @@ void SamplePlayerMain::OnSuspending(const winrt::Windows::Foundation::IInspectab
     {
         m_playerContext.Disconnect();
     }
-}
-
-void SamplePlayerMain::OnResuming(
-    const winrt::Windows::Foundation::IInspectable& sender, const winrt::Windows::Foundation::IInspectable& args)
-{
-    // (Re-)connect when the app resumes.
-    ConnectOrListen();
 }
 
 #pragma endregion Application lifecycle event handlers

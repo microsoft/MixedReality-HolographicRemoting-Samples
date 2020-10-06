@@ -11,14 +11,13 @@
 
 #include <pch.h>
 
-#include <Content/PerceptionDeviceHandler.h>
-#include <Content/QRCodeRenderer.h>
-#include <Content/QRCodeTracker.h>
+#include <content/QRCodeRenderer.h>
 
-#include <Common/DirectXHelper.h>
-#include <Common/PerceptionTypes.h>
-
-#include <Content/FrustumCulling.h>
+#include <content/PerceptionDeviceHandler.h>
+#include <content/PerceptionTypes.h>
+#include <content/QRCodeTracker.h>
+#include <d3d11/DirectXHelper.h>
+#include <holographic/FrustumCulling.h>
 
 #include <winrt/Windows.Perception.Spatial.h>
 

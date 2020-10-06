@@ -11,9 +11,9 @@
 
 #include <pch.h>
 
-#include <Content/SpatialSurfaceMeshRenderer.h>
+#include <content/SpatialSurfaceMeshRenderer.h>
 
-#include <Common\DirectXHelper.h>
+#include <d3d11/DirectXHelper.h>
 
 using namespace winrt::Windows;
 using namespace winrt::Windows::Perception::Spatial;
@@ -63,7 +63,7 @@ std::future<void> SpatialSurfaceMeshRenderer::CreateDeviceDependentResources()
             });
     });
 
-    std::vector<byte> vertexShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"hsa_SRMeshVertexShader.cso");
+    std::vector<byte> vertexShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SRMesh_VertexShader.cso");
     winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateVertexShader(
         vertexShaderFileData.data(), vertexShaderFileData.size(), nullptr, m_vertexShader.put()));
 
@@ -78,13 +78,13 @@ std::future<void> SpatialSurfaceMeshRenderer::CreateDeviceDependentResources()
         static_cast<UINT>(vertexShaderFileData.size()),
         m_inputLayout.put()));
 
-    std::vector<byte> geometryShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"hsa_SRMeshGeometryShader.cso");
+    std::vector<byte> geometryShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SRMesh_GeometryShader.cso");
 
     // After the pass-through geometry shader file is loaded, create the shader.
     winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateGeometryShader(
         geometryShaderFileData.data(), geometryShaderFileData.size(), nullptr, m_geometryShader.put()));
 
-    std::vector<byte> pixelShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"hsa_SRMeshPixelShader.cso");
+    std::vector<byte> pixelShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SRMesh_PixelShader.cso");
     winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreatePixelShader(
         pixelShaderFileData.data(), pixelShaderFileData.size(), nullptr, m_pixelShader.put()));
 

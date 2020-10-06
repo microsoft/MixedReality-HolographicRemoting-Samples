@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include <Common\DeviceResources.h>
-#include <Common\Utils.h>
+#include <Utils.h>
+#include <holographic/DeviceResources.h>
 
 #include <winrt/windows.perception.spatial.surfaces.h>
 
@@ -117,7 +117,7 @@ private:
     winrt::event_token m_observedSurfaceChangedToken;
 
     // mesh parts
-    using MeshPartMap = std::map<GUID, std::unique_ptr<SpatialSurfaceMeshPart>, GUIDComparer>;
+    using MeshPartMap = std::map<GUID, std::unique_ptr<SpatialSurfaceMeshPart>, Utils::GUIDComparer>;
     MeshPartMap m_meshParts;
 
     // rendering

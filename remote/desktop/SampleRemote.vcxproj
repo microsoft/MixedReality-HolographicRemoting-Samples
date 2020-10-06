@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{AA60B049-EB63-339B-9D41-F1B860CF33A3}</ProjectGuid>
+    <ProjectGuid>{5152211A-3850-3BE0-BDE3-3655C533BB90}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
@@ -73,7 +73,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -92,15 +92,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -125,7 +125,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -145,15 +145,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -176,7 +176,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -194,15 +194,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -226,81 +226,78 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include=".\SampleRemoteMain.cpp" />
-    <ClInclude Include=".\SampleRemoteMain.h" />
+    <ClCompile Include=".\SampleRemoteApp.cpp" />
+    <ClInclude Include=".\SampleRemoteApp.h" />
     <ClInclude Include=".\pch.h" />
     <ClCompile Include=".\pch.cpp" />
-    <ClCompile Include=".\SampleRemoteWindowWin32.cpp" />
-    <ClInclude Include=".\SampleRemoteWindowWin32.h" />
-    <ClCompile Include=".\Common\CameraResources.cpp" />
-    <ClInclude Include=".\Common\CameraResources.h" />
-    <ClInclude Include=".\Common\DbgLog.h" />
-    <ClCompile Include=".\Common\DeviceResources.cpp" />
-    <ClInclude Include=".\Common\DeviceResources.h" />
-    <ClInclude Include=".\Common\DirectXHelper.h" />
-    <ClCompile Include=".\Common\PerceptionTypes.cpp" />
-    <ClInclude Include=".\Common\PerceptionTypes.h" />
-    <ClInclude Include=".\Common\Utils.h" />
-    <ClCompile Include=".\Common\Speech.cpp" />
-    <ClInclude Include=".\Common\Speech.h" />
-    <ClInclude Include=".\Content\FrustumCulling.h" />
-    <ClCompile Include=".\Content\FrustumCulling.cpp" />
+    <ClInclude Include="..\common\DbgLog.h" />
+    <ClCompile Include="..\common\Utils.cpp" />
+    <ClInclude Include="..\common\Utils.h" />
+    <ClInclude Include="..\common\d3d11\DirectXHelper.h" />
+    <ClInclude Include="..\common\d3d11\SimpleColor_ShaderStructures.h" />
+    <ClCompile Include="..\common\holographic\CameraResources.cpp" />
+    <ClInclude Include="..\common\holographic\CameraResources.h" />
+    <ClCompile Include="..\common\holographic\DeviceResources.cpp" />
+    <ClInclude Include="..\common\holographic\DeviceResources.h" />
+    <ClInclude Include="..\common\holographic\FrustumCulling.h" />
+    <ClCompile Include="..\common\holographic\FrustumCulling.cpp" />
+    <ClInclude Include="..\common\holographic\IRemoteAppHolographic.h" />
+    <ClCompile Include="..\common\holographic\RemoteWindowHolographic.cpp" />
+    <ClInclude Include="..\common\holographic\RemoteWindowHolographic.h" />
+    <ClCompile Include="..\common\holographic\RenderableObject.cpp" />
+    <ClInclude Include="..\common\holographic\RenderableObject.h" />
+    <ClCompile Include="..\common\holographic\Speech.cpp" />
+    <ClInclude Include="..\common\holographic\Speech.h" />
+    <ClCompile Include="..\common\holographic\SpatialInputHandler.cpp" />
+    <ClInclude Include="..\common\holographic\SpatialInputHandler.h" />
+    <ClCompile Include="..\common\holographic\SpatialInputRenderer.cpp" />
+    <ClInclude Include="..\common\holographic\SpatialInputRenderer.h" />
+    <ClCompile Include="..\common\holographic\SpinningCubeRenderer.cpp" />
+    <ClInclude Include="..\common\holographic\SpinningCubeRenderer.h" />
+    <ClCompile Include="..\common\holographic\RemoteWindowHolographicWin32.cpp" />
+    <ClInclude Include="..\common\holographic\RemoteWindowHolographicWin32.h" />
     <ClCompile Include=".\Content\PerceptionDeviceHandler.cpp" />
     <ClInclude Include=".\Content\PerceptionDeviceHandler.h" />
+    <ClCompile Include=".\Content\PerceptionTypes.cpp" />
+    <ClInclude Include=".\Content\PerceptionTypes.h" />
     <ClCompile Include=".\Content\QRCodeRenderer.cpp" />
     <ClInclude Include=".\Content\QRCodeRenderer.h" />
     <ClCompile Include=".\Content\QRCodeTracker.cpp" />
     <ClInclude Include=".\Content\QRCodeTracker.h" />
-    <ClCompile Include=".\Content\RenderableObject.cpp" />
-    <ClInclude Include=".\Content\RenderableObject.h" />
-    <ClInclude Include=".\Content\ShaderStructures.h" />
-    <ClCompile Include=".\Content\SpatialInputHandler.cpp" />
-    <ClInclude Include=".\Content\SpatialInputHandler.h" />
-    <ClCompile Include=".\Content\SpatialInputRenderer.cpp" />
-    <ClInclude Include=".\Content\SpatialInputRenderer.h" />
-    <ClCompile Include=".\Content\SpinningCubeRenderer.cpp" />
-    <ClInclude Include=".\Content\SpinningCubeRenderer.h" />
     <ClCompile Include=".\Content\SpatialSurfaceMeshRenderer.cpp" />
     <ClInclude Include=".\Content\SpatialSurfaceMeshRenderer.h" />
-    <Image Include=".\Assets\LockScreenLogo.scale-200.png" />
-    <Image Include=".\Assets\SplashScreen.scale-200.png" />
-    <Image Include=".\Assets\Square44x44Logo.scale-200.png" />
-    <Image Include=".\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Image Include=".\Assets\Square150x150Logo.scale-200.png" />
-    <Image Include=".\Assets\StoreLogo.png" />
-    <Image Include=".\Assets\Wide310x150Logo.scale-200.png" />
     <AppxManifest Include=".\Package.appxmanifest" />
-    <FXCompile Include=".\Content\shaders\hsa_VertexShader.hlsl">
+    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\hsa_VPRTVertexShader.hlsl">
+    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShaderVprt.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\hsa_SRMeshVertexShader.hlsl">
+    <FXCompile Include=".\Content\shaders\SRMesh_VertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\hsa_PixelShader.hlsl">
+    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_PixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\hsa_SRMeshPixelShader.hlsl">
+    <FXCompile Include=".\Content\shaders\SRMesh_PixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\hsa_GeometryShader.hlsl">
+    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_GeometryShader.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\hsa_SRMeshGeometryShader.hlsl">
+    <FXCompile Include=".\Content\shaders\SRMesh_GeometryShader.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>main</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
@@ -312,6 +309,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.2.2\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.2.2\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.3.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.3.0\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>

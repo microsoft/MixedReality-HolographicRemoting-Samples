@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include <Common/PerceptionTypes.h>
-#include <Common/Utils.h>
-#include <Content/PerceptionDeviceHandler.h>
+#include <Utils.h>
+#include <content/PerceptionDeviceHandler.h>
+#include <content/PerceptionTypes.h>
 
 // Represents a single tracked QR code with position, size and last seen time.
 class QRCode
@@ -82,7 +82,7 @@ private:
     friend PropertyChangeHandler;
 
     using QRCodesByPointerMap = std::map<const QRCode*, std::unique_ptr<QRCode>>;
-    using QRCodesByGUIDMap = std::map<GUID, QRCode*, GUIDComparer>;
+    using QRCodesByGUIDMap = std::map<GUID, QRCode*, Utils::GUIDComparer>;
     using QRCodesByListenerMap = std::map<IPerceptionDevicePropertyListener*, QRCode*>;
 
 private:

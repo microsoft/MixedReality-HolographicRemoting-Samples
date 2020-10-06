@@ -134,10 +134,16 @@ namespace DXHelper
         winrt::com_ptr<ID3D11DepthStencilState> depthStencilState;
         winrt::com_ptr<ID3D11BlendState> blendState;
         winrt::com_ptr<ID3D11InputLayout> inputLayout;
+        winrt::com_ptr<ID3D11Buffer> vertexBuffer;
+        winrt::com_ptr<ID3D11Buffer> indexBuffer;
         FLOAT blendFactor[4] = {};
         UINT sampleMask = 0;
         D3D11_PRIMITIVE_TOPOLOGY primitiveTopoloy = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
         UINT stencilRef = 0;
+        UINT vertexBufferStrides = 0;
+        UINT vertexBufferOffsets = 0;
+        DXGI_FORMAT indexBufferFormat = DXGI_FORMAT_UNKNOWN;
+        UINT indexBufferOffset = 0;
 
         immediateContext->VSGetShader(vertexShader.put(), nullptr, nullptr);
         immediateContext->VSGetConstantBuffers(0, ARRAY_SIZE(vsConstantBuffers), reinterpret_cast<ID3D11Buffer**>(vsConstantBuffers));
@@ -151,6 +157,8 @@ namespace DXHelper
         immediateContext->OMGetBlendState(blendState.put(), blendFactor, &sampleMask);
         immediateContext->IAGetPrimitiveTopology(&primitiveTopoloy);
         immediateContext->IAGetInputLayout(inputLayout.put());
+        immediateContext->IAGetVertexBuffers(0, 1, vertexBuffer.put(), &vertexBufferStrides, &vertexBufferOffsets);
+        immediateContext->IAGetIndexBuffer(indexBuffer.put(), &indexBufferFormat, &indexBufferOffset);
 
         customRenderingCode();
 
@@ -167,5 +175,7 @@ namespace DXHelper
         immediateContext->OMSetBlendState(blendState.get(), blendFactor, sampleMask);
         immediateContext->IASetPrimitiveTopology(primitiveTopoloy);
         immediateContext->IASetInputLayout(inputLayout.get());
+        immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.put(), &vertexBufferStrides, &vertexBufferOffsets);
+        immediateContext->IASetIndexBuffer(indexBuffer.get(), indexBufferFormat, indexBufferOffset);
     }
 } // namespace DXHelper
