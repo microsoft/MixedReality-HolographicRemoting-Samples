@@ -1,9 +1,10 @@
 
 # Holographic Remoting Samples
 
-This repository hosts the two sample applications for Holographic Remoting. (https://docs.microsoft.com/en-us/windows/mixed-reality/holographic-remoting-player)
-* The remote sample shows how to write an application streaming content to a Microsoft HoloLens 2 or a PC running Windows Mixed Reality.
-* The player sample shows how to write an application running on your Microsoft HoloLens 2 or a Windows Mixed Reality PC and recieving streamed content. The player sample is very similar to the Holographic Remoting Player available in the store.
+The [Holographic Remoting Samples
+](https://github.com/microsoft/MixedReality-HolographicRemoting-Samples) repository hosts sample applications for [Holographic Remoting](https://docs.microsoft.com/en-us/windows/mixed-reality/holographic-remoting-player).
+* The two remote samples show how to write an application for streaming content to a Microsoft HoloLens 2 or a PC running Windows Mixed Reality, using either the Mixed Reality or OpenXR runtime. 
+* The player sample shows how to write an application running on your Microsoft HoloLens 2 or a Windows Mixed Reality PC and receive streamed content, using the Mixed Reality runtime. The player sample is very similar to the Holographic Remoting Player available in the store.
 
 ## Prerequisites
 
@@ -16,10 +17,22 @@ This repository hosts the two sample applications for Holographic Remoting. (htt
 
 ## Getting Started
 
+### Mixed Reality
+
 1. Open one of the ```.sln``` files either under ```player/``` or ```remote/```. 
 2. On first use ensure to restore any missing nuget packages. 
 3. Then build and run.
     * When running the remote app, pass the ip address of your HoloLens device as first argument to the application.
+
+For more information, please refer to the official [Mixed Reality documentation](https://docs.microsoft.com/en-us/windows/mixed-reality/).
+
+### OpenXR
+1. Open the ```.sln``` file under ```remote_openxr```. 
+2. On first use ensure to restore any missing nuget packages. 
+3. Then build and run.
+    * When running the remote app, pass the ip address of your HoloLens device as first argument to the application.
+
+For more information, please refer to the official [OpenXR reference](https://www.khronos.org/openxr/).
 
 ## Contributing
 

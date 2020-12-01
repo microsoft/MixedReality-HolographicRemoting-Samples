@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.props" Condition="Exists('packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.props')" />
+  <Import Project="packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props" Condition="Exists('packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props')" />
   <PropertyGroup>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
@@ -19,13 +21,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5152211A-3850-3BE0-BDE3-3655C533BB90}</ProjectGuid>
+    <ProjectGuid>{BDD6541B-7845-3E17-B3C6-6011A4343E9E}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
-    <ProjectName>SampleRemote</ProjectName>
+    <ProjectName>SampleRemoteOpenXR</ProjectName>
     <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
   </PropertyGroup>
+  <Import Project="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/14.26/Microsoft.VCToolsVersion.14.26.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -53,27 +56,27 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bin\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SampleRemote.dir\Debug\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SampleRemote</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SampleRemoteOpenXR.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SampleRemoteOpenXR</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bin\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SampleRemote.dir\Release\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SampleRemote</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SampleRemoteOpenXR.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SampleRemoteOpenXR</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">bin\RelWithDebInfo\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">SampleRemote.dir\RelWithDebInfo\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">SampleRemote</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">SampleRemoteOpenXR.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">SampleRemoteOpenXR</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -92,15 +95,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -114,9 +117,9 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>lib/Debug/SampleRemote.lib</ImportLibrary>
+      <ImportLibrary>lib/Debug/SampleRemoteOpenXR.lib</ImportLibrary>
       <OptimizeReferences>false</OptimizeReferences>
-      <ProgramDataBaseFile>bin/Debug/SampleRemote.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>bin/Debug/SampleRemoteOpenXR.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -125,7 +128,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -145,15 +148,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -166,8 +169,8 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>lib/Release/SampleRemote.lib</ImportLibrary>
-      <ProgramDataBaseFile>bin/Release/SampleRemote.pdb</ProgramDataBaseFile>
+      <ImportLibrary>lib/Release/SampleRemoteOpenXR.lib</ImportLibrary>
+      <ProgramDataBaseFile>bin/Release/SampleRemoteOpenXR.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -176,7 +179,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -194,15 +197,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -216,9 +219,9 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>lib/RelWithDebInfo/SampleRemote.lib</ImportLibrary>
+      <ImportLibrary>lib/RelWithDebInfo/SampleRemoteOpenXR.lib</ImportLibrary>
       <OptimizeReferences>false</OptimizeReferences>
-      <ProgramDataBaseFile>bin/RelWithDebInfo/SampleRemote.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>bin/RelWithDebInfo/SampleRemoteOpenXR.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -226,89 +229,30 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include=".\SampleRemoteApp.cpp" />
-    <ClInclude Include=".\SampleRemoteApp.h" />
+    <ClCompile Include=".\OpenXrProgram.cpp" />
+    <ClInclude Include=".\OpenXrProgram.h" />
     <ClInclude Include=".\pch.h" />
     <ClCompile Include=".\pch.cpp" />
-    <ClInclude Include="..\common\DbgLog.h" />
-    <ClCompile Include="..\common\Utils.cpp" />
-    <ClInclude Include="..\common\Utils.h" />
-    <ClInclude Include="..\common\d3d11\DirectXHelper.h" />
-    <ClInclude Include="..\common\d3d11\SimpleColor_ShaderStructures.h" />
-    <ClCompile Include="..\common\holographic\CameraResources.cpp" />
-    <ClInclude Include="..\common\holographic\CameraResources.h" />
-    <ClCompile Include="..\common\holographic\DeviceResources.cpp" />
-    <ClInclude Include="..\common\holographic\DeviceResources.h" />
-    <ClInclude Include="..\common\holographic\FrustumCulling.h" />
-    <ClCompile Include="..\common\holographic\FrustumCulling.cpp" />
-    <ClInclude Include="..\common\holographic\IRemoteAppHolographic.h" />
-    <ClCompile Include="..\common\holographic\RemoteWindowHolographic.cpp" />
-    <ClInclude Include="..\common\holographic\RemoteWindowHolographic.h" />
-    <ClCompile Include="..\common\holographic\RenderableObject.cpp" />
-    <ClInclude Include="..\common\holographic\RenderableObject.h" />
-    <ClCompile Include="..\common\holographic\Speech.cpp" />
-    <ClInclude Include="..\common\holographic\Speech.h" />
-    <ClCompile Include="..\common\holographic\SpatialInputHandler.cpp" />
-    <ClInclude Include="..\common\holographic\SpatialInputHandler.h" />
-    <ClCompile Include="..\common\holographic\SpatialInputRenderer.cpp" />
-    <ClInclude Include="..\common\holographic\SpatialInputRenderer.h" />
-    <ClCompile Include="..\common\holographic\SpinningCubeRenderer.cpp" />
-    <ClInclude Include="..\common\holographic\SpinningCubeRenderer.h" />
-    <ClCompile Include="..\common\holographic\RemoteWindowHolographicWin32.cpp" />
-    <ClInclude Include="..\common\holographic\RemoteWindowHolographicWin32.h" />
-    <ClCompile Include=".\Content\PerceptionDeviceHandler.cpp" />
-    <ClInclude Include=".\Content\PerceptionDeviceHandler.h" />
-    <ClCompile Include=".\Content\PerceptionTypes.cpp" />
-    <ClInclude Include=".\Content\PerceptionTypes.h" />
-    <ClCompile Include=".\Content\QRCodeRenderer.cpp" />
-    <ClInclude Include=".\Content\QRCodeRenderer.h" />
-    <ClCompile Include=".\Content\QRCodeTracker.cpp" />
-    <ClInclude Include=".\Content\QRCodeTracker.h" />
-    <ClCompile Include=".\Content\SpatialSurfaceMeshRenderer.cpp" />
-    <ClInclude Include=".\Content\SpatialSurfaceMeshRenderer.h" />
+    <ClCompile Include=".\App.cpp" />
+    <ClCompile Include=".\CubeGraphics.cpp" />
+    <ClCompile Include=".\DxUtility.cpp" />
+    <ClInclude Include=".\DxUtility.h" />
+    <ClCompile Include=".\SampleShared\CommandLineUtility.cpp" />
+    <ClCompile Include=".\SampleShared\SampleWindowWin32.cpp" />
+    <Image Include=".\Assets\LockScreenLogo.scale-200.png" />
+    <Image Include=".\Assets\SplashScreen.scale-200.png" />
+    <Image Include=".\Assets\Square150x150Logo.scale-200.png" />
+    <Image Include=".\Assets\Square44x44Logo.scale-200.png" />
+    <Image Include=".\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Image Include=".\Assets\StoreLogo.png" />
+    <Image Include=".\Assets\Wide310x150Logo.scale-200.png" />
     <AppxManifest Include=".\Package.appxmanifest" />
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
-      <EntryPointName>main</EntryPointName>
-      <ShaderModel>5.0</ShaderModel>
-    </FXCompile>
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShaderVprt.hlsl">
-      <ShaderType>Vertex</ShaderType>
-      <EntryPointName>main</EntryPointName>
-      <ShaderModel>5.0</ShaderModel>
-    </FXCompile>
-    <FXCompile Include=".\Content\shaders\SRMesh_VertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
-      <EntryPointName>main</EntryPointName>
-      <ShaderModel>5.0</ShaderModel>
-    </FXCompile>
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_PixelShader.hlsl">
-      <ShaderType>Pixel</ShaderType>
-      <EntryPointName>main</EntryPointName>
-      <ShaderModel>5.0</ShaderModel>
-    </FXCompile>
-    <FXCompile Include=".\Content\shaders\SRMesh_PixelShader.hlsl">
-      <ShaderType>Pixel</ShaderType>
-      <EntryPointName>main</EntryPointName>
-      <ShaderModel>5.0</ShaderModel>
-    </FXCompile>
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_GeometryShader.hlsl">
-      <ShaderType>Geometry</ShaderType>
-      <EntryPointName>main</EntryPointName>
-      <ShaderModel>5.0</ShaderModel>
-    </FXCompile>
-    <FXCompile Include=".\Content\shaders\SRMesh_GeometryShader.hlsl">
-      <ShaderType>Geometry</ShaderType>
-      <EntryPointName>main</EntryPointName>
-      <ShaderModel>5.0</ShaderModel>
-    </FXCompile>
-    <None Include=".\SpeechGrammar.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets" Condition="Exists('packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets')" />
+    <Import Project="packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets" Condition="Exists('packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.4.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.4.0\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.4.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.4.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
   </ImportGroup>
 </Project>
