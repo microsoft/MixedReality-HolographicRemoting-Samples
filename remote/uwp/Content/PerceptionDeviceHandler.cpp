@@ -65,7 +65,7 @@ void PerceptionDeviceHandler::Start()
 
     m_rootObjectChangeHandler = winrt::make_self<RootObjectChangeHandler>(*this);
 
-    std::array<const GUID, 2> rootObjectIds{QRCodeTracker::GetStaticPropertyId()};
+    std::array<const GUID, 1> rootObjectIds{QRCodeTracker::GetStaticPropertyId()};
     for (size_t i = 0; i < rootObjectIds.size(); ++i)
     {
         winrt::com_ptr<IPerceptionDeviceRootObjectWatcher> watcher;
