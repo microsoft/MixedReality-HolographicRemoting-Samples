@@ -17,14 +17,21 @@
 
 #include <openxr/openxr.h>
 #include <openxr/openxr_reflection.h>
+#include <openxr/openxr_msft_holographic_remoting.h>
 
 #include <string>
 
-#define XR_LIST_ENUM_XrRemotingResult(_)                                \
-    _(XR_ERROR_REMOTING_NOT_DISCONNECTED_MSFT, -1000065000)             \
-    _(XR_ERROR_REMOTING_CODEC_NOT_FOUND_MSFT, -1000065001)              \
-    _(XR_ERROR_REMOTING_CALLBACK_ERROR_MSFT, -1000065002)               \
-    _(XR_ERROR_REMOTING_DEPTH_BUFFER_STREAM_DISABLED_MSFT, -1000065003) \
+#define XR_LIST_ENUM_XrRemotingResult(_)                                  \
+    _(XR_ERROR_REMOTING_NOT_DISCONNECTED_MSFT, -1000065000)               \
+    _(XR_ERROR_REMOTING_CODEC_NOT_FOUND_MSFT, -1000065001)                \
+    _(XR_ERROR_REMOTING_CALLBACK_ERROR_MSFT, -1000065002)                 \
+    _(XR_ERROR_REMOTING_DEPTH_BUFFER_STREAM_DISABLED_MSFT, -1000065003)   \
+    _(XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_ID_MSFT, -1000065004)        \
+    _(XR_ERROR_REMOTING_DATA_CHANNEL_CLOSED_MSFT, -1000065005)            \
+    _(XR_ERROR_REMOTING_DATA_CHANNEL_OPEN_PENDING_MSFT, -1000065006)      \
+    _(XR_ERROR_REMOTING_DATA_CHANNEL_ID_ALREADY_IN_USE_MSFT, -1000065007) \
+    _(XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_DATA_MSFT, -1000065008)      \
+    _(XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT, -1000065009)    \
     _(XR_RESULT_MAX_ENUM, 0x7FFFFFFF)
 
 // Macro to generate stringify functions for OpenXR enumerations based data provided in openxr_reflection.h

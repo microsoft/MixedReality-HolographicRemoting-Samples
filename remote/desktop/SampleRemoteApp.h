@@ -27,14 +27,14 @@
 
 #include <winrt/Microsoft.Holographic.AppRemoting.h>
 
-#define INITIAL_WINDOW_WIDTH 1280
+#define INITIAL_WINDOW_WIDTH  1280
 #define INITIAL_WINDOW_HEIGHT 720
 
-#define TITLE_TEXT L"SampleRemoteHolographic"
-#define TITLE_SEPARATOR L" | "
-#define TITLE_CONNECT_TEXT L"Press Space To Connect"
-#define TITLE_DISCONNECT_TEXT L"Press D to Disconnect"
-#define TITLE_ENABLE_PREVIEW_TEXT L"Preview Disabled (press P to enable)"
+#define TITLE_TEXT                 L"SampleRemoteHolographic"
+#define TITLE_SEPARATOR            L" | "
+#define TITLE_CONNECT_TEXT         L"Press Space To Connect"
+#define TITLE_DISCONNECT_TEXT      L"Press D to Disconnect"
+#define TITLE_ENABLE_PREVIEW_TEXT  L"Preview Disabled (press P to enable)"
 #define TITLE_DISABLE_PREVIEW_TEXT L"Preview Enabled (press P to disable)"
 
 // #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
@@ -156,10 +156,20 @@ private:
     void OnLocatabilityChanged(
         const winrt::Windows::Perception::Spatial::SpatialLocator& sender, const winrt::Windows::Foundation::IInspectable& args);
 
+    // Used to notify the app when a connection was successfully established
+    void OnConnected();
+
+    // Used to notify the app when an established connection ended or when a connection attempt failed
     void OnDisconnected(winrt::Microsoft::Holographic::AppRemoting::ConnectionFailureReason failureReason);
 
+    // Used to notify the app when a frame is about to be sent to the Player
+    void OnSendFrame(const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture);
+
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-    void OnCustomDataChannelDataReceived();
+    // Used to notify the app when the custom data channel received a data packet
+    void OnCustomDataChannelDataReceived(winrt::array_view<const uint8_t> dataView);
+
+    // Used to notify the app when the custom data channel was closed
     void OnCustomDataChannelClosed();
 #endif
 

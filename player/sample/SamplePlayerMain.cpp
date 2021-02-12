@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include <winrt/Windows.Foundation.Metadata.h>
+#include <winrt/Windows.Ui.Popups.h>
 
 using namespace std::chrono_literals;
 
@@ -99,36 +100,29 @@ winrt::fire_and_forget SamplePlayerMain::ConnectOrListenAfter(std::chrono::syste
     auto strongThis = weakThis.get();
     if (!strongThis)
     {
-        return;
+        co_return;
     }
 
     // Try to connect or listen
     ConnectOrListen();
 }
 
-HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
+HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds, const HolographicFrame& prevHolographicFrame)
 {
-    HolographicSpace holographicSpace = m_deviceResources->GetHolographicSpace();
-    HolographicFrame holographicFrame = holographicSpace.CreateNextFrame();
-    HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
+    SpatialCoordinateSystem focusPointCoordinateSystem = nullptr;
+    float3 focusPointPosition{0.0f, 0.0f, 0.0f};
 
-    // Back buffers can change from frame to frame. Validate each buffer, and recreate resource views and depth buffers as needed.
-    m_deviceResources->EnsureCameraResources(holographicFrame, prediction);
-
-    // Update the accumulated statistics with the statistics from the last frame
-    m_statisticsHelper.Update(m_playerContext.LastFrameStatistics());
-
-    if (m_statisticsHelper.StatisticsHaveChanged())
+    // Update the position of the status and error display.
+    // Note, this is done with the data from the previous frame before the next wait to save CPU time and get the remote frame presented as
+    // fast as possible. This also means that focus point and status display position are one frame behind which is a reasonable tradeoff
+    // for the time we win.
+    if (prevHolographicFrame != nullptr && m_attachedFrameOfReference != nullptr)
     {
-        UpdateStatusDisplay();
-    }
+        HolographicFramePrediction prevPrediction = prevHolographicFrame.CurrentPrediction();
+        SpatialCoordinateSystem coordinateSystem =
+            m_attachedFrameOfReference.GetStationaryCoordinateSystemAtTimestamp(prevPrediction.Timestamp());
 
-    // Update the position of the status and error display
-    SpatialCoordinateSystem coordinateSystem = nullptr;
-    if (m_attachedFrameOfReference != nullptr)
-    {
-        coordinateSystem = m_attachedFrameOfReference.GetStationaryCoordinateSystemAtTimestamp(prediction.Timestamp());
-        auto poseIterator = prediction.CameraPoses().First();
+        auto poseIterator = prevPrediction.CameraPoses().First();
         if (poseIterator.HasCurrent())
         {
             HolographicCameraPose cameraPose = poseIterator.Current();
@@ -137,41 +131,55 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds)
                 const float imageOffsetX = m_trackingLost ? -0.0095f : -0.0125f;
                 const float imageOffsetY = 0.0111f;
                 m_statusDisplay->PositionDisplay(deltaTimeInSeconds, visibleFrustumReference.Value(), imageOffsetX, imageOffsetY);
+            }
+        }
 
-                for (const HolographicCameraPose& predictionCameraPose : prediction.CameraPoses())
+        focusPointCoordinateSystem = coordinateSystem;
+        focusPointPosition = m_statusDisplay->GetPosition();
+    }
+
+    // Update content of the status and error display.
+    {
+        // Update the accumulated statistics with the statistics from the last frame.
+        m_statisticsHelper.Update(m_playerContext.LastFrameStatistics());
+
+        if (m_statisticsHelper.StatisticsHaveChanged())
+        {
+            UpdateStatusDisplay();
+        }
+
+        const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
+        if (!(connected && !m_trackingLost))
+        {
+            if (m_playerOptions.m_listen)
+            {
+                auto deviceIpNew = m_ipAddressUpdater.GetIpAddress(m_playerOptions.m_ipv6);
+                if (m_deviceIp != deviceIpNew)
                 {
-                    HolographicCameraRenderingParameters renderingParameters =
-                        holographicFrame.GetRenderingParameters(predictionCameraPose);
+                    m_deviceIp = deviceIpNew;
 
-                    // Set the focus point for image stabilization to the center of the status display.
-                    // NOTE: The focus point set here will be overwritten with the focus point from the remote side by BlitRemoteFrame or
-                    //       ignored if a depth buffer is commited (see HolographicRemotingPlayerMain::Render for details).
-                    renderingParameters.SetFocusPoint(coordinateSystem, m_statusDisplay->GetPosition());
+                    UpdateStatusDisplay();
                 }
             }
         }
+
+        m_statusDisplay->SetImageEnabled(!connected);
+        m_statusDisplay->Update(deltaTimeInSeconds);
+        m_errorHelper.Update(deltaTimeInSeconds, [this]() { UpdateStatusDisplay(); });
     }
 
-    const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
-    // Update the content of the status and error display
-    if (!(connected && !m_trackingLost))
+    HolographicFrame holographicFrame = m_deviceResources->GetHolographicSpace().CreateNextFrame();
     {
-        if (m_playerOptions.m_listen)
-        {
-            auto deviceIpNew = m_ipAddressUpdater.GetIpAddress(m_playerOptions.m_ipv6);
-            if (m_deviceIp != deviceIpNew)
-            {
-                m_deviceIp = deviceIpNew;
-
-                UpdateStatusDisplay();
-            }
-        }
+        // Note, we don't wait for the next frame on present which allows us to first update all view independent stuff and also create the
+        // next frame before we actually wait. By doing so everything before the wait is executed while the previous frame is presented by
+        // the OS and thus saves us quite some CPU time after the wait.
+        m_deviceResources->WaitForNextFrameReady();
     }
+    holographicFrame.UpdateCurrentPrediction();
 
-    m_statusDisplay->SetImageEnabled(!connected);
-    m_statusDisplay->Update(deltaTimeInSeconds);
-
-    m_errorHelper.Update(deltaTimeInSeconds, [this]() { UpdateStatusDisplay(); });
+    // Back buffers can change from frame to frame. Validate each buffer, and recreate resource views and depth buffers as needed.
+    m_deviceResources->EnsureCameraResources(
+        holographicFrame, holographicFrame.CurrentPrediction(), focusPointCoordinateSystem, focusPointPosition);
 
     return holographicFrame;
 }
@@ -182,8 +190,6 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
 
     m_deviceResources->UseHolographicCameraResources([this, holographicFrame, &atLeastOneCameraRendered](
                                                          std::map<UINT32, std::unique_ptr<DXHelper::CameraResources>>& cameraResourceMap) {
-        holographicFrame.UpdateCurrentPrediction();
-
         HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
 
         SpatialCoordinateSystem coordinateSystem = nullptr;
@@ -221,10 +227,6 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                     return;
                 }
 
-                // Clear the back buffer and depth stencil view.
-                deviceContext->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
-                deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
                 if (coordinateSystem)
                 {
                     // The view and projection matrices for each holographic camera will change
@@ -252,7 +254,7 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                 // Only render world-locked content when positional tracking is active.
                 if (cameraActive)
                 {
-                    bool depthAvailable = false;
+                    auto blitResult = BlitResult::Failed_NoRemoteFrameAvailable;
 
                     try
                     {
@@ -261,11 +263,7 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                             // Blit the remote frame into the backbuffer for the HolographicFrame.
                             // NOTE: This overwrites the focus point for the current frame, if the remote application
                             // has specified a focus point during the rendering of the remote frame.
-                            if (m_playerContext.BlitRemoteFrame() == BlitResult::Success_Color_Depth)
-                            {
-                                // In case of Success_Color_Depth a depth buffer has been committed by the remote application.
-                                depthAvailable = true;
-                            }
+                            blitResult = m_playerContext.BlitRemoteFrame();
                         }
                     }
                     catch (winrt::hresult_error err)
@@ -273,6 +271,15 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                         winrt::hstring msg = err.message();
                         m_errorHelper.AddError(std::wstring(L"BlitRemoteFrame failed: ") + msg.c_str());
                         UpdateStatusDisplay();
+                    }
+
+                    // If a remote remote frame has been blitted then color and depth buffer are fully overwritten, otherwise we have to
+                    // clear both buffers before we render any local content.
+                    if (blitResult != BlitResult::Success_Color && blitResult != BlitResult::Success_Color_Depth)
+                    {
+                        // Clear the back buffer and depth stencil view.
+                        deviceContext->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
+                        deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
                     }
 
                     // Render local content.
@@ -283,10 +290,10 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                         m_statusDisplay->Render();
                     }
 
-                    // Commit depth buffer if available.
+                    // Commit depth buffer if it has been committed by the remote app which is indicated by Success_Color_Depth.
                     // NOTE: CommitDirect3D11DepthBuffer should be the last thing before the frame is presented. By doing so the depth
-                    //       buffer submitted include remote content and local content.
-                    if (m_canCommitDirect3D11DepthBuffer && depthAvailable)
+                    //       buffer submitted includes remote content and local content.
+                    if (m_canCommitDirect3D11DepthBuffer && blitResult == BlitResult::Success_Color_Depth)
                     {
                         auto interopSurface = pCameraResources->GetDepthStencilTextureInteropObject();
                         HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
@@ -332,7 +339,18 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
 {
     // Create the player context
     // IMPORTANT: This must be done before creating the HolographicSpace (or any other call to the Holographic API).
-    m_playerContext = PlayerContext::Create();
+    try
+    {
+        m_playerContext = PlayerContext::Create();
+    }
+    catch (winrt::hresult_error)
+    {
+        // If we get here, it is likely that no Windows Holographic is installed.
+        m_failedToCreatePlayerContext = true;
+        // Return right away to avoid bringing down the application. This allows us to
+        // later provide feedback to users about this failure.
+        return;
+    }
 
     // Register to the PlayerContext connection events
     m_playerContext.OnConnected({this, &SamplePlayerMain::OnConnected});
@@ -368,6 +386,14 @@ void SamplePlayerMain::SetWindow(const CoreWindow& window)
 
     m_windowClosedEventRevoker = window.Closed(winrt::auto_revoke, {this, &SamplePlayerMain::OnWindowClosed});
     m_visibilityChangedEventRevoker = window.VisibilityChanged(winrt::auto_revoke, {this, &SamplePlayerMain::OnVisibilityChanged});
+
+    // We early out if we have no device resources here to avoid bringing down the application.
+    // The reason for this is that we want to be able to provide feedback to users later on in
+    // case the player context could not be created.
+    if (!m_deviceResources)
+    {
+        return;
+    }
 
     // Forward the window to the device resources, so that it can create a holographic space for the window.
     m_deviceResources->SetWindow(window);
@@ -412,19 +438,51 @@ void SamplePlayerMain::Run()
     Clock clock;
     TimePoint timeLastUpdate = clock.now();
 
+    HolographicFrame prevHolographicFrame = nullptr;
     while (!m_windowClosed)
     {
         TimePoint timeCurrUpdate = clock.now();
         Duration timeSinceLastUpdate = timeCurrUpdate - timeLastUpdate;
         float deltaTimeInSeconds = std::chrono::duration<float>(timeSinceLastUpdate).count();
 
-        if (m_windowVisible && (m_deviceResources->GetHolographicSpace() != nullptr))
+        // If we encountered an error while creating the player context, we are going to provide
+        // users with some feedback here. We have to do this after the application has launched
+        // or we are going to fail at showing the dialog box.
+        if (m_failedToCreatePlayerContext && !m_shownFeedbackToUser)
+        {
+            CoreWindow coreWindow{CoreApplication::MainView().CoreWindow().GetForCurrentThread()};
+
+            // Window must be active or the MessageDialog will not show.
+            coreWindow.Activate();
+
+            // Dispatch call to open MessageDialog.
+            coreWindow.Dispatcher().RunAsync(
+                winrt::Windows::UI::Core::CoreDispatcherPriority::Normal,
+                winrt::Windows::UI::Core::DispatchedHandler([]() -> winrt::fire_and_forget {
+                    winrt::Windows::UI::Popups::MessageDialog failureDialog(
+                        L"Failed to initialize. Please make sure that Windows Holographic is installed on your system."
+                        " Windows Holographic will be installed automatically when you attach your Head-mounted Display.");
+
+                    failureDialog.Title(L"Initialization Failure");
+                    failureDialog.Commands().Append(winrt::Windows::UI::Popups::UICommand(L"Close App"));
+                    failureDialog.DefaultCommandIndex(0);
+                    failureDialog.CancelCommandIndex(0);
+
+                    auto _ = co_await failureDialog.ShowAsync();
+
+                    CoreApplication::Exit();
+                }));
+
+            m_shownFeedbackToUser = true;
+        }
+
+        if (m_windowVisible && m_deviceResources != nullptr && (m_deviceResources->GetHolographicSpace() != nullptr))
         {
             CoreWindow::GetForCurrentThread().Dispatcher().ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
-            HolographicFrame holographicFrame = Update(deltaTimeInSeconds);
-
+            HolographicFrame holographicFrame = Update(deltaTimeInSeconds, prevHolographicFrame);
             Render(holographicFrame);
+            prevHolographicFrame = holographicFrame;
         }
         else
         {

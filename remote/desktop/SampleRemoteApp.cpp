@@ -332,13 +332,18 @@ HolographicFrame SampleRemoteApp::Update()
         return nullptr;
     }
 
+    // Create the next holographic frame early.
+    HolographicFrame holographicFrame = m_holographicSpace.CreateNextFrame();
+
     // NOTE: DXHelper::DeviceResources::Present does not wait for the frame to finish.
     //       Instead we wait here before we do the call to CreateNextFrame on the HolographicSpace.
     //       We do this to avoid that PeekMessage causes frame delta time spikes, say if we wait
     //       after PeekMessage WaitForNextFrameReady will compensate any time spend in PeekMessage.
     m_holographicSpace.WaitForNextFrameReady();
 
-    HolographicFrame holographicFrame = m_holographicSpace.CreateNextFrame();
+    // Update to latest prediction immediately after waiting.
+    holographicFrame.UpdateCurrentPrediction();
+
     HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
 
     // Back buffers can change from frame to frame. Validate each buffer, and recreate resource views and depth buffers as needed.
@@ -614,7 +619,21 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
 
         // Create the RemoteContext
         // IMPORTANT: This must be done before creating the HolographicSpace (or any other call to the Holographic API).
-        CreateRemoteContext(m_remoteContext, 20000, true, PreferredVideoCodec::Any);
+        HRESULT hr = CreateRemoteContext(m_remoteContext, 20000, true, PreferredVideoCodec::Any);
+
+        if (hr != S_OK)
+        {
+            if (hr == WINCODEC_ERR_COMPONENTNOTFOUND)
+            {
+                DebugLog(L"Preferred video codec not found.\n");
+            }
+            else
+            {
+                DebugLog(L"Failed to create the remote context.\n");
+            }
+            m_remoteContext = nullptr;
+            return;
+        }
 
         // Configure for half-resolution depth.
         auto depthResolution = DepthBufferStreamResolution::Half_Resolution;
@@ -649,99 +668,27 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
             return;
         }
 
-        winrt::weak_ref<IRemoteContext> remoteContextWeakRef = m_remoteContext;
-
-        m_onConnectedEventRevoker = m_remoteContext.OnConnected(winrt::auto_revoke, [this, remoteContextWeakRef]() {
-            if (auto remoteContext = remoteContextWeakRef.get())
+        m_onConnectedEventRevoker = m_remoteContext.OnConnected(winrt::auto_revoke, [weakThis = weak_from_this()]() {
+            if (auto strongThis = weakThis.lock())
             {
-                WindowUpdateTitle();
-
-#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-                remoteContext.CreateDataChannel(0, DataChannelPriority::Low);
-#endif
+                strongThis->OnConnected();
             }
-
-            // The spatial surface renderer needs to get recreated on every connect, because its SpatialSurfaceObserver stops working on
-            // disconnect. Uncomment the below line to render spatial surfaces
-            // m_spatialSurfaceMeshRenderer = std::make_unique<SpatialSurfaceMeshRenderer>(m_deviceResources);
         });
 
         m_onDisconnectedEventRevoker =
-            m_remoteContext.OnDisconnected(winrt::auto_revoke, [this, remoteContextWeakRef](ConnectionFailureReason failureReason) {
-                if (auto remoteContext = remoteContextWeakRef.get())
+            m_remoteContext.OnDisconnected(winrt::auto_revoke, [weakThis = weak_from_this()](ConnectionFailureReason failureReason) {
+                if (auto strongThis = weakThis.lock())
                 {
-                    OnDisconnected(failureReason);
+                    strongThis->OnDisconnected(failureReason);
                 }
-
-                m_spatialSurfaceMeshRenderer = nullptr;
             });
 
         m_onSendFrameEventRevoker = m_remoteContext.OnSendFrame(
-            winrt::auto_revoke, [this](const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture) {
-                if (m_options.showPreview)
+            winrt::auto_revoke,
+            [weakThis = weak_from_this()](const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture) {
+                if (auto strongThis = weakThis.lock())
                 {
-                    winrt::com_ptr<ID3D11Device1> spDevice;
-                    spDevice.copy_from(GetDeviceResources()->GetD3DDevice());
-
-                    winrt::com_ptr<ID3D11Texture2D> spBackBuffer;
-                    winrt::check_hresult(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), spBackBuffer.put_void()));
-
-                    winrt::com_ptr<ID3D11Texture2D> texturePtr;
-                    {
-                        winrt::com_ptr<ID3D11Resource> resource;
-                        winrt::com_ptr<::IInspectable> inspectable = texture.as<::IInspectable>();
-                        winrt::com_ptr<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess> dxgiInterfaceAccess;
-                        winrt::check_hresult(inspectable->QueryInterface(__uuidof(dxgiInterfaceAccess), dxgiInterfaceAccess.put_void()));
-                        winrt::check_hresult(dxgiInterfaceAccess->GetInterface(__uuidof(resource), resource.put_void()));
-                        resource.as(texturePtr);
-                    }
-
-                    // Get source/dest dimensions and adjust copy rect and destination position to avoid D3D errors
-                    D3D11_TEXTURE2D_DESC backBufferDesc, textureDesc;
-                    spBackBuffer->GetDesc(&backBufferDesc);
-                    texturePtr->GetDesc(&textureDesc);
-
-                    UINT destX = 0, destY = 0;
-                    D3D11_BOX srcBox{0, 0, 0, textureDesc.Width, textureDesc.Height, 1};
-
-                    if (backBufferDesc.Width < textureDesc.Width)
-                    {
-                        // Target (BackBuffer) narrower than source (Texture)
-                        srcBox.left = (textureDesc.Width - backBufferDesc.Width) / 2;
-                        srcBox.right = srcBox.left + backBufferDesc.Width;
-                    }
-                    else if (backBufferDesc.Width > textureDesc.Width)
-                    {
-                        // Target (BackBuffer) wider than source (Texture)
-                        destX = (backBufferDesc.Width - textureDesc.Width) / 2;
-                    }
-
-                    if (backBufferDesc.Height < textureDesc.Height)
-                    {
-                        // Target (BackBuffer) shorter than source (Texture)
-                        srcBox.top = (textureDesc.Height - backBufferDesc.Height) / 2;
-                        srcBox.bottom = srcBox.top + backBufferDesc.Height;
-                    }
-                    else if (backBufferDesc.Height > textureDesc.Height)
-                    {
-                        // Target (BackBuffer) taller than source (Texture)
-                        destY = (backBufferDesc.Height - textureDesc.Height) / 2;
-                    }
-
-                    // Copy texture to back buffer
-                    GetDeviceResources()->UseD3DDeviceContext([&](auto context) {
-                        context->CopySubresourceRegion(
-                            spBackBuffer.get(), // dest
-                            0,                  // dest subresource
-                            destX,
-                            destY,
-                            0,                // dest x, y, z
-                            texturePtr.get(), // source
-                            0,                // source subresource
-                            &srcBox);         // source box, null means the entire resource
-                    });
-
-                    WindowPresentSwapChain();
+                    strongThis->OnSendFrame(texture);
                 }
             });
 
@@ -752,7 +699,7 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
                 m_customDataChannel = dataChannel.as<IDataChannel2>();
 
                 m_customChannelDataReceivedEventRevoker = m_customDataChannel.OnDataReceived(
-                    winrt::auto_revoke, [this](winrt::array_view<const uint8_t> dataView) { OnCustomDataChannelDataReceived(); });
+                    winrt::auto_revoke, [this](winrt::array_view<const uint8_t> dataView) { OnCustomDataChannelDataReceived(dataView); });
 
                 m_customChannelClosedEventRevoker =
                     m_customDataChannel.OnClosed(winrt::auto_revoke, [this]() { OnCustomDataChannelClosed(); });
@@ -809,9 +756,6 @@ void SampleRemoteApp::ConnectOrListen()
     // Try to establish a connection.
     try
     {
-        // Request access to eyes pose data on every connection/listen attempt.
-        RequestEyesPoseAccess();
-
         if (m_options.ephemeralPort)
         {
             m_options.port = 0;
@@ -1186,6 +1130,25 @@ void SampleRemoteApp::OnLocatabilityChanged(const SpatialLocator& sender, const 
     OutputDebugStringW(message.data());
 }
 
+void SampleRemoteApp::OnConnected()
+{
+    WindowUpdateTitle();
+
+    // Request access to eyes pose data after connection.
+    RequestEyesPoseAccess();
+
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+    if (m_remoteContext)
+    {
+        m_remoteContext.CreateDataChannel(0, DataChannelPriority::Low);
+    }
+#endif
+
+    // The spatial surface renderer needs to get recreated on every connect, because its SpatialSurfaceObserver stops working on
+    // disconnect. Uncomment the below line to render spatial surfaces
+    // m_spatialSurfaceMeshRenderer = std::make_unique<SpatialSurfaceMeshRenderer>(m_deviceResources);
+}
+
 void SampleRemoteApp::OnDisconnected(winrt::Microsoft::Holographic::AppRemoting::ConnectionFailureReason failureReason)
 {
     DebugLog(L"Disconnected with reason %d", failureReason);
@@ -1222,6 +1185,77 @@ void SampleRemoteApp::OnDisconnected(winrt::Microsoft::Holographic::AppRemoting:
     }
 
     WindowUpdateTitle();
+
+    m_spatialSurfaceMeshRenderer = nullptr;
+}
+
+void SampleRemoteApp::OnSendFrame(const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture)
+{
+    if (m_options.showPreview)
+    {
+        winrt::com_ptr<ID3D11Device1> spDevice;
+        spDevice.copy_from(GetDeviceResources()->GetD3DDevice());
+
+        winrt::com_ptr<ID3D11Texture2D> spBackBuffer;
+        winrt::check_hresult(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), spBackBuffer.put_void()));
+
+        winrt::com_ptr<ID3D11Texture2D> texturePtr;
+        {
+            winrt::com_ptr<ID3D11Resource> resource;
+            winrt::com_ptr<::IInspectable> inspectable = texture.as<::IInspectable>();
+            winrt::com_ptr<Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess> dxgiInterfaceAccess;
+            winrt::check_hresult(inspectable->QueryInterface(__uuidof(dxgiInterfaceAccess), dxgiInterfaceAccess.put_void()));
+            winrt::check_hresult(dxgiInterfaceAccess->GetInterface(__uuidof(resource), resource.put_void()));
+            resource.as(texturePtr);
+        }
+
+        // Get source/dest dimensions and adjust copy rect and destination position to avoid D3D errors
+        D3D11_TEXTURE2D_DESC backBufferDesc, textureDesc;
+        spBackBuffer->GetDesc(&backBufferDesc);
+        texturePtr->GetDesc(&textureDesc);
+
+        UINT destX = 0, destY = 0;
+        D3D11_BOX srcBox{0, 0, 0, textureDesc.Width, textureDesc.Height, 1};
+
+        if (backBufferDesc.Width < textureDesc.Width)
+        {
+            // Target (BackBuffer) narrower than source (Texture)
+            srcBox.left = (textureDesc.Width - backBufferDesc.Width) / 2;
+            srcBox.right = srcBox.left + backBufferDesc.Width;
+        }
+        else if (backBufferDesc.Width > textureDesc.Width)
+        {
+            // Target (BackBuffer) wider than source (Texture)
+            destX = (backBufferDesc.Width - textureDesc.Width) / 2;
+        }
+
+        if (backBufferDesc.Height < textureDesc.Height)
+        {
+            // Target (BackBuffer) shorter than source (Texture)
+            srcBox.top = (textureDesc.Height - backBufferDesc.Height) / 2;
+            srcBox.bottom = srcBox.top + backBufferDesc.Height;
+        }
+        else if (backBufferDesc.Height > textureDesc.Height)
+        {
+            // Target (BackBuffer) taller than source (Texture)
+            destY = (backBufferDesc.Height - textureDesc.Height) / 2;
+        }
+
+        // Copy texture to back buffer
+        GetDeviceResources()->UseD3DDeviceContext([&](auto context) {
+            context->CopySubresourceRegion(
+                spBackBuffer.get(), // dest
+                0,                  // dest subresource
+                destX,
+                destY,
+                0,                // dest x, y, z
+                texturePtr.get(), // source
+                0,                // source subresource
+                &srcBox);         // source box, null means the entire resource
+        });
+
+        WindowPresentSwapChain();
+    }
 }
 
 void SampleRemoteApp::WindowCreateSwapChain(const winrt::com_ptr<ID3D11Device1>& device)
@@ -1236,7 +1270,7 @@ void SampleRemoteApp::WindowCreateSwapChain(const winrt::com_ptr<ID3D11Device1>&
     desc.SampleDesc.Count = 1; // Don't use multi-sampling.
     desc.SampleDesc.Quality = 0;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    desc.BufferCount = 2; // Double buffered
+    desc.BufferCount = 3; // Triple buffered
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
     desc.Flags = 0;
     desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
@@ -1303,7 +1337,7 @@ void SampleRemoteApp::WindowUpdateTitle()
 }
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-void SampleRemoteApp::OnCustomDataChannelDataReceived()
+void SampleRemoteApp::OnCustomDataChannelDataReceived(winrt::array_view<const uint8_t> dataView)
 {
     // TODO: React on data received via the custom data channel here.
     OutputDebugString(TEXT("Response Received.\n"));

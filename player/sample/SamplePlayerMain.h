@@ -38,7 +38,8 @@ public:
     winrt::fire_and_forget ConnectOrListenAfter(std::chrono::system_clock::duration time);
 
     // Starts the holographic frame and updates the content.
-    winrt::Windows::Graphics::Holographic::HolographicFrame Update(float deltaTimeInSeconds);
+    winrt::Windows::Graphics::Holographic::HolographicFrame
+        Update(float deltaTimeInSeconds, const winrt::Windows::Graphics::Holographic::HolographicFrame& prevHolographicFrame);
 
     // Renders the current frame to each holographic camera and presents it.
     void Render(const winrt::Windows::Graphics::Holographic::HolographicFrame& holographicFrame);
@@ -164,4 +165,8 @@ private:
     winrt::Windows::ApplicationModel::Core::CoreApplicationView::Activated_revoker m_viewActivatedRevoker;
     winrt::Windows::UI::Core::CoreWindow::Closed_revoker m_windowClosedEventRevoker;
     winrt::Windows::UI::Core::CoreWindow::VisibilityChanged_revoker m_visibilityChangedEventRevoker;
+
+    // Feedback when failing to start-up
+    bool m_failedToCreatePlayerContext = false;
+    bool m_shownFeedbackToUser = false;
 };

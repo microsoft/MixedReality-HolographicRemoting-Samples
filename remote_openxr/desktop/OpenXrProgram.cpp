@@ -26,6 +26,8 @@
 #include <SampleShared/SampleWindowWin32.h>
 #endif
 
+// #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+
 namespace {
     constexpr DirectX::XMVECTORF32 clearColor = {0.392156899f, 0.584313750f, 0.929411829f, 1.000000000f};
 
@@ -68,6 +70,17 @@ namespace {
                     }
 
                     if (m_sessionRunning) {
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+                        auto timeDelta = std::chrono::high_resolution_clock::now() - m_customDataChannelSendTime;
+                        if (timeDelta > std::chrono::seconds(5)) {
+                            m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
+
+                            if (!m_userDataChannelDestroyed) {
+                                SendDataViaUserDataChannel(m_userDataChannel);
+                            }
+                        }
+#endif
+
                         try {
                             PollActions();
                             RenderFrame();
@@ -88,6 +101,43 @@ namespace {
         }
 
     private:
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+        void CreateUserDataChannel() {
+            CHECK(m_instance.Get() != XR_NULL_HANDLE);
+            CHECK(m_systemId != XR_NULL_SYSTEM_ID);
+
+            XrRemotingDataChannelCreateInfoMSFT channelInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_DATA_CHANNEL_CREATE_INFO_MSFT)};
+            channelInfo.channelId = 0;
+            channelInfo.channelPriority = XR_REMOTING_DATA_CHANNEL_PRIORITY_LOW_MSFT;
+            CHECK_XRCMD(m_extensions.xrCreateRemotingDataChannelMSFT(m_instance.Get(), m_systemId, &channelInfo, &m_userDataChannel));
+        }
+
+        void DestroyUserDataChannel(XrRemotingDataChannelMSFT channelHandle) {
+            CHECK_XRCMD(m_extensions.xrDestroyRemotingDataChannelMSFT(channelHandle));
+        }
+
+        void SendDataViaUserDataChannel(XrRemotingDataChannelMSFT channelHandle) {
+            XrRemotingDataChannelStateMSFT channelState{static_cast<XrStructureType>(XR_TYPE_REMOTING_DATA_CHANNEL_STATE_MSFT)};
+            CHECK_XRCMD(m_extensions.xrGetRemotingDataChannelStateMSFT(channelHandle, &channelState));
+
+            if (channelState.connectionStatus == XR_REMOTING_DATA_CHANNEL_STATUS_OPENED_MSFT) {
+                // Only send the packet if the send queue is smaller than 1MiB
+                if (channelState.sendQueueSize >= 1 * 1024 * 1024) {
+                    return;
+                }
+
+                DEBUG_PRINT("Holographic Remoting: SendDataViaUserDataChannel.");
+                uint8_t data[] = {17};
+
+                XrRemotingDataChannelSendDataInfoMSFT sendInfo{
+                    static_cast<XrStructureType>(XR_TYPE_REMOTING_DATA_CHANNEL_SEND_DATA_INFO_MSFT)};
+                sendInfo.data = data;
+                sendInfo.size = sizeof(data);
+                sendInfo.guaranteedDelivery = true;
+                CHECK_XRCMD(m_extensions.xrSendRemotingDataMSFT(channelHandle, &sendInfo));
+            }
+        }
+#endif
         bool EnableRemotingXR() {
             wchar_t executablePath[MAX_PATH];
             if (GetModuleFileNameW(NULL, executablePath, ARRAYSIZE(executablePath)) == 0) {
@@ -511,7 +561,7 @@ namespace {
             attachInfo.actionSets = actionSets.data();
             CHECK_XRCMD(xrAttachSessionActionSets(m_session.Get(), &attachInfo));
 
-            // Get the primary view configuration.
+            // Get the xrEnumerateViewConfig
             {
                 uint32_t viewConfigTypeCount;
                 CHECK_XRCMD(xrEnumerateViewConfigurations(m_instance.Get(), m_systemId, 0, &viewConfigTypeCount, nullptr));
@@ -773,6 +823,37 @@ namespace {
                                 reinterpret_cast<const XrRemotingEventDataDisconnectedMSFT*>(&eventData)->disconnectReason);
                     break;
                 }
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+                case XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_CREATED_MSFT: {
+                    auto channelCreatedEventData = reinterpret_cast<const XrEventDataRemotingDataChannelCreatedMSFT*>(&eventData);
+                    DEBUG_PRINT("Holographic Remoting: Custom data channel created.");
+                    m_userDataChannel = channelCreatedEventData->channel;
+                    break;
+                }
+                case XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_OPENED_MSFT: {
+                    DEBUG_PRINT("Holographic Remoting: Custom data channel opened.");
+                    break;
+                }
+                case XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_CLOSED_MSFT: {
+                    auto closedEventData = reinterpret_cast<const XrEventDataRemotingDataChannelClosedMSFT*>(&eventData);
+                    DEBUG_PRINT("Holographic Remoting: Custom data channel closed reason: %d", closedEventData->closedReason);
+                    break;
+                }
+                case XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_DATA_RECEIVED_MSFT: {
+                    auto dataReceivedEventData = reinterpret_cast<const XrEventDataRemotingDataChannelDataReceivedMSFT*>(&eventData);
+                    std::vector<uint8_t> packet(dataReceivedEventData->size);
+                    uint32_t dataBytesCount;
+                    CHECK_XRCMD(m_extensions.xrRetrieveRemotingDataMSFT(dataReceivedEventData->channel,
+                                                                        dataReceivedEventData->packetId,
+                                                                        static_cast<uint32_t>(packet.size()),
+                                                                        &dataBytesCount,
+                                                                        packet.data()));
+                    DEBUG_PRINT("Holographic Remoting: Custom data channel data received: %d", static_cast<uint32_t>(packet[0]));
+                    break;
+                }
+
+#endif
+
                 case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:
                 case XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED:
                 default: {
@@ -1191,13 +1272,32 @@ namespace {
                         if (m_session.Get() == XR_NULL_HANDLE) {
                             ConnectOrListen();
                             InitializeSession();
+
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+                            CreateUserDataChannel();
+                            m_userDataChannelDestroyed = false;
+#endif
                         }
                         break;
                     }
-
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+                    case 'x': {
+                        if (m_sessionRunning && !m_userDataChannelDestroyed) {
+                            DestroyUserDataChannel(m_userDataChannel);
+                            m_userDataChannelDestroyed = true;
+                        }
+                        break;
+                    }
+#endif
                     case 'd': {
                         if (m_sessionRunning) {
                             Disconnect();
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+                            if (!m_userDataChannelDestroyed) {
+                                DestroyUserDataChannel(m_userDataChannel);
+                                m_userDataChannelDestroyed = true;
+                            }
+#endif
                         }
                         break;
                     }
@@ -1303,7 +1403,12 @@ namespace {
         std::mutex m_keyPressedMutex;
         std::queue<wchar_t> m_keyPressedQueue;
 #endif
-    };
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+        std::chrono::high_resolution_clock::time_point m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
+        XrRemotingDataChannelMSFT m_userDataChannel;
+        bool m_userDataChannelDestroyed = false;
+#endif
+    }; // namespace
 } // namespace
 
 namespace sample {

@@ -21,14 +21,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BDD6541B-7845-3E17-B3C6-6011A4343E9E}</ProjectGuid>
+    <ProjectGuid>{C3E46858-377B-3010-AEA6-30315A9BB5A7}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
     <ProjectName>SampleRemoteOpenXR</ProjectName>
     <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
   </PropertyGroup>
-  <Import Project="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/14.26/Microsoft.VCToolsVersion.14.26.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -253,6 +252,6 @@
     <Import Project="packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets" Condition="Exists('packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets')" />
     <Import Project="packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets" Condition="Exists('packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.4.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.4.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.5.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.5.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
   </ImportGroup>
 </Project>
