@@ -17,11 +17,21 @@ namespace DXHelper
         void HandleDeviceLost();
         void Present(winrt::Windows::Graphics::Holographic::HolographicFrame frame);
 
+        enum class WaitResult
+        {
+            Success,
+            Failure,
+            DeviceLost
+        };
+        WaitResult WaitForNextFrameReady();
+
         void SetWindow(const winrt::Windows::UI::Core::CoreWindow& window);
 
         void EnsureCameraResources(
             winrt::Windows::Graphics::Holographic::HolographicFrame frame,
-            winrt::Windows::Graphics::Holographic::HolographicFramePrediction prediction);
+            winrt::Windows::Graphics::Holographic::HolographicFramePrediction prediction,
+            winrt::Windows::Perception::Spatial::SpatialCoordinateSystem focusPointCoordinateSystem,
+            winrt::Windows::Foundation::Numerics::float3 focusPointPosition);
 
         // Holographic accessors.
         template <typename LCallback>
@@ -56,15 +66,6 @@ namespace DXHelper
 
         void UnregisterHolographicEventHandlers();
 
-        enum class WaitResult
-        {
-            Success,
-            Failure,
-            DeviceLost
-        };
-
-        WaitResult WaitForNextFrameReady(winrt::Windows::Graphics::Holographic::HolographicFrame frame);
-
         // Direct3D interop objects.
         winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_d3dInteropDevice;
 
@@ -73,6 +74,7 @@ namespace DXHelper
 
         bool m_useLegacyWaitBehavior = false;
         bool m_nextPresentMustWait = false;
+        bool m_firstFramePresented = false;
 
         // Back buffer resources, etc. for attached holographic cameras.
         std::map<UINT32, std::unique_ptr<CameraResources>> m_cameraResources;

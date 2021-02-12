@@ -445,9 +445,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header" style="max-width: 100;">
 <h1>OpenXR Remoting Extensions</h1>
 <div class="details">
-<span id="author" class="author">Copyright (c) 2020 Microsoft. All rights reserved.</span><br>
-<span id="revnumber">version 1.0.0,</span>
-<span id="revdate">Fri, 20 Nov 2020</span>
+<span id="author" class="author">Copyright (c) 20201 Microsoft. All rights reserved.</span><br>
+<span id="revnumber">version 2.0.0,</span>
+<span id="revdate">Fri, 5 Feb 2021</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -481,7 +481,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </dd>
 <dt class="hdlist1"><strong>Revision</strong></dt>
 <dd>
-<p>1</p>
+<p>2</p>
 </dd>
 <dt class="hdlist1"><strong>Extension and Version Dependencies</strong></dt>
 <dd>
@@ -499,7 +499,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <dl>
 <dt class="hdlist1"><strong>Last Modified Date</strong></dt>
 <dd>
-<p>2020-11-20</p>
+<p>2021-02-05</p>
 </dd>
 <dt class="hdlist1"><strong>IP Status</strong></dt>
 <dd>
@@ -510,7 +510,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Mark Keinz, Microsoft<br>
 Florian Bagar, Microsoft<br>
 Sohini Banerjee, Microsoft<br>
-Felix Reeh, Microsoft<br></p>
+Felix Reeh, Microsoft<br>
+Hanaa Elghobashi, Microsoft<br>
+Vincent Musch, Microsoft<br></p>
 </dd>
 </dl>
 </div>
@@ -558,7 +560,7 @@ before enumerating the device properties.</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <a href="#xrRemotingSetContextPropertiesMSFT">xrRemotingSetContextPropertiesMSFT</a> structure is defined as:</p>
+<p>The remoting configuration parameters can be set via the <a href="#xrRemotingSetContextPropertiesMSFT">xrRemotingSetContextPropertiesMSFT</a> function which is defined as:</p>
 </div>
 <div id="xrRemotingSetContextPropertiesMSFT" class="paragraph">
 <p></p>
@@ -577,10 +579,10 @@ before enumerating the device properties.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is the handle of the instance from which to get the information</p>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
 </li>
 <li>
-<p><code>systemId</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> of the current system</p>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
 <p><code>contextProperties</code> is the remote context properties like the max bitrate, video codec etc. to use for the connection.</p>
@@ -590,7 +592,7 @@ before enumerating the device properties.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>This configuration must happen before the actual connection attempt in <a href="#xrRemotingConnectMSFT">xrRemotingConnectMSFT</a></p>
+<p>The configuration must be set before the actual connection attempt, either via <a href="#xrRemotingConnectMSFT">xrRemotingConnectMSFT</a> or <a href="#xrRemotingListenMSFT">xrRemotingListenMSFT</a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -734,7 +736,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <a href="#XrRemotingVideoCodecMSFT">XrRemotingVideoCodecMSFT</a> describes the preferred video codec to use for the connection</p>
+<p>The <a href="#XrRemotingVideoCodecMSFT">XrRemotingVideoCodecMSFT</a> describes the preferred video codec to use for the connection.</p>
 </div>
 <div id="XrRemotingVideoCodecMSFT" class="paragraph">
 <p></p>
@@ -811,10 +813,13 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p><strong>Set up Remote Context for connecting</strong></p>
+</div>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>Connect to a player running in network server mode with/without using an encrypted and authenticated connection method as requested in the <a href="#XrRemotingConnectInfoMSFT">XrRemotingConnectInfoMSFT</a></p>
+<p>Use the <a href="#xrRemotingConnectMSFT">xrRemotingConnectMSFT</a> function to connect to a player running in network server mode with/without using an encrypted and authenticated connection method as specified in the <a href="#XrRemotingConnectInfoMSFT">XrRemotingConnectInfoMSFT</a> structure.</p>
 </div>
 <div id="xrRemotingConnectMSFT" class="paragraph">
 <p></p>
@@ -833,10 +838,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is the handle of the instance from which to get the information</p>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
 </li>
 <li>
-<p><code>systemId</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> of the current system</p>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
 <p><code>connectInfo</code> is the <a href="#XrRemotingConnectInfoMSFT">XrRemotingConnectInfoMSFT</a> properties/settings to use for the connection</p>
@@ -844,9 +849,6 @@ No such structures are defined in core OpenXR or this extension.</p>
 </ul>
 </div>
 </div>
-</div>
-<div class="paragraph">
-<p>This connection attempt should only happen after the remote context properties has been configured via a call to <a href="#xrRemotingSetContextPropertiesMSFT">xrRemotingSetContextPropertiesMSFT</a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -984,10 +986,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </div>
 <div class="paragraph">
-<p><strong>Set up Remote Context</strong></p>
+<p><strong>Set up Remote Context for listening</strong></p>
 </div>
 <div class="paragraph">
-<p>Set up the remote context, in network server mode, to listen for client connections.</p>
+<p>Use the <a href="#xrRemotingListenMSFT">xrRemotingListenMSFT</a> function to set up the remote context in network server mode to listen for client connections.</p>
 </div>
 <div class="openblock">
 <div class="content">
@@ -1008,20 +1010,17 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is the handle of the instance from which to get the information</p>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
 </li>
 <li>
-<p><code>systemId</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> of the current system</p>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
-<p><code>listenInfo</code> is the <a href="#XrRemotingListenInfoMSFT">XrRemotingListenInfoMSFT</a> properties/settings to use for the connection</p>
+<p><code>listenInfo</code> is the <a href="#XrRemotingListenInfoMSFT">XrRemotingListenInfoMSFT</a> properties/settings to use for the connection.</p>
 </li>
 </ul>
 </div>
 </div>
-</div>
-<div class="paragraph">
-<p>This listen attempt should only happen after the remote context properties has been configured via a call to <a href="#xrRemotingSetContextPropertiesMSFT">xrRemotingSetContextPropertiesMSFT</a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -1166,7 +1165,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </div>
 <div class="paragraph">
-<p><strong>Close current connection and stop listening</strong></p>
+<p><strong>Close current connection</strong></p>
+</div>
+<div class="paragraph">
+<p>Use the <a href="#xrRemotingDisconnectMSFT">xrRemotingDisconnectMSFT</a> function to close a previously established connection. The connection is closed independet of whether <a href="#xrRemotingListenMSFT">xrRemotingListenMSFT</a> or <a href="#xrRemotingConnectMSFT">xrRemotingConnectMSFT</a> was used to establish the connection in the first place. Additionally, in case of <a href="#xrRemotingListenMSFT">xrRemotingListenMSFT</a>, listening for incomming clients gets stopped as well.</p>
 </div>
 <div class="openblock">
 <div class="content">
@@ -1187,13 +1189,13 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is the handle of the instance from which to get the information</p>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
 </li>
 <li>
-<p><code>systemId</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> of the current system</p>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
-<p><code>disconnectInfo</code> is the <a href="#XrRemotingDisconnectInfoMSFT">XrRemotingDisconnectInfoMSFT</a> settings to use while closing current connection</p>
+<p><code>disconnectInfo</code> is the <a href="#XrRemotingDisconnectInfoMSFT">XrRemotingDisconnectInfoMSFT</a> settings to use while closing current connection.</p>
 </li>
 </ul>
 </div>
@@ -1319,6 +1321,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="paragraph">
 <p><strong>Query connection state</strong></p>
 </div>
+<div class="paragraph">
+<p>At any time the <a href="#xrRemotingGetConnectionStateMSFT">xrRemotingGetConnectionStateMSFT</a> function can be used to query the current connection state.</p>
+</div>
 <div class="openblock">
 <div class="content">
 <div id="xrRemotingGetConnectionStateMSFT" class="paragraph">
@@ -1339,16 +1344,16 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is the handle of the instance from which to get the information</p>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
 </li>
 <li>
-<p><code>systemId</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> of the current system</p>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
-<p><code>connectionState</code> is the current connection state <a href="#XrRemotingConnectionStateMSFT">XrRemotingConnectionStateMSFT</a></p>
+<p><code>connectionState</code> is the current connection state <a href="#XrRemotingConnectionStateMSFT">XrRemotingConnectionStateMSFT</a>.</p>
 </li>
 <li>
-<p><code>lastDisconnectReason</code> is the last <a href="#XrRemotingDisconnectReasonMSFT">XrRemotingDisconnectReasonMSFT</a></p>
+<p><code>lastDisconnectReason</code> is the last <a href="#XrRemotingDisconnectReasonMSFT">XrRemotingDisconnectReasonMSFT</a>.</p>
 </li>
 </ul>
 </div>
@@ -1424,7 +1429,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <a href="#XrRemotingConnectionStateMSFT">XrRemotingConnectionStateMSFT</a> describes the current connection state</p>
+<p>The <a href="#XrRemotingConnectionStateMSFT">XrRemotingConnectionStateMSFT</a> enumeration describes the current connection state.</p>
 </div>
 <div id="XrRemotingConnectionStateMSFT" class="paragraph">
 <p></p>
@@ -1466,7 +1471,7 @@ all communication channels established (Client/Server).</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <a href="#XrRemotingDisconnectReasonMSFT">XrRemotingDisconnectReasonMSFT</a> describes the reason for why the connection disconnected</p>
+<p>The <a href="#XrRemotingDisconnectReasonMSFT">XrRemotingDisconnectReasonMSFT</a> enumeration describes the reason for why the connection disconnected.</p>
 </div>
 <div id="XrRemotingDisconnectReasonMSFT" class="paragraph">
 <p></p>
@@ -1818,6 +1823,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="paragraph">
 <p><strong>Set client callbacks for secure connection</strong></p>
 </div>
+<div class="paragraph">
+<p>To setup client callbacks when running the Remote Context in client mode, via the <a href="#xrRemotingConnectMSFT">xrRemotingConnectMSFT</a> function, use <a href="#xrRemotingSetSecureConnectionClientCallbacksMSFT">xrRemotingSetSecureConnectionClientCallbacksMSFT</a>. Also ensure that the client callbacks are enabled via the secureConnection member of the <a href="#XrRemotingConnectInfoMSFT">XrRemotingConnectInfoMSFT</a> structure.</p>
+</div>
 <div class="openblock">
 <div class="content">
 <div id="xrRemotingSetSecureConnectionClientCallbacksMSFT" class="paragraph">
@@ -1837,10 +1845,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is the handle of the instance from which to get the information</p>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
 </li>
 <li>
-<p><code>systemId</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> of the current system</p>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
 <p><code>secureConnectionClientCallbacks</code> points to an <a href="#XrRemotingSecureConnectionClientCallbacksMSFT">XrRemotingSecureConnectionClientCallbacksMSFT</a>
@@ -2444,6 +2452,9 @@ host presenting the certificate does not match the certificate subject.</p>
 <div class="paragraph">
 <p><strong>Set server callbacks for secure connection</strong></p>
 </div>
+<div class="paragraph">
+<p>To setup server callbacks when running the Remote Context in sever mode, via the <a href="#xrRemotingListenMSFT">xrRemotingListenMSFT</a> function, use <a href="#xrRemotingSetSecureConnectionServerCallbacksMSFT">xrRemotingSetSecureConnectionServerCallbacksMSFT</a>. Also ensure that the server callbacks are enabled via the secureConnection member of the <a href="#XrRemotingListenInfoMSFT">XrRemotingListenInfoMSFT</a> structure.</p>
+</div>
 <div class="openblock">
 <div class="content">
 <div id="xrRemotingSetSecureConnectionServerCallbacksMSFT" class="paragraph">
@@ -2463,13 +2474,13 @@ host presenting the certificate does not match the certificate subject.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is the handle of the instance from which to get the information</p>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
 </li>
 <li>
-<p><code>systemId</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> of the current system</p>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
-<p><code>secureConnectionServerCallbacks</code> is the callback interfaces that needs to be passed for the server network context</p>
+<p><code>secureConnectionServerCallbacks</code> is the callback interfaces that needs to be passed for the server network context.</p>
 </li>
 </ul>
 </div>
@@ -2576,13 +2587,13 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>context</code> is a user-defined pointer-size value which will be passed verbatim as a parameter to the callback functions. May be NULL.</p>
 </li>
 <li>
-<p><code>requestServerCertificateCallback</code> is the callback interface that needs to be passed when the server network context requests a certificate</p>
+<p><code>requestServerCertificateCallback</code> is the callback interface that needs to be passed when the server network context requests a certificate.</p>
 </li>
 <li>
-<p><code>validateAuthenticationTokenCallback</code> is the callback interface that needs to be passed when the server network context needs to validate a client&#8217;s authentication token</p>
+<p><code>validateAuthenticationTokenCallback</code> is the callback interface that needs to be passed when the server network context needs to validate a client&#8217;s authentication token.</p>
 </li>
 <li>
-<p><code>authenticationRealm</code> is the name of the current authentication realm</p>
+<p><code>authenticationRealm</code> is the name of the current authentication realm.</p>
 </li>
 </ul>
 </div>
@@ -2886,6 +2897,1129 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_custom_data_channels"><a class="anchor" href="#_custom_data_channels"></a>1.1.2. Custom data channels</h4>
+<div class="paragraph">
+<p>Custom data channels can be used to send additional user specific data over an established remoting connection.</p>
+</div>
+<div class="paragraph">
+<p><strong>Create custom data channels</strong></p>
+</div>
+<div class="paragraph">
+<p>After a connection is successfully established, new data channels can be created via the <a href="#xrCreateRemotingDataChannelMSFT">xrCreateRemotingDataChannelMSFT</a> function. In case a data channel gets created by the player side, the remote side is notified with the <a href="#XrEventDataRemotingDataChannelCreatedMSFT">XrEventDataRemotingDataChannelCreatedMSFT</a> event structure. The initial <a href="#XrRemotingDataChannelStatusMSFT">XrRemotingDataChannelStatusMSFT</a> state after calling <a href="#xrCreateRemotingDataChannelMSFT">xrCreateRemotingDataChannelMSFT</a> is <code>XR_REMOTING_DATA_CHANNEL_STATUS_OPEN_PENDING_MSFT</code>. Once the data channel has been fully established the channel`s state switches to <code>XR_REMOTING_DATA_CHANNEL_STATUS_OPENED_MSFT</code>.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#xrCreateRemotingDataChannelMSFT">xrCreateRemotingDataChannelMSFT</a> function is defined as:</p>
+</div>
+<div id="xrCreateRemotingDataChannelMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrCreateRemotingDataChannelMSFT(
+    XrInstance                                  instance,
+    XrSystemId                                  systemId,
+    const XrRemotingDataChannelCreateInfoMSFT*  channelInfo,
+    XrRemotingDataChannelMSFT*                  channel);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
+</li>
+<li>
+<p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
+</li>
+<li>
+<p><code>channelInfo</code> is the <a href="#XrRemotingDataChannelCreateInfoMSFT">XrRemotingDataChannelCreateInfoMSFT</a> struct with the channel creation parameters.</p>
+</li>
+<li>
+<p><code>channel</code> is the returned <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrCreateRemotingDataChannelMSFT-extension-notenabled" href="#VUID-xrCreateRemotingDataChannelMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrCreateRemotingDataChannelMSFT">xrCreateRemotingDataChannelMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrCreateRemotingDataChannelMSFT-instance-parameter" href="#VUID-xrCreateRemotingDataChannelMSFT-instance-parameter"></a> <code>instance</code> <strong class="purple">must</strong> be a valid <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrCreateRemotingDataChannelMSFT-channelInfo-parameter" href="#VUID-xrCreateRemotingDataChannelMSFT-channelInfo-parameter"></a> <code>channelInfo</code> <strong class="purple">must</strong> be a pointer to a valid <a href="#XrRemotingDataChannelCreateInfoMSFT">XrRemotingDataChannelCreateInfoMSFT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-xrCreateRemotingDataChannelMSFT-channel-parameter" href="#VUID-xrCreateRemotingDataChannelMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a pointer to an <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SYSTEM_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_ID_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_ID_ALREADY_IN_USE_MSFT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingDataChannelCreateInfoMSFT">XrRemotingDataChannelCreateInfoMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrRemotingDataChannelCreateInfoMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingDataChannelCreateInfoMSFT {
+    XrStructureType                      type;
+    void*                                next;
+    XrRemotingDataChannelPriorityMSFT    channelPriority;
+    uint8_t                              channelId;
+} XrRemotingDataChannelCreateInfoMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>channelPriority</code> specifies the <a href="#XrRemotingDataChannelPriorityMSFT">XrRemotingDataChannelPriorityMSFT</a> priority.</p>
+</li>
+<li>
+<p><code>channelId</code> is the channel ID, which is used for internal operations.
+For the creation, valid channel IDs on the remote side are from 0 up to and including 63,and 64 up to and including 127 for the player side.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrRemotingDataChannelCreateInfoMSFT-extension-notenabled" href="#VUID-XrRemotingDataChannelCreateInfoMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrRemotingDataChannelCreateInfoMSFT">XrRemotingDataChannelCreateInfoMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelCreateInfoMSFT-type-type" href="#VUID-XrRemotingDataChannelCreateInfoMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_REMOTING_DATA_CHANNEL_CREATE_INFO_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelCreateInfoMSFT-next-next" href="#VUID-XrRemotingDataChannelCreateInfoMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelCreateInfoMSFT-channelPriority-parameter" href="#VUID-XrRemotingDataChannelCreateInfoMSFT-channelPriority-parameter"></a> <code>channelPriority</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelPriorityMSFT">XrRemotingDataChannelPriorityMSFT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingDataChannelPriorityMSFT">XrRemotingDataChannelPriorityMSFT</a> describes the priority, with which data of this channel is transferred to the other side. It is defined as:</p>
+</div>
+<div id="XrRemotingDataChannelPriorityMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDataChannelPriorityMSFT {
+    XR_REMOTING_DATA_CHANNEL_PRIORITY_LOW_MSFT = 0,
+    XR_REMOTING_DATA_CHANNEL_PRIORITY_MEDIUM_MSFT = 1,
+    XR_REMOTING_DATA_CHANNEL_PRIORITY_HIGH_MSFT = 2,
+    XR_REMOTING_DATA_CHANNEL_PRIORITY_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrRemotingDataChannelPriorityMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Enumerant Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_PRIORITY_LOW_MSFT</code> represents a low data channel priority.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_PRIORITY_MEDIUM_MSFT</code> represents a medium data channel priority.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_PRIORITY_HIGH_MSFT</code> represents a high data channel priority.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> is the handle which is used to identify the data channel in subsequent operations. The handle is defined as:</p>
+</div>
+<div id="XrRemotingDataChannelMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XR_DEFINE_HANDLE(XrRemotingDataChannelMSFT)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>In case the player side creates a data channel, a <a href="#XrEventDataRemotingDataChannelCreatedMSFT">XrEventDataRemotingDataChannelCreatedMSFT</a> event structure is placed in the event queue. The structure is defined as:</p>
+</div>
+<div id="XrEventDataRemotingDataChannelCreatedMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelCreatedMSFT {
+    XrStructureType              type;
+    void*                        next;
+    uint8_t                      channelId;
+    XrRemotingDataChannelMSFT    channel;
+} XrEventDataRemotingDataChannelCreatedMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>channelId</code> is the channel ID, which is used for internal operations.</p>
+</li>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle which is used to identify the data channel in subsequent operations.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelCreatedMSFT-extension-notenabled" href="#VUID-XrEventDataRemotingDataChannelCreatedMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrEventDataRemotingDataChannelCreatedMSFT">XrEventDataRemotingDataChannelCreatedMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelCreatedMSFT-type-type" href="#VUID-XrEventDataRemotingDataChannelCreatedMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_CREATED_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelCreatedMSFT-next-next" href="#VUID-XrEventDataRemotingDataChannelCreatedMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelCreatedMSFT-channel-parameter" href="#VUID-XrEventDataRemotingDataChannelCreatedMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrEventDataRemotingDataChannelOpenedMSFT">XrEventDataRemotingDataChannelOpenedMSFT</a> event structure is placed in the event queue when the state of a previously created data channel switches from <code>XR_REMOTING_DATA_CHANNEL_STATUS_OPEN_PENDING_MSFT</code> to <code>XR_REMOTING_DATA_CHANNEL_STATUS_OPENED_MSFT</code>. The structure is defined as:</p>
+</div>
+<div id="XrEventDataRemotingDataChannelOpenedMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelOpenedMSFT {
+    XrStructureType              type;
+    void*                        next;
+    XrRemotingDataChannelMSFT    channel;
+} XrEventDataRemotingDataChannelOpenedMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle of the opened channel.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelOpenedMSFT-extension-notenabled" href="#VUID-XrEventDataRemotingDataChannelOpenedMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrEventDataRemotingDataChannelOpenedMSFT">XrEventDataRemotingDataChannelOpenedMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelOpenedMSFT-type-type" href="#VUID-XrEventDataRemotingDataChannelOpenedMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_OPENED_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelOpenedMSFT-next-next" href="#VUID-XrEventDataRemotingDataChannelOpenedMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelOpenedMSFT-channel-parameter" href="#VUID-XrEventDataRemotingDataChannelOpenedMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Send data with custom data channels</strong></p>
+</div>
+<div class="paragraph">
+<p>The <a href="#xrSendRemotingDataMSFT">xrSendRemotingDataMSFT</a> function is used to send data to the player side and is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="xrSendRemotingDataMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrSendRemotingDataMSFT(
+    XrRemotingDataChannelMSFT                   channel,
+    XrRemotingDataChannelSendDataInfoMSFT*      sendDataInfo);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle.</p>
+</li>
+<li>
+<p><code>sendDataInfo</code> is the <a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a> struct.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrSendRemotingDataMSFT-extension-notenabled" href="#VUID-xrSendRemotingDataMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrSendRemotingDataMSFT">xrSendRemotingDataMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrSendRemotingDataMSFT-channel-parameter" href="#VUID-xrSendRemotingDataMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrSendRemotingDataMSFT-sendDataInfo-parameter" href="#VUID-xrSendRemotingDataMSFT-sendDataInfo-parameter"></a> <code>sendDataInfo</code> <strong class="purple">must</strong> be a pointer to an <a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_CLOSED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_OPEN_PENDING_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_DATA_MSFT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrRemotingDataChannelSendDataInfoMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingDataChannelSendDataInfoMSFT {
+    XrStructureType    type;
+    void*              next;
+    uint8_t*           data;
+    uint32_t           size;
+    XrBool32           guaranteedDelivery;
+} XrRemotingDataChannelSendDataInfoMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>data</code> is a pointer to application-allocated memory holding the custom data.</p>
+</li>
+<li>
+<p><code>size</code> is the amount of bytes provided by the data member.</p>
+</li>
+<li>
+<p><code>guaranteedDelivery</code> is a flag to indicate whether the data delivery is guaranteed or not.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrRemotingDataChannelSendDataInfoMSFT-extension-notenabled" href="#VUID-XrRemotingDataChannelSendDataInfoMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelSendDataInfoMSFT-type-type" href="#VUID-XrRemotingDataChannelSendDataInfoMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_REMOTING_DATA_CHANNEL_SEND_DATA_INFO_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelSendDataInfoMSFT-next-next" href="#VUID-XrRemotingDataChannelSendDataInfoMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelSendDataInfoMSFT-data-parameter" href="#VUID-XrRemotingDataChannelSendDataInfoMSFT-data-parameter"></a> <code>data</code> <strong class="purple">must</strong> be a pointer to a <code>uint8_t</code> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Retrieve data with custom data channels</strong></p>
+</div>
+<div class="paragraph">
+<p>Every time data arrives via a data channel, the <a href="#XrEventDataRemotingDataChannelDataReceivedMSFT">XrEventDataRemotingDataChannelDataReceivedMSFT</a> event structure is placed into the event queue. The event structure is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrEventDataRemotingDataChannelDataReceivedMSFT">XrEventDataRemotingDataChannelDataReceivedMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrEventDataRemotingDataChannelDataReceivedMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelDataReceivedMSFT {
+    XrStructureType              type;
+    void*                        next;
+    XrRemotingDataChannelMSFT    channel;
+    uint32_t                     size;
+    XrRemotingPacketIdMSFT       packetId;
+} XrEventDataRemotingDataChannelDataReceivedMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle on which data was received.</p>
+</li>
+<li>
+<p><code>size</code> is the amount of bytes that was received.</p>
+</li>
+<li>
+<p><code>packetId</code> is a <a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a> handle identifing the received packet.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-extension-notenabled" href="#VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrEventDataRemotingDataChannelDataReceivedMSFT">XrEventDataRemotingDataChannelDataReceivedMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-type-type" href="#VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_DATA_RECEIVED_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-next-next" href="#VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-channel-parameter" href="#VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-packetId-parameter" href="#VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-packetId-parameter"></a> <code>packetId</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-commonparent" href="#VUID-XrEventDataRemotingDataChannelDataReceivedMSFT-commonparent"></a> Both of <code>channel</code> and <code>packetId</code> <strong class="purple">must</strong> have been created, allocated, or retrieved from the same <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a> handle is defined as:</p>
+</div>
+<div id="XrRemotingPacketIdMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XR_DEFINE_HANDLE(XrRemotingPacketIdMSFT)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Received packets can be retrieved with the <a href="#xrRetrieveRemotingDataMSFT">xrRetrieveRemotingDataMSFT</a> function which is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="xrRetrieveRemotingDataMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRetrieveRemotingDataMSFT(
+    XrRemotingDataChannelMSFT                   channel,
+    XrRemotingPacketIdMSFT                      packetId,
+    uint32_t                                    dataBytesCapacityInput,
+    uint32_t*                                   dataBytesCountOutput,
+    uint8_t*                                    data);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
+</li>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle from which data should be retrieved.</p>
+</li>
+<li>
+<p><code>packetId</code> is the <a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a> handle from the <a href="#XrEventDataRemotingDataChannelDataReceivedMSFT">XrEventDataRemotingDataChannelDataReceivedMSFT</a> event.</p>
+</li>
+<li>
+<p><code>dataBytesCapacityInput</code> is the capacity of the data bytes array, or 0 to indicate a request to retrieve the required capacity.</p>
+</li>
+<li>
+<p><code>dataBytesCountOutput</code> is a pointer to the count of data bytes, or a pointer to the required capacity in the case that dataBytesCapacityInput is 0.</p>
+</li>
+<li>
+<p><code>data</code> is a pointer to an array of uint8_t, but can be null if dataBytesCapacityInput is 0.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrRetrieveRemotingDataMSFT-extension-notenabled" href="#VUID-xrRetrieveRemotingDataMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrRetrieveRemotingDataMSFT">xrRetrieveRemotingDataMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingDataMSFT-channel-parameter" href="#VUID-xrRetrieveRemotingDataMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingDataMSFT-packetId-parameter" href="#VUID-xrRetrieveRemotingDataMSFT-packetId-parameter"></a> <code>packetId</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingDataMSFT-dataBytesCountOutput-parameter" href="#VUID-xrRetrieveRemotingDataMSFT-dataBytesCountOutput-parameter"></a> <code>dataBytesCountOutput</code> <strong class="purple">must</strong> be a pointer to a <code>uint32_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingDataMSFT-data-parameter" href="#VUID-xrRetrieveRemotingDataMSFT-data-parameter"></a> <code>data</code> <strong class="purple">must</strong> be a pointer to a <code>uint8_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingDataMSFT-commonparent" href="#VUID-xrRetrieveRemotingDataMSFT-commonparent"></a> Both of <code>channel</code> and <code>packetId</code> <strong class="purple">must</strong> have been created, allocated, or retrieved from the same <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_VALIDATION_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_CLOSED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_OPEN_PENDING_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Get custom data channel state</strong></p>
+</div>
+<div class="paragraph">
+<p>The <a href="#xrGetRemotingDataChannelStateMSFT">xrGetRemotingDataChannelStateMSFT</a> function can be used to query the data channel state and is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="xrGetRemotingDataChannelStateMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrGetRemotingDataChannelStateMSFT(
+    XrRemotingDataChannelMSFT                   channel,
+    XrRemotingDataChannelStateMSFT*             channelState);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle for the data channel of interest.</p>
+</li>
+<li>
+<p><code>channelState</code> is the returned <a href="#XrRemotingDataChannelStateMSFT">XrRemotingDataChannelStateMSFT</a> struct.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrGetRemotingDataChannelStateMSFT-extension-notenabled" href="#VUID-xrGetRemotingDataChannelStateMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrGetRemotingDataChannelStateMSFT">xrGetRemotingDataChannelStateMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrGetRemotingDataChannelStateMSFT-channel-parameter" href="#VUID-xrGetRemotingDataChannelStateMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrGetRemotingDataChannelStateMSFT-channelState-parameter" href="#VUID-xrGetRemotingDataChannelStateMSFT-channelState-parameter"></a> <code>channelState</code> <strong class="purple">must</strong> be a pointer to an <a href="#XrRemotingDataChannelStateMSFT">XrRemotingDataChannelStateMSFT</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingDataChannelStateMSFT">XrRemotingDataChannelStateMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrRemotingDataChannelStateMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingDataChannelStateMSFT {
+    XrStructureType                    type;
+    void*                              next;
+    uint32_t                           sendQueueSize;
+    XrRemotingDataChannelStatusMSFT    connectionStatus;
+} XrRemotingDataChannelStateMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>sendQueueSize</code> is the total number of bytes which have not yet been sent.</p>
+</li>
+<li>
+<p><code>connectionStatus</code> is the <a href="#XrRemotingDataChannelStatusMSFT">XrRemotingDataChannelStatusMSFT</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrRemotingDataChannelStateMSFT-extension-notenabled" href="#VUID-XrRemotingDataChannelStateMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrRemotingDataChannelStateMSFT">XrRemotingDataChannelStateMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelStateMSFT-type-type" href="#VUID-XrRemotingDataChannelStateMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_REMOTING_DATA_CHANNEL_STATE_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelStateMSFT-next-next" href="#VUID-XrRemotingDataChannelStateMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingDataChannelStateMSFT-connectionStatus-parameter" href="#VUID-XrRemotingDataChannelStateMSFT-connectionStatus-parameter"></a> <code>connectionStatus</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelStatusMSFT">XrRemotingDataChannelStatusMSFT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingDataChannelStatusMSFT">XrRemotingDataChannelStatusMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrRemotingDataChannelStatusMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDataChannelStatusMSFT {
+    XR_REMOTING_DATA_CHANNEL_STATUS_OPEN_PENDING_MSFT = 0,
+    XR_REMOTING_DATA_CHANNEL_STATUS_OPENED_MSFT = 1,
+    XR_REMOTING_DATA_CHANNEL_STATUS_CLOSED_MSFT = 2,
+    XR_REMOTING_DATA_CHANNEL_STATUS_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrRemotingDataChannelStatusMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Enumerant Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_STATUS_OPEN_PENDING_MSFT</code> represents that the channel is created but not ready to be used for sending and receiving data yet. Only calls to <a href="#xrGetRemotingDataChannelStateMSFT">xrGetRemotingDataChannelStateMSFT</a> and <a href="#xrDestroyRemotingDataChannelMSFT">xrDestroyRemotingDataChannelMSFT</a> are allowed.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_STATUS_OPENED_MSFT</code> represents that the channel is fully functional and can be used for sending and receiving data.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_STATUS_CLOSED_MSFT</code> represents that the channel is closed and cannot be used for sending and receiving data. Only calls to <a href="#xrGetRemotingDataChannelStateMSFT">xrGetRemotingDataChannelStateMSFT</a> and <a href="#xrDestroyRemotingDataChannelMSFT">xrDestroyRemotingDataChannelMSFT</a> are allowed.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Additional custom data channel events</strong></p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrEventDataRemotingDataChannelClosedMSFT">XrEventDataRemotingDataChannelClosedMSFT</a> will be placed in the event queue in case the player side closes or destroys the data channel. The data channel state switches to <code>XR_REMOTING_DATA_CHANNEL_STATUS_CLOSED_MSFT</code>. For a closed data channel the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle is still valid. The <a href="#XrEventDataRemotingDataChannelClosedMSFT">XrEventDataRemotingDataChannelClosedMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrEventDataRemotingDataChannelClosedMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelClosedMSFT {
+    XrStructureType                          type;
+    void*                                    next;
+    XrRemotingDataChannelMSFT                channel;
+    XrRemotingDataChannelClosedReasonMSFT    closedReason;
+} XrEventDataRemotingDataChannelClosedMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle that has been closed.</p>
+</li>
+<li>
+<p><code>closedReason</code> is the <a href="#XrRemotingDataChannelClosedReasonMSFT">XrRemotingDataChannelClosedReasonMSFT</a> structure why the data channel has been closed.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelClosedMSFT-extension-notenabled" href="#VUID-XrEventDataRemotingDataChannelClosedMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrEventDataRemotingDataChannelClosedMSFT">XrEventDataRemotingDataChannelClosedMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelClosedMSFT-type-type" href="#VUID-XrEventDataRemotingDataChannelClosedMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_CLOSED_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelClosedMSFT-next-next" href="#VUID-XrEventDataRemotingDataChannelClosedMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelClosedMSFT-channel-parameter" href="#VUID-XrEventDataRemotingDataChannelClosedMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingDataChannelClosedMSFT-closedReason-parameter" href="#VUID-XrEventDataRemotingDataChannelClosedMSFT-closedReason-parameter"></a> <code>closedReason</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelClosedReasonMSFT">XrRemotingDataChannelClosedReasonMSFT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingDataChannelClosedReasonMSFT">XrRemotingDataChannelClosedReasonMSFT</a> structur is defined as:</p>
+</div>
+<div id="XrRemotingDataChannelClosedReasonMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDataChannelClosedReasonMSFT {
+    XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_PROTOCOL_MSFT = 0,
+    XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_ERROR_MSFT = 1,
+    XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrRemotingDataChannelClosedReasonMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Enumerant Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_PROTOCOL_MSFT</code> represents that the channel was closed by the peer.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_ERROR_MSFT</code> represents that the channel was closed due to an unknown reason(remoting connection lost, etc.).</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Destroy custom data channels</strong></p>
+</div>
+<div class="paragraph">
+<p>A data channel can be destroyed with <a href="#xrDestroyRemotingDataChannelMSFT">xrDestroyRemotingDataChannelMSFT</a>. The <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle is invalid after the <a href="#xrDestroyRemotingDataChannelMSFT">xrDestroyRemotingDataChannelMSFT</a> call and the data channel handle must not be used afterwards.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#xrDestroyRemotingDataChannelMSFT">xrDestroyRemotingDataChannelMSFT</a> structure is defined as:</p>
+</div>
+<div id="xrDestroyRemotingDataChannelMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrDestroyRemotingDataChannelMSFT(
+    XrRemotingDataChannelMSFT                   channel);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle that should be destroyed.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrDestroyRemotingDataChannelMSFT-extension-notenabled" href="#VUID-xrDestroyRemotingDataChannelMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrDestroyRemotingDataChannelMSFT">xrDestroyRemotingDataChannelMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrDestroyRemotingDataChannelMSFT-channel-parameter" href="#VUID-xrDestroyRemotingDataChannelMSFT-channel-parameter"></a> <code>channel</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="paragraph">
 <p><strong>New Object Types</strong></p>
 </div>
@@ -2945,6 +4079,27 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><code>XR_TYPE_REMOTING_SECURE_CONNECTION_SERVER_CALLBACKS_MSFT</code></p>
 </li>
+<li>
+<p><code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_CREATED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_OPENED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_DATA_RECEIVED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_EVENT_DATA_REMOTING_DATA_CHANNEL_CLOSED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_REMOTING_DATA_CHANNEL_CREATE_INFO_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_REMOTING_DATA_CHANNEL_STATE_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_REMOTING_DATA_CHANNEL_SEND_DATA_INFO_MSFT</code></p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -2964,13 +4119,25 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><code>XR_ERROR_REMOTING_DEPTH_BUFFER_STREAM_DISABLED_MSFT</code></p>
 </li>
-</ul>
-</div>
-<div class="paragraph">
-<p><strong>New Enums</strong></p>
-</div>
-<div class="ulist">
-<ul>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_ID_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_CLOSED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_OPEN_PENDING_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_ID_ALREADY_IN_USE_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_DATA_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT</code>
+<strong>New Enums</strong></p>
+</li>
 <li>
 <p><a href="#XrRemotingDisconnectReasonMSFT">XrRemotingDisconnectReasonMSFT</a></p>
 </li>
@@ -2985,6 +4152,15 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p><a href="#XrRemotingCertificateNameValidationResultMSFT">XrRemotingCertificateNameValidationResultMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingDataChannelPriorityMSFT">XrRemotingDataChannelPriorityMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingDataChannelClosedReasonMSFT">XrRemotingDataChannelClosedReasonMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingDataChannelStatusMSFT">XrRemotingDataChannelStatusMSFT</a></p>
 </li>
 </ul>
 </div>
@@ -3038,6 +4214,27 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><a href="#XrRemotingSecureConnectionServerCallbacksMSFT">XrRemotingSecureConnectionServerCallbacksMSFT</a></p>
 </li>
+<li>
+<p><a href="#XrRemotingDataChannelCreateInfoMSFT">XrRemotingDataChannelCreateInfoMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingDataChannelStateMSFT">XrRemotingDataChannelStateMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrEventDataRemotingDataChannelCreatedMSFT">XrEventDataRemotingDataChannelCreatedMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrEventDataRemotingDataChannelOpenedMSFT">XrEventDataRemotingDataChannelOpenedMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrEventDataRemotingDataChannelDataReceivedMSFT">XrEventDataRemotingDataChannelDataReceivedMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrEventDataRemotingDataChannelClosedMSFT">XrEventDataRemotingDataChannelClosedMSFT</a></p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -3066,6 +4263,21 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><a href="#xrRemotingSetSecureConnectionServerCallbacksMSFT">xrRemotingSetSecureConnectionServerCallbacksMSFT</a></p>
 </li>
+<li>
+<p><a href="#xrCreateRemotingDataChannelMSFT">xrCreateRemotingDataChannelMSFT</a></p>
+</li>
+<li>
+<p><a href="#xrDestroyRemotingDataChannelMSFT">xrDestroyRemotingDataChannelMSFT</a></p>
+</li>
+<li>
+<p><a href="#xrGetRemotingDataChannelStateMSFT">xrGetRemotingDataChannelStateMSFT</a></p>
+</li>
+<li>
+<p><a href="#xrSendRemotingDataMSFT">xrSendRemotingDataMSFT</a></p>
+</li>
+<li>
+<p><a href="#xrRetrieveRemotingDataMSFT">xrRetrieveRemotingDataMSFT</a></p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -3078,6 +4290,19 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p>PFN_xrRemotingValidateServerCertificateCallbackMSFT</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>New Handles</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a></p>
 </li>
 </ul>
 </div>
@@ -3102,8 +4327,17 @@ No such structures are defined in core OpenXR or this extension.</p>
 </ul>
 </div>
 </li>
+<li>
+<p>Revision 2, 2021-02-05 (Hanaa Elghobashi, Vincent Musch)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Custom data channels</p>
+</li>
 </ul>
 </div>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">

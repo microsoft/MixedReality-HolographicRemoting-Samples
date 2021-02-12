@@ -43,7 +43,7 @@ namespace xr::math {
         constexpr bool IsPoseTracked(const XrViewState& viewState);
 
         template <typename Quaternion, typename Vector3>
-        constexpr XrPosef MakePose(const Quaternion& orientation, const Vector3& position);
+        inline XrPosef MakePose(const Quaternion& orientation, const Vector3& position);
     } // namespace Pose
 
     namespace Quaternion {
@@ -189,6 +189,36 @@ namespace xr::math {
     DEFINE_CAST(DirectX::XMFLOAT4, XrQuaternionf);
     DEFINE_CAST(DirectX::XMFLOAT2, XrExtent2Df);
 #undef DEFINE_CAST
+
+#define VECTOR2F_OPERATOR(op)                                                    \
+    constexpr XrVector2f operator op(const XrVector2f& a, const XrVector2f& b) { \
+        return XrVector2f{a.x op b.x, a.y op b.y};                               \
+    }
+    VECTOR2F_OPERATOR(+);
+    VECTOR2F_OPERATOR(-);
+    VECTOR2F_OPERATOR(*);
+    VECTOR2F_OPERATOR(/);
+#undef VECTOR2F_OPERATOR
+
+#define VECTOR2F_OPERATOR(op)                                        \
+    constexpr XrVector2f operator op(const XrVector2f& a, float s) { \
+        return XrVector2f{a.x op s, a.y op s};                       \
+    }
+    VECTOR2F_OPERATOR(+);
+    VECTOR2F_OPERATOR(-);
+    VECTOR2F_OPERATOR(*);
+    VECTOR2F_OPERATOR(/);
+#undef VECTOR2F_OPERATOR
+
+#define VECTOR2F_OPERATOR(op)                                        \
+    constexpr XrVector2f operator op(float s, const XrVector2f& a) { \
+        return XrVector2f{s op a.x, s op a.y};                       \
+    }
+    VECTOR2F_OPERATOR(+);
+    VECTOR2F_OPERATOR(-);
+    VECTOR2F_OPERATOR(*);
+    VECTOR2F_OPERATOR(/);
+#undef VECTOR2F_OPERATOR
 
 #define VECTOR3F_OPERATOR(op)                                                    \
     constexpr XrVector3f operator op(const XrVector3f& a, const XrVector3f& b) { \
@@ -345,26 +375,31 @@ namespace xr::math {
             return c;
         }
 
-        constexpr bool IsPoseValid(const XrSpaceLocation& spaceLocation) {
+        constexpr bool IsPoseValid(XrSpaceLocationFlags locationFlags) {
             constexpr XrSpaceLocationFlags PoseValidFlags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT;
-            return (spaceLocation.locationFlags & PoseValidFlags) == PoseValidFlags;
+            return (locationFlags & PoseValidFlags) == PoseValidFlags;
+        }
+
+        constexpr bool IsPoseTracked(XrSpaceLocationFlags locationFlags) {
+            constexpr XrSpaceLocationFlags PoseTrackedFlags =
+                XR_SPACE_LOCATION_POSITION_TRACKED_BIT | XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT;
+            return (locationFlags & PoseTrackedFlags) == PoseTrackedFlags;
+        }
+
+        constexpr bool IsPoseValid(const XrSpaceLocation& spaceLocation) {
+            return IsPoseValid(spaceLocation.locationFlags);
         }
 
         constexpr bool IsPoseTracked(const XrSpaceLocation& spaceLocation) {
-            constexpr XrSpaceLocationFlags PoseTrackedFlags =
-                XR_SPACE_LOCATION_POSITION_TRACKED_BIT | XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT;
-            return (spaceLocation.locationFlags & PoseTrackedFlags) == PoseTrackedFlags;
+            return IsPoseTracked(spaceLocation.locationFlags);
         }
 
         constexpr bool IsPoseValid(const XrHandJointLocationEXT& jointLocation) {
-            constexpr XrSpaceLocationFlags PoseValidFlags = XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT;
-            return (jointLocation.locationFlags & PoseValidFlags) == PoseValidFlags;
+            return IsPoseValid(jointLocation.locationFlags);
         }
 
         constexpr bool IsPoseTracked(const XrHandJointLocationEXT& jointLocation) {
-            constexpr XrSpaceLocationFlags PoseTrackedFlags =
-                XR_SPACE_LOCATION_POSITION_TRACKED_BIT | XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT;
-            return (jointLocation.locationFlags & PoseTrackedFlags) == PoseTrackedFlags;
+            return IsPoseTracked(jointLocation.locationFlags);
         }
 
         constexpr bool IsPoseValid(const XrViewState& viewState) {
@@ -378,8 +413,8 @@ namespace xr::math {
         }
 
         template <typename Quaternion, typename Vector3>
-        constexpr XrPosef MakePose(const Quaternion& orientation, const Vector3& position) {
-            return XrPosef{orientation.x, orientation.y, orientation.z, orientation.w, position.x, position.y, position.z};
+        inline XrPosef MakePose(const Quaternion& orientation, const Vector3& position) {
+            return XrPosef{{orientation.x, orientation.y, orientation.z, orientation.w}, {position.x, position.y, position.z}};
         }
     } // namespace Pose
 

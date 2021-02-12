@@ -15,12 +15,22 @@
 //*********************************************************
 #pragma once
 
-#define FOR_EACH_SAMPLE_EXTENSION_FUNCTION(_) \
-    _(xrCreateSpatialAnchorMSFT)              \
-    _(xrCreateSpatialAnchorSpaceMSFT)         \
-    _(xrDestroySpatialAnchorMSFT)             \
-    _(xrGetD3D11GraphicsRequirementsKHR)
+#ifdef XR_USE_GRAPHICS_API_D3D11
+#define FOR_EACH_D3D11_EXTENSION_FUNCTION(_) _(xrGetD3D11GraphicsRequirementsKHR)
+#else
+#define FOR_EACH_D3D11_EXTENSION_FUNCTION(_)
+#endif
 
+#if XR_MSFT_spatial_anchor
+#define FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_) \
+    _(xrCreateSpatialAnchorMSFT)            \
+    _(xrCreateSpatialAnchorSpaceMSFT)       \
+    _(xrDestroySpatialAnchorMSFT)
+#else
+#define FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_)
+#endif
+
+#if XR_MSFT_holographic_remoting
 #define FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_) \
     _(xrRemotingSetContextPropertiesMSFT)               \
     _(xrRemotingConnectMSFT)                            \
@@ -28,7 +38,20 @@
     _(xrRemotingDisconnectMSFT)                         \
     _(xrRemotingGetConnectionStateMSFT)                 \
     _(xrRemotingSetSecureConnectionClientCallbacksMSFT) \
-    _(xrRemotingSetSecureConnectionServerCallbacksMSFT)
+    _(xrRemotingSetSecureConnectionServerCallbacksMSFT) \
+    _(xrCreateRemotingDataChannelMSFT)                  \
+    _(xrDestroyRemotingDataChannelMSFT)                 \
+    _(xrGetRemotingDataChannelStateMSFT)                \
+    _(xrSendRemotingDataMSFT)                           \
+    _(xrRetrieveRemotingDataMSFT)
+#else
+#define FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_)
+#endif
+
+#define FOR_EACH_SAMPLE_EXTENSION_FUNCTION(_) \
+    FOR_EACH_D3D11_EXTENSION_FUNCTION(_)      \
+    FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_)       \
+    FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_)
 
 #define GET_INSTANCE_PROC_ADDRESS(name) \
     (void)xrGetInstanceProcAddr(instance, #name, reinterpret_cast<PFN_xrVoidFunction*>(const_cast<PFN_##name*>(&name)));
@@ -36,13 +59,11 @@
 
 namespace xr {
     struct ExtensionDispatchTable {
-        FOR_EACH_SAMPLE_EXTENSION_FUNCTION(DEFINE_PROC_MEMBER);
-        FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(DEFINE_PROC_MEMBER);
+        FOR_EACH_SAMPLE_EXTENSION_FUNCTION(DEFINE_PROC_MEMBER)
 
         ExtensionDispatchTable() = default;
         void PopulateDispatchTable(XrInstance instance) {
-            FOR_EACH_SAMPLE_EXTENSION_FUNCTION(GET_INSTANCE_PROC_ADDRESS);
-            FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(GET_INSTANCE_PROC_ADDRESS);
+            FOR_EACH_SAMPLE_EXTENSION_FUNCTION(GET_INSTANCE_PROC_ADDRESS)
         }
     };
 } // namespace xr

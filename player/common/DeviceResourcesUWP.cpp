@@ -9,6 +9,8 @@ using namespace D2D1;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Graphics::Display;
 using namespace winrt::Windows::Graphics::Holographic;
+using namespace winrt::Windows::Perception::Spatial;
+using namespace winrt::Windows::Foundation::Numerics;
 
 using namespace DXHelper;
 
@@ -105,12 +107,22 @@ void DeviceResourcesUWP::UnregisterHolographicEventHandlers()
 // Validates the back buffer for each HolographicCamera and recreates
 // resources for back buffers that have changed.
 // Locks the set of holographic camera resources until the function exits.
-void DeviceResourcesUWP::EnsureCameraResources(HolographicFrame frame, HolographicFramePrediction prediction)
+void DeviceResourcesUWP::EnsureCameraResources(
+    HolographicFrame frame,
+    HolographicFramePrediction prediction,
+    SpatialCoordinateSystem focusPointCoordinateSystem,
+    float3 focusPointPosition)
 {
-    UseHolographicCameraResources([this, frame, prediction](std::map<UINT32, std::unique_ptr<CameraResources>>& cameraResourceMap) {
+    UseHolographicCameraResources([this, frame, prediction, focusPointCoordinateSystem, focusPointPosition](
+                                      std::map<UINT32, std::unique_ptr<CameraResources>>& cameraResourceMap) {
         for (HolographicCameraPose const& cameraPose : prediction.CameraPoses())
         {
             HolographicCameraRenderingParameters renderingParameters = frame.GetRenderingParameters(cameraPose);
+            if (focusPointCoordinateSystem)
+            {
+                renderingParameters.SetFocusPoint(focusPointCoordinateSystem, focusPointPosition);
+            }
+
             CameraResources* pCameraResources = cameraResourceMap[cameraPose.HolographicCamera().Id()].get();
 
             pCameraResources->CreateResourcesForBackBuffer(this, renderingParameters);
@@ -176,7 +188,7 @@ void DeviceResourcesUWP::Present(HolographicFrame frame)
 {
     if (m_nextPresentMustWait)
     {
-        switch (WaitForNextFrameReady(frame))
+        switch (WaitForNextFrameReady())
         {
             case WaitResult::Success:
                 break;
@@ -188,29 +200,17 @@ void DeviceResourcesUWP::Present(HolographicFrame frame)
         }
     }
 
-    // Note, by not waiting on PresentUsingCurrentPrediction and instead using WaitForNextFrameReadyWithHeadStart we avoid going into
-    // pipelined mode.
-    HolographicFramePresentResult presentResult =
-        frame.PresentUsingCurrentPrediction(HolographicFramePresentWaitBehavior::DoNotWaitForFrameToFinish);
+    // Note, starting with Windows SDK 10.0.17763.0 we can use WaitForNextFrameReadyWithHeadStart which allows us to avoid pipelined mode.
+    // Pipelined mode is basically one frame queue which allows an app to do more on the CPU and GPU. For Holographic Remoting pipelined
+    // mode means one additional frame of latency.
+    HolographicFramePresentWaitBehavior waitBehavior = m_useLegacyWaitBehavior
+                                                           ? HolographicFramePresentWaitBehavior::WaitForFrameToFinish
+                                                           : HolographicFramePresentWaitBehavior::DoNotWaitForFrameToFinish;
 
-    if (presentResult == HolographicFramePresentResult::Success)
-    {
-        // Only wait if the device was not removed.
-        switch (WaitForNextFrameReady(frame))
-        {
-            case WaitResult::Success:
-                m_nextPresentMustWait = false;
-                break;
-            case WaitResult::Failure:
-                m_nextPresentMustWait = true;
-                break;
-            case WaitResult::DeviceLost:
-                m_nextPresentMustWait = true;
-                HandleDeviceLost();
-                break;
-        }
-    }
-    else
+    HolographicFramePresentResult presentResult = frame.PresentUsingCurrentPrediction(waitBehavior);
+    m_firstFramePresented = true;
+
+    if (presentResult != HolographicFramePresentResult::Success)
     {
         m_nextPresentMustWait = true;
         HandleDeviceLost();
@@ -227,21 +227,18 @@ void DXHelper::DeviceResourcesUWP::OnIsAvailableChanged(
     }
 }
 
-DXHelper::DeviceResourcesUWP::WaitResult DXHelper::DeviceResourcesUWP::WaitForNextFrameReady(HolographicFrame frame)
+DXHelper::DeviceResourcesUWP::WaitResult DXHelper::DeviceResourcesUWP::WaitForNextFrameReady()
 {
+    if (m_useLegacyWaitBehavior || !m_firstFramePresented)
+    {
+        return WaitResult::Failure;
+    }
+
     try
     {
         // WaitForNextFrameReadyWithHeadStart has been added in 10.0.17763.0.
-        if (!m_useLegacyWaitBehavior)
-        {
-            m_holographicSpace.WaitForNextFrameReadyWithHeadStart(winrt::Windows::Foundation::TimeSpan(0));
-            return WaitResult::Success;
-        }
-        else
-        {
-            frame.WaitForFrameToFinish();
-            return WaitResult::Success;
-        }
+        m_holographicSpace.WaitForNextFrameReadyWithHeadStart(winrt::Windows::Foundation::TimeSpan(0));
+        return WaitResult::Success;
     }
     catch (winrt::hresult_error& err)
     {
