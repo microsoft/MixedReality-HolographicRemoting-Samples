@@ -14,9 +14,9 @@ products:
 
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-Supported Unity versions | Holographic Remoting version
-:-----------------: | :----------------: |
-Unity 2020 or higher |2.5.0 |
+| Holographic Remoting version |
+:-----------------: |
+|2.5.0 |
 
 The [Holographic Remoting Samples](https://github.com/microsoft/MixedReality-HolographicRemoting-Samples) repository hosts sample applications for [Holographic Remoting](https://docs.microsoft.com/en-us/windows/mixed-reality/holographic-remoting-player). The two remote samples show how to write an application for streaming content to a Microsoft HoloLens 2 or a PC running Windows Mixed Reality.
 
@@ -25,7 +25,7 @@ The [Holographic Remoting Samples](https://github.com/microsoft/MixedReality-Hol
 | remote | HoloLens 2, PC | Mixed Reality |
 | remote_openxr | HoloLens 2, PC | OpenXR |
 
-The player sample shows how to write an application running on your Microsoft HoloLens 2 or a Windows Mixed Reality PC and receive streamed content, using the Mixed Reality runtime. The player sample is very similar to the Holographic Remoting Player available in the store. <!-- Link? -->
+The player sample shows how to write an application running on your Microsoft HoloLens 2 or a Windows Mixed Reality PC and receive streamed content, using the Mixed Reality runtime. The player sample is very similar to the [Holographic Remoting Player available in the Microsoft store](https://www.microsoft.com/p/holographic-remoting-player/9nblggh4sv40).
 
 | Sample | Platform | Runtime |
 | ---------- | -------- | ----------- |
@@ -35,11 +35,11 @@ The player sample shows how to write an application running on your Microsoft Ho
 
 | File/folder | Description |
 |-------------|-------------|
-| `player` | Unity assets, scenes, prefabs, and scripts. |
-| `remote` | Project manifest and packages list. |
-| `remote_openxr` | Unity asset setting files. |
-| `.clang-format` | Generated user settings from Unity. |
-| `.editorconfig` | Define what to ignore at commit time. |
+| `player` | Holographic Remoting player sample code |
+| `remote` | Holographic Remoting sample with legacy API |
+| `remote_openxr` | Holographic Remoting sample with OpenXR |
+| `.clang-format` | Source code style formatting. |
+| `.editorconfig` | Standard editor setup settings. |
 | `.gitignore` | Define what data to ignore at commit time. |
 | `CODE_OF_CONDUCT.md` | Details on the Microsoft Open Source Code of Conduct. |
 | `LICENSE`   | The license for the sample. |
@@ -61,14 +61,14 @@ Clone or download this sample repository.
 ### Mixed Reality
 
 1. Open one of the ```.sln``` files either under ```player/``` or ```remote/```. 
-2. On first use, ensure to restore any missing NuGet packages. <!-- Link? -->
+2. On first use, right-click the solution and select **Restore NuGet Packages**.
 
 For more information, please refer to the official [Mixed Reality documentation](https://docs.microsoft.com/en-us/windows/mixed-reality/).
 
 ### OpenXR
 
 1. Open the ```.sln``` file under ```remote_openxr```. 
-2. On first use ensure, to restore any missing NuGet packages. <!-- Link? -->
+2. On first use, right-click the solution and select **Restore NuGet Packages**.
 
 For more information, please refer to the official [OpenXR reference](https://www.khronos.org/openxr/).
 
@@ -78,11 +78,13 @@ Build and run. When running the remote app, pass the ip address of your HoloLens
 
 ## Key concepts 
 
-<!-- Content? -->
+The `player` sample application lets you customize the remote player experience using public APIs and the latest Holographic Remoting packages. If you don't need customization, use the [pre-packaged version on the Microsoft Store](https://www.microsoft.com/p/holographic-remoting-player/9nblggh4sv40).
+
+Use the `remote` and `remote_openxr` samples to implement remoting functionality into a custom engine using C++. If you're using Unity or Unreal, this feature is already built-in.
 
 ## Best practices
 
-<!-- Content? -->
+Check out the [Holographic Remoting Player documentation](https://docs.microsoft.com/windows/mixed-reality/develop/platform-capabilities-and-apis/holographic-remoting-player) for information on quality, performance, diagnostics, and system requirements.
 
 ## Contributing
 
