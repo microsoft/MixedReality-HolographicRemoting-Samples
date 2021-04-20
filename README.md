@@ -36,8 +36,8 @@ The player sample shows how to write an application running on your Microsoft Ho
 | File/folder | Description |
 |-------------|-------------|
 | `player` | Holographic Remoting player sample code |
-| `remote` | Holographic Remoting sample with legacy API |
-| `remote_openxr` | Holographic Remoting sample with OpenXR |
+| `remote` | Holographic Remoting sample code |
+| `remote_openxr` | Holographic Remoting sample code with OpenXR |
 | `.clang-format` | Source code style formatting. |
 | `.editorconfig` | Standard editor setup settings. |
 | `.gitignore` | Define what data to ignore at commit time. |
