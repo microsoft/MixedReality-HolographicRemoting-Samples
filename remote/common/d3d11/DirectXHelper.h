@@ -139,9 +139,20 @@ namespace DXHelper
     // Check for SDK Layer support.
     inline bool SdkLayersAvailable()
     {
+        D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_NULL;
+
+#    if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+        if (GetModuleHandleW(L"renderdoc.dll") != NULL)
+        {
+            // In theory there is no need to create a real hardware device for this check.
+            // Unfortunately, RenderDoc can fail without a real hardware device.
+            driverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE;
+        }
+#    endif
+
         HRESULT hr = D3D11CreateDevice(
             nullptr,
-            D3D_DRIVER_TYPE_NULL, // There is no need to create a real hardware device.
+            driverType,
             0,
             D3D11_CREATE_DEVICE_DEBUG, // Check for the SDK layers.
             nullptr,                   // Any feature level will do.

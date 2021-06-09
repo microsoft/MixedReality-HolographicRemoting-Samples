@@ -1193,9 +1193,6 @@ void SampleRemoteApp::OnCameraAdded(const HolographicSpace& sender, const Hologr
     winrt::Windows::Foundation::Deferral deferral = args.GetDeferral();
     auto holographicCamera = args.Camera();
 
-    HolographicViewConfiguration viewConfig = holographicCamera.ViewConfiguration();
-    viewConfig.PixelFormat(DirectXPixelFormat::B8G8R8A8UIntNormalized);
-
     create_task([this, deferral, holographicCamera]() {
         m_deviceResources->AddHolographicCamera(holographicCamera);
 
