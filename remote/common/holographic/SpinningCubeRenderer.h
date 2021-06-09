@@ -88,7 +88,7 @@ private:
     DirectX::XMFLOAT4 m_filterColorData = {1, 1, 1, 1};
 
     // Variables used with the rendering loop.
-    bool m_loadingComplete = false;
+    std::atomic<bool> m_loadingComplete = false;
     float m_degreesPerSecond = 180.0f;
     winrt::Windows::Foundation::Numerics::float3 m_position = {0.0f, 0.0f, -2.0f};
     PauseState m_pauseState = PauseState::Unpaused;

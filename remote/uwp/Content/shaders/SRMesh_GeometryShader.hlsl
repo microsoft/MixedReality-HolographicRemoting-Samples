@@ -12,16 +12,16 @@
 // Per-vertex data from the vertex shader.
 struct GeometryShaderInput
 {
-    float4      pos      : SV_POSITION;
-    uint        instId   : TEXCOORD1;
+    float4  pos      : SV_POSITION;
+    uint    instId   : TEXCOORD1;
 };
 
 // Per-vertex data passed to the rasterizer.
 struct GeometryShaderOutput
 {
-    float4      pos      : SV_POSITION;
-    float3      barycentricCoords : TEXCOORD0;
-    uint        rtvId    : SV_RenderTargetArrayIndex;
+    float4  pos                 : SV_POSITION;
+    float3  barycentricCoords   : TEXCOORD0;
+    uint    rtvId               : SV_RenderTargetArrayIndex;
 };
 
 // This geometry shader is a pass-through that leaves the geometry unmodified 

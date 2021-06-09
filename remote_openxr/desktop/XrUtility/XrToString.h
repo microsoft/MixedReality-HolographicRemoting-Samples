@@ -18,6 +18,7 @@
 #include <openxr/openxr.h>
 #include <openxr/openxr_reflection.h>
 #include <openxr/openxr_msft_holographic_remoting.h>
+#include <openxr/openxr_msft_remoting_speech.h>
 
 #include <string>
 
@@ -32,7 +33,11 @@
     _(XR_ERROR_REMOTING_DATA_CHANNEL_ID_ALREADY_IN_USE_MSFT, -1000065007) \
     _(XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_DATA_MSFT, -1000065008)      \
     _(XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT, -1000065009)    \
-    _(XR_RESULT_MAX_ENUM, 0x7FFFFFFF)
+    _(XR_ERROR_REMOTING_MAX_ENUM, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrRemotingSpeechResult(_)              \
+    _(XR_ERROR_REMOTING_SPEECH_PACKET_EXPIRED, -1000144000) \
+    _(XR_ERROR_REMOTING_SPEECH_MAX_ENUM, 0x7FFFFFFF)
 
 // Macro to generate stringify functions for OpenXR enumerations based data provided in openxr_reflection.h
 // clang-format off

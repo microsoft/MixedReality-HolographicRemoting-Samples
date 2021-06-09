@@ -445,9 +445,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header" style="max-width: 100;">
 <h1>OpenXR Remoting Extensions</h1>
 <div class="details">
-<span id="author" class="author">Copyright (c) 20201 Microsoft. All rights reserved.</span><br>
-<span id="revnumber">version 2.0.0,</span>
-<span id="revdate">Fri, 5 Feb 2021</span>
+<span id="author" class="author">Copyright (c) 2021 Microsoft. All rights reserved.</span><br>
+<span id="revnumber">version 2.6.0,</span>
+<span id="revdate">Thu, 1 Jun 2021</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -455,7 +455,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#extension-appendices-list">1. List of Extensions</a>
 <ul class="sectlevel2">
 <li><a href="#XR_MSFT_holographic_remoting">1.1. XR_MSFT_holographic_remoting</a></li>
-<li><a href="#XR_MSFT_remoting_frame_mirroring">1.2. XR_MSFT_remoting_frame_mirroring</a></li>
+<li><a href="#XR_MSFT_holographic_remoting_speech">1.2. XR_MSFT_holographic_remoting_speech</a></li>
+<li><a href="#XR_MSFT_remoting_frame_mirroring">1.3. XR_MSFT_remoting_frame_mirroring</a></li>
 </ul>
 </li>
 </ul>
@@ -499,7 +500,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <dl>
 <dt class="hdlist1"><strong>Last Modified Date</strong></dt>
 <dd>
-<p>2021-02-05</p>
+<p>2021-06-01</p>
 </dd>
 <dt class="hdlist1"><strong>IP Status</strong></dt>
 <dd>
@@ -2938,7 +2939,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>systemId</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSystemId"><code>XrSystemId</code></a> handle for the system which will be used to create a session.</p>
 </li>
 <li>
-<p><code>channelInfo</code> is the <a href="#XrRemotingDataChannelCreateInfoMSFT">XrRemotingDataChannelCreateInfoMSFT</a> struct with the channel creation parameters.</p>
+<p><code>channelInfo</code> is the <a href="#XrRemotingDataChannelCreateInfoMSFT">XrRemotingDataChannelCreateInfoMSFT</a> structure with the channel creation parameters.</p>
 </li>
 <li>
 <p><code>channel</code> is the returned <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle.</p>
@@ -3286,7 +3287,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle.</p>
 </li>
 <li>
-<p><code>sendDataInfo</code> is the <a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a> struct.</p>
+<p><code>sendDataInfo</code> is the <a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a> structure.</p>
 </li>
 </ul>
 </div>
@@ -3541,9 +3542,6 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>instance</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrInstance">XrInstance</a> handle previously created with <a href="#xrCreateInstance">xrCreateInstance</a>.</p>
-</li>
-<li>
 <p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle from which data should be retrieved.</p>
 </li>
 <li>
@@ -3668,7 +3666,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>channel</code> is the <a href="#XrRemotingDataChannelMSFT">XrRemotingDataChannelMSFT</a> handle for the data channel of interest.</p>
 </li>
 <li>
-<p><code>channelState</code> is the returned <a href="#XrRemotingDataChannelStateMSFT">XrRemotingDataChannelStateMSFT</a> struct.</p>
+<p><code>channelState</code> is the returned <a href="#XrRemotingDataChannelStateMSFT">XrRemotingDataChannelStateMSFT</a> structure.</p>
 </li>
 </ul>
 </div>
@@ -4135,9 +4133,15 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>XR_ERROR_REMOTING_DATA_CHANNEL_INVALID_DATA_MSFT</code></p>
 </li>
 <li>
-<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT</code>
-<strong>New Enums</strong></p>
+<p><code>XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT</code></p>
 </li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>New Enums</strong></p>
+</div>
+<div class="ulist">
+<ul>
 <li>
 <p><a href="#XrRemotingDisconnectReasonMSFT">XrRemotingDisconnectReasonMSFT</a></p>
 </li>
@@ -4340,8 +4344,740 @@ No such structures are defined in core OpenXR or this extension.</p>
 </ul>
 </div>
 </div>
+</div>
 <div class="sect2">
-<h3 id="XR_MSFT_remoting_frame_mirroring"><a class="anchor" href="#XR_MSFT_remoting_frame_mirroring"></a>1.2. XR_MSFT_remoting_frame_mirroring</h3>
+<h3 id="XR_MSFT_holographic_remoting_speech"><a class="anchor" href="#XR_MSFT_holographic_remoting_speech"></a>1.2. XR_MSFT_holographic_remoting_speech</h3>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><strong>Name String</strong></dt>
+<dd>
+<p><code>XR_MSFT_holographic_remoting_speech</code></p>
+</dd>
+<dt class="hdlist1"><strong>Extension Type</strong></dt>
+<dd>
+<p>Instance extension</p>
+</dd>
+<dt class="hdlist1"><strong>Registered Extension Number</strong></dt>
+<dd>
+<p>145</p>
+</dd>
+<dt class="hdlist1"><strong>Revision</strong></dt>
+<dd>
+<p>2</p>
+</dd>
+<dt class="hdlist1"><strong>Extension and Version Dependencies</strong></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p>Requires OpenXR 1.0</p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><strong>Last Modified Date</strong></dt>
+<dd>
+<p>2021-06-01</p>
+</dd>
+<dt class="hdlist1"><strong>IP Status</strong></dt>
+<dd>
+<p>No known IP claims.</p>
+</dd>
+<dt class="hdlist1"><strong>Contributors</strong></dt>
+<dd>
+<p>Hanaa Elghobashi, Microsoft<br>
+Marc Appelsmeier, Microsoft<br>
+Florian Bagar, Microsoft<br>
+Norman Pohl, Microsoft<br>
+Felix Reeh, Microsoft<br></p>
+</dd>
+</dl>
+</div>
+<div class="sect3">
+<h4 id="_overview_6"><a class="anchor" href="#_overview_6"></a>1.2.1. Overview</h4>
+<div class="paragraph">
+<p>This holographic remoting extension allows the remote application to react to speech commands detected by the player application.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a> function is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="xrInitializeRemotingSpeechMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrInitializeRemotingSpeechMSFT(
+    XrSession                                   session,
+    const XrRemotingSpeechInitInfoMSFT*         speechInitInfo);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>session</code> is a <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
+</li>
+<li>
+<p><code>speechInitInfo</code> is a pointer to a valid <a href="#XrRemotingSpeechInitInfoMSFT">XrRemotingSpeechInitInfoMSFT</a> which contains information to initialize the speech recognizer.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>To initialize a speech recognizer on the player application, the remote application <strong class="purple">can</strong> call <a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a>. This transmits speech initialization parameters, i.e. a language, a dictionary of phrases, and the contents of a grammar file, to the player application. The speech recognizer <strong class="purple">must</strong> only be initialized once per <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrInitializeRemotingSpeechMSFT-extension-notenabled" href="#VUID-xrInitializeRemotingSpeechMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting_speech">XR_MSFT_holographic_remoting_speech</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrInitializeRemotingSpeechMSFT-session-parameter" href="#VUID-xrInitializeRemotingSpeechMSFT-session-parameter"></a> <code>session</code> <strong class="purple">must</strong> be a valid <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrInitializeRemotingSpeechMSFT-speechInitInfo-parameter" href="#VUID-xrInitializeRemotingSpeechMSFT-speechInitInfo-parameter"></a> <code>speechInitInfo</code> <strong class="purple">must</strong> be a pointer to a valid <a href="#XrRemotingSpeechInitInfoMSFT">XrRemotingSpeechInitInfoMSFT</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
+</li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_VALIDATION_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_SPEECH_ALREADY_INITIALIZED_MSFT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <a href="#XrRemotingSpeechInitInfoMSFT">XrRemotingSpeechInitInfoMSFT</a> structure is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="XrRemotingSpeechInitInfoMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingSpeechInitInfoMSFT {
+    XrStructureType    type;
+    void*              next;
+    char               language[XR_MAX_SPEECH_LANGUAGE_NAME_SIZE_MSFT];
+    uint32_t           grammarFileSize;
+    uint8_t*           grammarFileContent;
+    uint32_t           dictionaryEntriesCount;
+    const char**       dictionaryEntries;
+} XrRemotingSpeechInitInfoMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>grammarFileSize</code> is the size of the grammar file in bytes.</p>
+</li>
+<li>
+<p><code>grammarFileContent</code> is the byte content of the grammar file sent from remote to initialize the speech recognizer on the player side.</p>
+</li>
+<li>
+<p><code>dictionaryEntriesCount</code> is the count of the dictionary entries.</p>
+</li>
+<li>
+<p><code>dictionaryEntries</code> is the list of phrases that compose the dictionary sent from remote to initialize the speech recognizer on the player side.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrRemotingSpeechInitInfoMSFT-extension-notenabled" href="#VUID-XrRemotingSpeechInitInfoMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting_speech">XR_MSFT_holographic_remoting_speech</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrRemotingSpeechInitInfoMSFT">XrRemotingSpeechInitInfoMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingSpeechInitInfoMSFT-type-type" href="#VUID-XrRemotingSpeechInitInfoMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_REMOTING_SPEECH_INIT_INFO_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingSpeechInitInfoMSFT-next-next" href="#VUID-XrRemotingSpeechInitInfoMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingSpeechInitInfoMSFT-language-parameter" href="#VUID-XrRemotingSpeechInitInfoMSFT-language-parameter"></a> <code>language</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string whose length is less than or equal to <code>XR_MAX_SPEECH_LANGUAGE_NAME_SIZE_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingSpeechInitInfoMSFT-grammarFileContent-parameter" href="#VUID-XrRemotingSpeechInitInfoMSFT-grammarFileContent-parameter"></a> <code>grammarFileContent</code> <strong class="purple">must</strong> be a pointer to a <code>uint8_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingSpeechInitInfoMSFT-dictionaryEntries-parameter" href="#VUID-XrRemotingSpeechInitInfoMSFT-dictionaryEntries-parameter"></a> <code>dictionaryEntries</code> <strong class="purple">must</strong> be a pointer to an array of <code>dictionaryEntriesCount</code> null-terminated UTF-8 strings</p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingSpeechInitInfoMSFT-dictionaryEntriesCount-arraylength" href="#VUID-XrRemotingSpeechInitInfoMSFT-dictionaryEntriesCount-arraylength"></a> The <code>dictionaryEntriesCount</code> parameter <strong class="purple">must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>If the creation of the speech recognizer succeeded, as indicated by the <code>XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZER_STATE_CHANGED_MSFT</code> event, the remote application will be notified when a speech recognition result was generated on the player application.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrEventDataRemotingSpeechRecognizerStateChangedMSFT">XrEventDataRemotingSpeechRecognizerStateChangedMSFT</a> event structure is placed in the event queue when the state of the speech recognizer on the player side changes. It is defined as:</p>
+</div>
+<div id="XrEventDataRemotingSpeechRecognizerStateChangedMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingSpeechRecognizerStateChangedMSFT {
+    XrStructureType                        type;
+    void*                                  next;
+    XrRemotingSpeechRecognizerStateMSFT    speechRecognizerState;
+    char                                   stateMessage[XR_MAX_SPEECH_RECOGNIZER_STATE_MESSAGE_SIZE_MSFT];
+} XrEventDataRemotingSpeechRecognizerStateChangedMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>speechRecognizerState</code> is the current state of the speech recognizer on the player side.</p>
+</li>
+<li>
+<p><code>stateMessage</code> is a message that indicates the kind of error that happened if initializing the speech recognizer failed. Otherwise, it&#8217;s empty.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-extension-notenabled" href="#VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting_speech">XR_MSFT_holographic_remoting_speech</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrEventDataRemotingSpeechRecognizerStateChangedMSFT">XrEventDataRemotingSpeechRecognizerStateChangedMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-type-type" href="#VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZER_STATE_CHANGED_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-next-next" href="#VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-speechRecognizerState-parameter" href="#VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-speechRecognizerState-parameter"></a> <code>speechRecognizerState</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingSpeechRecognizerStateMSFT">XrRemotingSpeechRecognizerStateMSFT</a> value</p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-stateMessage-parameter" href="#VUID-XrEventDataRemotingSpeechRecognizerStateChangedMSFT-stateMessage-parameter"></a> <code>stateMessage</code> <strong class="purple">must</strong> be a null-terminated UTF-8 string whose length is less than or equal to <code>XR_MAX_SPEECH_RECOGNIZER_STATE_MESSAGE_SIZE_MSFT</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingSpeechRecognizerStateMSFT">XrRemotingSpeechRecognizerStateMSFT</a> defines all possible states of the speech recognizer on the player side. It is defined as:</p>
+</div>
+<div id="XrRemotingSpeechRecognizerStateMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingSpeechRecognizerStateMSFT {
+    XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZING_MSFT = 0,
+    XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZED_MSFT = 1,
+    XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZATION_FAILED_MSFT = 2,
+    XR_REMOTING_SPEECH_RECOGNIZER_STATE_STARTED_MSFT = 3,
+    XR_REMOTING_SPEECH_RECOGNIZER_STATE_STOPPED_MSFT = 4,
+    XR_REMOTING_SPEECH_RECOGNIZER_STATE_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrRemotingSpeechRecognizerStateMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Enumerant Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZING_MSFT</code> states that the speech recognizer is still in the initialization process.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZED_MSFT</code> states that the speech recognizer has been successfully initialized.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZATION_FAILED_MSFT</code> states that the speech recognizer initialization failed. The failure reason is indicated by the state message.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNIZER_STATE_STARTED_MSFT</code> states that the speech recognizer is running and can recognize speech commands.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNIZER_STATE_STOPPED_MSFT</code> states that the speech recognizer stopped running.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrEventDataRemotingSpeechRecognizedMSFT">XrEventDataRemotingSpeechRecognizedMSFT</a> event structure is placed in the event queue when the speech recognizer on the player side has a speech recognition result. It is defined as:</p>
+</div>
+<div id="XrEventDataRemotingSpeechRecognizedMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingSpeechRecognizedMSFT {
+    XrStructureType                              type;
+    void*                                        next;
+    XrRemotingSpeechPacketIdMSFT                 packetId;
+    XrRemotingSpeechRecognitionConfidenceMSFT    confidence;
+    float                                        rawConfidence;
+} XrEventDataRemotingSpeechRecognizedMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+<li>
+<p><code>packetId</code> is the is a <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle identifing the received recognized speech packet.</p>
+</li>
+<li>
+<p><code>confidence</code> is the <a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a>. it represents the confidence level: high, medium and low as returned by the Windows Speech Recognition API.</p>
+</li>
+<li>
+<p><code>rawConfidence</code> is the confidence level of the speech recognition result on a scale from 0 to 1, as returned by the Windows Speech Recognition API.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizedMSFT-extension-notenabled" href="#VUID-XrEventDataRemotingSpeechRecognizedMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting_speech">XR_MSFT_holographic_remoting_speech</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrEventDataRemotingSpeechRecognizedMSFT">XrEventDataRemotingSpeechRecognizedMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizedMSFT-type-type" href="#VUID-XrEventDataRemotingSpeechRecognizedMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZED_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizedMSFT-next-next" href="#VUID-XrEventDataRemotingSpeechRecognizedMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizedMSFT-packetId-parameter" href="#VUID-XrEventDataRemotingSpeechRecognizedMSFT-packetId-parameter"></a> <code>packetId</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingSpeechRecognizedMSFT-confidence-parameter" href="#VUID-XrEventDataRemotingSpeechRecognizedMSFT-confidence-parameter"></a> <code>confidence</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle is defined as:</p>
+</div>
+<div id="XrRemotingSpeechPacketIdMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XR_DEFINE_HANDLE(XrRemotingSpeechPacketIdMSFT)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a> is a direct mapping of the SpeechRecognitionConfidence enum returned with the speech recognition result by the Windows Speech Recognition API. It is defined as:</p>
+</div>
+<div id="XrRemotingSpeechRecognitionConfidenceMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingSpeechRecognitionConfidenceMSFT {
+    XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_HIGH_MSFT = 0,
+    XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_MEDIUM_MSFT = 1,
+    XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_LOW_MSFT = 2,
+    XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrRemotingSpeechRecognitionConfidenceMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Enumerant Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_HIGH_MSFT</code> represents high confidence level.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_MEDIUM_MSFT</code> represents medium confidence level.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_LOW_MSFT</code> represents low confidence level.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Retrieve recognized speech text</strong></p>
+</div>
+<div class="paragraph">
+<p>When the remote application is notified about a recognized text, it <strong class="purple">can</strong> query the recognized speech text by calling <a href="#xrRetrieveRemotingSpeechRecognizedTextMSFT">xrRetrieveRemotingSpeechRecognizedTextMSFT</a>.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="#xrRetrieveRemotingSpeechRecognizedTextMSFT">xrRetrieveRemotingSpeechRecognizedTextMSFT</a> function is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="xrRetrieveRemotingSpeechRecognizedTextMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRetrieveRemotingSpeechRecognizedTextMSFT(
+    XrSession                                   session,
+    XrRemotingSpeechPacketIdMSFT                packetId,
+    uint32_t                                    dataBytesCapacityInput,
+    uint32_t*                                   dataBytesCountOutput,
+    uint8_t*                                    data);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>session</code> is a <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
+</li>
+<li>
+<p><code>packetId</code> is the <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle from the <a href="#XrEventDataRemotingSpeechRecognizedMSFT">XrEventDataRemotingSpeechRecognizedMSFT</a> event.</p>
+</li>
+<li>
+<p><code>dataBytesCapacityInput</code> is the capacity of the data bytes array, or 0 to indicate a request to retrieve the required capacity.</p>
+</li>
+<li>
+<p><code>dataBytesCountOutput</code> is a pointer to the count of data bytes, or a pointer to the required capacity in the case that dataBytesCapacityInput is 0.</p>
+</li>
+<li>
+<p><code>dataBytes</code> is a pointer to an array of characters for the recognized text, but can be null if dataBytesCapacityInput is 0.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-extension-notenabled" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting_speech">XR_MSFT_holographic_remoting_speech</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrRetrieveRemotingSpeechRecognizedTextMSFT">xrRetrieveRemotingSpeechRecognizedTextMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-session-parameter" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-session-parameter"></a> <code>session</code> <strong class="purple">must</strong> be a valid <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-packetId-parameter" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-packetId-parameter"></a> <code>packetId</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-dataBytesCountOutput-parameter" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-dataBytesCountOutput-parameter"></a> <code>dataBytesCountOutput</code> <strong class="purple">must</strong> be a pointer to a <code>uint32_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-data-parameter" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-data-parameter"></a> <code>data</code> <strong class="purple">must</strong> be a pointer to a <code>uint8_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-packetId-parent" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-packetId-parent"></a> <code>packetId</code> <strong class="purple">must</strong> have been created, allocated, or retrieved from <code>session</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
+</li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_VALIDATION_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_SPEECH_PACKET_EXPIRED_MSFT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>New Object Types</strong></p>
+</div>
+<div class="paragraph">
+<p><strong>New Flag Types</strong></p>
+</div>
+<div class="paragraph">
+<p><strong>New Enum Constants</strong></p>
+</div>
+<div class="paragraph">
+<p><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> enumeration is extended with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_TYPE_REMOTING_SPEECH_INIT_INFO_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZER_STATE_CHANGED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZED_MSFT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrResult">XrResult</a> enumeration is extended with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_REMOTING_SPEECH_ALREADY_INITIALIZED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_SPEECH_PACKET_EXPIRED_MSFT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>New Enums</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#XrRemotingSpeechRecognizerStateMSFT">XrRemotingSpeechRecognizerStateMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>New Structures</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#XrRemotingSpeechInitInfoMSFT">XrRemotingSpeechInitInfoMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrEventDataRemotingSpeechRecognizedMSFT">XrEventDataRemotingSpeechRecognizedMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrEventDataRemotingSpeechRecognizerStateChangedMSFT">XrEventDataRemotingSpeechRecognizerStateChangedMSFT</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>New Functions</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a></p>
+</li>
+<li>
+<p><a href="#xrRetrieveRemotingSpeechRecognizedTextMSFT">xrRetrieveRemotingSpeechRecognizedTextMSFT</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>New Handles</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Issues</strong></p>
+</div>
+<div class="paragraph">
+<p><strong>Version History</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Revision 1, 2021-03-29 (Hanaa Elghobashi)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Initial extension description</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Revision 2, 2021-06-01 (Norman Pohl, Felix Reeh)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Added <a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a> and <code>XR_ERROR_REMOTING_SPEECH_ALREADY_INITIALIZED_MSFT</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="XR_MSFT_remoting_frame_mirroring"><a class="anchor" href="#XR_MSFT_remoting_frame_mirroring"></a>1.3. XR_MSFT_remoting_frame_mirroring</h3>
 <div class="dlist">
 <dl>
 <dt class="hdlist1"><strong>Name String</strong></dt>
@@ -4390,7 +5126,7 @@ Florian Bagar, Microsoft<br></p>
 </dl>
 </div>
 <div class="sect3">
-<h4 id="_overview_6"><a class="anchor" href="#_overview_6"></a>1.2.1. Overview</h4>
+<h4 id="_overview_7"><a class="anchor" href="#_overview_7"></a>1.3.1. Overview</h4>
 <div class="paragraph">
 <p>This extension allows the Holographic Remoting application to receive a copy of the final composited frame that was sent to the Holographic Player application
 and can be used for local display.</p>
@@ -4762,9 +5498,5 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </div>
 </div>
-<!-- begin footer docinfo -->
-<script>
-</script>
-<!-- end footer docinfo -->
 </body>
 </html>

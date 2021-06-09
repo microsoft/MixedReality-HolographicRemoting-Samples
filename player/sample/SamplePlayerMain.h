@@ -21,6 +21,8 @@
 
 #include <winrt/Microsoft.Holographic.AppRemoting.h>
 
+#include <chrono>
+
 class SamplePlayerMain : public winrt::implements<
                              SamplePlayerMain,
                              winrt::Windows::ApplicationModel::Core::IFrameworkViewSource,
@@ -169,4 +171,7 @@ private:
     // Feedback when failing to start-up
     bool m_failedToCreatePlayerContext = false;
     bool m_shownFeedbackToUser = false;
+
+    // Indicates that at least one remote frame was blitted
+    bool m_firstRemoteFrameWasBlitted = false;
 };

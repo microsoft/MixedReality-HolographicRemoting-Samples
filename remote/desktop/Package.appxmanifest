@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="b0cf2e39-8f6e-4238-b33a-868c9b1122ce" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="2.5.0.0" />
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2" IgnorableNamespaces="uap mp uap2">
+  <Identity Name="b0cf2e39-8f6e-4238-b33a-868c9b1122ce" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="2.6.0.0" />
   <mp:PhoneIdentity PhoneProductId="b0cf2e39-8f6e-4238-b33a-868c9b1122ce" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>SampleRemote</DisplayName>
@@ -11,7 +11,7 @@
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
   </Dependencies>
   <Resources>
-    <Resource Language="x-generate" /> 
+    <Resource Language="x-generate" />
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="SampleRemoteWindowUWPView">
@@ -27,24 +27,8 @@
     <Capability Name="internetClientServer" />
     <Capability Name="privateNetworkClientServer" />
     <DeviceCapability Name="microphone" />
+    <DeviceCapability Name="spatialPerception"/>
     <DeviceCapability Name="webcam" />
+    <DeviceCapability Name="gazeInput" />
   </Capabilities>
-  <Extensions>
-    <!--Extension Category="windows.activatableClass.inProcessServer">
-      <InProcessServer>
-        <Path>SceneUnderstanding.dll</Path>
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Transform" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Id" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.QuadToolkit" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.SpatialCoordinateSystem" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Quad" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Toolkit" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.SpatialComponent" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Component" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Entity" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.Mesh" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="SceneUnderstanding.SceneProcessor" ThreadingModel="both" />
-      </InProcessServer>
-    </Extension-->
-  </Extensions>
 </Package>

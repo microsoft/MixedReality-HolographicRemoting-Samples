@@ -11,97 +11,111 @@
 
 #include <pch.h>
 
+#include <chrono>
+
 #include <content/QRCodeRenderer.h>
 
-#include <content/PerceptionDeviceHandler.h>
-#include <content/PerceptionTypes.h>
-#include <content/QRCodeTracker.h>
 #include <d3d11/DirectXHelper.h>
 #include <holographic/FrustumCulling.h>
 
-#include <winrt/Windows.Perception.Spatial.h>
+#include <winrt/Windows.Foundation.Numerics.h>
+#include <winrt/Windows.Perception.Spatial.Preview.h>
 
-namespace
-{
-    using namespace DirectX;
-
-    void AppendColoredTriangle(
-        winrt::Windows::Foundation::Numerics::float3 p0,
-        winrt::Windows::Foundation::Numerics::float3 p1,
-        winrt::Windows::Foundation::Numerics::float3 p2,
-        winrt::Windows::Foundation::Numerics::float3 color,
-        std::vector<VertexPositionNormalColor>& vertices)
-    {
-        VertexPositionNormalColor vertex;
-        vertex.color = XMFLOAT3(&color.x);
-        vertex.normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
-
-        vertex.pos = XMFLOAT3(&p0.x);
-        vertices.push_back(vertex);
-        vertex.pos = XMFLOAT3(&p1.x);
-        vertices.push_back(vertex);
-        vertex.pos = XMFLOAT3(&p2.x);
-        vertices.push_back(vertex);
-    }
-} // namespace
+using namespace winrt::Microsoft::MixedReality::QR;
+using namespace winrt::Windows::Foundation::Numerics;
 
 QRCodeRenderer::QRCodeRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources)
     : RenderableObject(deviceResources)
 {
 }
 
-void QRCodeRenderer::Update(
-    PerceptionDeviceHandler& perceptionDeviceHandler,
-    winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem)
+void QRCodeRenderer::OnAddedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code)
 {
-    auto processQRCode = [this, renderingCoordinateSystem](QRCode& code) {
-        auto codeCS = code.GetCoordinateSystem();
-        float size = code.GetPhysicalSize();
-        auto codeToRendering = codeCS.TryGetTransformTo(renderingCoordinateSystem);
-        if (!codeToRendering)
+    std::scoped_lock lock(m_mutex);
+    m_qrCodes.insert({code, nullptr});
+}
+
+void QRCodeRenderer::OnUpdatedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code)
+{
+    std::scoped_lock lock(m_mutex);
+
+    if (m_qrCodes.find(code) != m_qrCodes.end())
+    {
+        // Remove the old entry;
+        m_qrCodes.erase(code);
+    }
+
+    m_qrCodes.insert({code, nullptr});
+}
+
+void QRCodeRenderer::Update(winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem)
+{
+    std::scoped_lock lock(m_mutex);
+    m_renderableQrCodes.clear();
+
+    for (auto& [code, coordinateSystem] : m_qrCodes)
+    {
+        winrt::Windows::Foundation::IReference<float4x4> qrToRenderingRef = nullptr;
+        if (coordinateSystem == nullptr)
         {
-            return;
+            try
+            {
+                coordinateSystem = Preview::SpatialGraphInteropPreview::CreateCoordinateSystemForNode(code.SpatialGraphNodeId());
+            }
+            catch (winrt::hresult_error const&)
+            {
+                coordinateSystem = nullptr;
+                continue;
+            }
         }
-        else
+
+        if (coordinateSystem)
         {
-            m_renderableQRCodes.push_back({size, codeToRendering.Value()});
+            qrToRenderingRef = coordinateSystem.TryGetTransformTo(renderingCoordinateSystem);
+
+            if (qrToRenderingRef)
+            {
+                m_renderableQrCodes.push_back({code.PhysicalSideLength(), qrToRenderingRef.Value()});
+            }
         }
-    };
+    }
 
-    m_renderableQRCodes.clear();
-    auto processQRCodeTracker = [this, processQRCode](QRCodeTracker& tracker) { tracker.ForEachQRCode(processQRCode); };
-
-    m_vertices.clear();
-    perceptionDeviceHandler.ForEachRootObjectOfType<QRCodeTracker>(processQRCodeTracker);
-
+    // The vertices are already in rendering space.
     auto modelTransform = winrt::Windows::Foundation::Numerics::float4x4::identity();
     UpdateModelConstantBuffer(modelTransform);
 }
 
 void QRCodeRenderer::Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum)
 {
-    for (RenderableQRCode code : m_renderableQRCodes)
+    std::scoped_lock lock(m_mutex);
+
+    // Clear the vertices.
+    m_vertices.clear();
+
+    for (auto renderableCode : m_renderableQrCodes)
     {
-        // Frustum culling
+        // Apply frustum culling.
+        const float size = renderableCode.size;
         winrt::Windows::Foundation::Numerics::float3 center =
-            winrt::Windows::Foundation::Numerics::transform({0, 0, 0}, code.codeToRendering);
-        float radius = sqrtf(2 * code.size * code.size);
+            winrt::Windows::Foundation::Numerics::transform({0, 0, 0}, renderableCode.codeToRendering);
+        float radius = sqrtf(2 * size * size);
 
         if (FrustumCulling::SphereInFrustum(center, radius, cullingFrustum))
         {
-            winrt::Windows::Foundation::Numerics::float3 positions[4] = {
-                {0.0f, 0.0f, 0.0f}, {0.0f, code.size, 0.0f}, {code.size, code.size, 0.0f}, {code.size, 0.0f, 0.0f}};
+            float3 positions[4] = {{0.0f, 0.0f, 0.0f}, {0.0f, size, 0.0f}, {size, size, 0.0f}, {size, 0.0f, 0.0f}};
             for (int i = 0; i < 4; ++i)
             {
-                positions[i] = winrt::Windows::Foundation::Numerics::transform(positions[i], code.codeToRendering);
+                // Transform from entity to rendering space.
+                positions[i] = transform(positions[i], renderableCode.codeToRendering);
             }
 
-            winrt::Windows::Foundation::Numerics::float3 col{1.0f, 1.0f, 0.0f};
+            float3 col{1.0f, 0.76f, 0.0f};
             AppendColoredTriangle(positions[0], positions[2], positions[1], col, m_vertices);
             AppendColoredTriangle(positions[0], positions[3], positions[2], col, m_vertices);
         }
     }
 
+    // Only render if vertices are available.
     if (m_vertices.empty())
     {
         return;
@@ -122,4 +136,13 @@ void QRCodeRenderer::Draw(unsigned int numInstances, winrt::Windows::Foundation:
         context->IASetVertexBuffers(0, 1, &pBuffer, &stride, &offset);
         context->DrawInstanced(static_cast<UINT>(m_vertices.size()), numInstances, offset, 0);
     });
+}
+
+void QRCodeRenderer::Reset()
+{
+    std::scoped_lock lock(m_mutex);
+
+    m_qrCodes.clear();
+    m_renderableQrCodes.clear();
+    m_vertices.clear();
 }

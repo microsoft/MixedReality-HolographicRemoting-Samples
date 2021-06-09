@@ -12,8 +12,8 @@
 // Per-pixel color data passed through the pixel shader.
 struct PixelShaderInput
 {
-    float4      pos         : SV_POSITION;
-    float3      barycentricCoords : TEXCOORD0;
+    float4  pos                 : SV_POSITION;
+    float3  barycentricCoords   : TEXCOORD0;
 };
 
 #define LINE_WIDTH 2.0

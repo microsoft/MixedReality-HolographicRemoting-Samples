@@ -65,7 +65,7 @@ SpatialInteractionManager RemoteWindowHolographicUwp::CreateInteractionManager()
 
 void RemoteWindowHolographicUwp::SetWindowTitle(std::wstring title)
 {
-    auto dispatcher = CoreApplication::MainView().CoreWindow().Dispatcher();
+    auto dispatcher = m_coreWindow.Dispatcher();
 
     auto doSetWindowTitle = [title]() {
         try

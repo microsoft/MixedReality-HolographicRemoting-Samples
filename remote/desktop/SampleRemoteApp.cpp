@@ -36,6 +36,8 @@ using namespace concurrency;
 using namespace std::chrono_literals;
 
 using namespace winrt::Microsoft::Holographic::AppRemoting;
+using namespace winrt::Microsoft::MixedReality::SceneUnderstanding;
+using namespace winrt::Microsoft::MixedReality::QR;
 using namespace winrt::Windows::Foundation::Numerics;
 using namespace winrt::Windows::Graphics::Holographic;
 using namespace winrt::Windows::Graphics::DirectX;
@@ -136,6 +138,10 @@ void SampleRemoteApp::OnKeyPress(char key)
 
         case 'c':
             m_spinningCubeRenderer->TogglePauseState();
+            break;
+
+        case 'u':
+            ToggleSceneUnderstanding();
             break;
     }
 
@@ -332,141 +338,147 @@ HolographicFrame SampleRemoteApp::Update()
         return nullptr;
     }
 
-    // Create the next holographic frame early.
-    HolographicFrame holographicFrame = m_holographicSpace.CreateNextFrame();
-
-    // NOTE: DXHelper::DeviceResources::Present does not wait for the frame to finish.
-    //       Instead we wait here before we do the call to CreateNextFrame on the HolographicSpace.
-    //       We do this to avoid that PeekMessage causes frame delta time spikes, say if we wait
-    //       after PeekMessage WaitForNextFrameReady will compensate any time spend in PeekMessage.
-    m_holographicSpace.WaitForNextFrameReady();
-
-    // Update to latest prediction immediately after waiting.
-    holographicFrame.UpdateCurrentPrediction();
-
-    HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
-
-    // Back buffers can change from frame to frame. Validate each buffer, and recreate resource views and depth buffers as needed.
-    m_deviceResources->EnsureCameraResources(holographicFrame, prediction);
-
-    SpatialCoordinateSystem coordinateSystem = nullptr;
-    coordinateSystem = m_referenceFrame.CoordinateSystem();
-
-    // Check for new input state since the last frame.
-    Spatial::SpatialTappedEventArgs tapped = m_spatialInputHandler->CheckForTapped();
-    if (tapped)
+    try
     {
-        Spatial::SpatialPointerPose pointerPose = tapped.TryGetPointerPose(coordinateSystem);
+        // Create the next holographic frame early.
+        HolographicFrame holographicFrame = m_holographicSpace.CreateNextFrame();
 
-        // When the Tapped spatial input event is received, the sample hologram will be repositioned two meters in front of the user.
-        m_spinningCubeRenderer->PositionHologram(pointerPose);
-    }
-    else
-    {
-        static float3 initialCubePosition = float3::zero();
+        // NOTE: DXHelper::DeviceResources::Present does not wait for the frame to finish.
+        //       Instead we wait here before we do the call to CreateNextFrame on the HolographicSpace.
+        //       We do this to avoid that PeekMessage causes frame delta time spikes, say if we wait
+        //       after PeekMessage WaitForNextFrameReady will compensate any time spend in PeekMessage.
+        m_holographicSpace.WaitForNextFrameReady();
 
-        auto manipulationStarted = m_spatialInputHandler->CheckForManipulationStarted();
-        if (manipulationStarted)
+        // Update to latest prediction immediately after waiting.
+        holographicFrame.UpdateCurrentPrediction();
+
+        HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
+
+        // Back buffers can change from frame to frame. Validate each buffer, and recreate resource views and depth buffers as needed.
+        m_deviceResources->EnsureCameraResources(holographicFrame, prediction);
+
+        SpatialCoordinateSystem coordinateSystem = nullptr;
+        coordinateSystem = m_referenceFrame.CoordinateSystem();
+
+        // Check for new input state since the last frame.
+        Spatial::SpatialTappedEventArgs tapped = m_spatialInputHandler->CheckForTapped();
+        if (tapped)
         {
-            initialCubePosition = m_spinningCubeRenderer->GetPosition();
-            m_spinningCubeRenderer->Pause();
+            Spatial::SpatialPointerPose pointerPose = tapped.TryGetPointerPose(coordinateSystem);
+
+            // When the Tapped spatial input event is received, the sample hologram will be repositioned two meters in front of the user.
+            m_spinningCubeRenderer->PositionHologram(pointerPose);
         }
         else
         {
-            auto manipulationUpdated = m_spatialInputHandler->CheckForManipulationUpdated();
-            if (manipulationUpdated)
+            static float3 initialCubePosition = float3::zero();
+
+            auto manipulationStarted = m_spatialInputHandler->CheckForManipulationStarted();
+            if (manipulationStarted)
             {
-                auto delta = manipulationUpdated.TryGetCumulativeDelta(coordinateSystem);
-                if (delta)
-                {
-                    m_spinningCubeRenderer->SetPosition(initialCubePosition + delta.Translation());
-                }
+                initialCubePosition = m_spinningCubeRenderer->GetPosition();
+                m_spinningCubeRenderer->Pause();
             }
             else
             {
-                switch (m_spatialInputHandler->CheckForManipulationResult())
+                auto manipulationUpdated = m_spatialInputHandler->CheckForManipulationUpdated();
+                if (manipulationUpdated)
                 {
-                    case SpatialInputHandler::ManipulationResult::Canceled:
-                        m_spinningCubeRenderer->SetPosition(initialCubePosition);
-                    case SpatialInputHandler::ManipulationResult::Completed:
-                        m_spinningCubeRenderer->Unpause();
-                        break;
+                    auto delta = manipulationUpdated.TryGetCumulativeDelta(coordinateSystem);
+                    if (delta)
+                    {
+                        m_spinningCubeRenderer->SetPosition(initialCubePosition + delta.Translation());
+                    }
+                }
+                else
+                {
+                    switch (m_spatialInputHandler->CheckForManipulationResult())
+                    {
+                        case SpatialInputHandler::ManipulationResult::Canceled:
+                            m_spinningCubeRenderer->SetPosition(initialCubePosition);
+                        case SpatialInputHandler::ManipulationResult::Completed:
+                            m_spinningCubeRenderer->Unpause();
+                            break;
+                    }
                 }
             }
         }
-    }
 
-    std::chrono::duration<float> timeSinceStart = std::chrono::high_resolution_clock::now() - m_startTime;
-    m_spinningCubeRenderer->Update(timeSinceStart.count(), prediction.Timestamp(), coordinateSystem);
+        std::chrono::duration<float> timeSinceStart = std::chrono::high_resolution_clock::now() - m_startTime;
+        m_spinningCubeRenderer->Update(timeSinceStart.count(), prediction.Timestamp(), coordinateSystem);
 
-    if (m_spatialSurfaceMeshRenderer != nullptr)
-    {
-        m_spatialSurfaceMeshRenderer->Update(prediction.Timestamp(), coordinateSystem);
-    }
-    m_spatialInputRenderer->Update(prediction.Timestamp(), coordinateSystem);
-    if (m_perceptionDeviceHandler)
-    {
-        m_qrCodeRenderer->Update(*m_perceptionDeviceHandler, coordinateSystem);
-    }
+        m_sceneUnderstandingRenderer->Update(coordinateSystem);
+        m_qrCodeRenderer->Update(coordinateSystem);
 
-    // We complete the frame update by using information about our content positioning to set the focus point.
-    if (!m_canCommitDirect3D11DepthBuffer || !m_commitDirect3D11DepthBuffer)
-    {
-        for (auto cameraPose : prediction.CameraPoses())
+        if (m_spatialSurfaceMeshRenderer)
         {
-            try
-            {
-                HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
-
-                // Set the focus point for image stabilization to the center of the sample hologram.
-                // NOTE: A focus point can be set for every HolographicFrame. If a focus point is set on a HolographicFrame,
-                //       it will get transmitted to the player and will get set during the PlayerContext::BlitRemoteFrame() call.
-                renderingParameters.SetFocusPoint(coordinateSystem, m_spinningCubeRenderer->GetPosition());
-            }
-            catch (winrt::hresult_error&)
-            {
-            }
+            m_spatialSurfaceMeshRenderer->Update(prediction.Timestamp(), coordinateSystem);
         }
-    }
+        m_spatialInputRenderer->Update(prediction.Timestamp(), coordinateSystem);
 
-#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-    timeDelta = std::chrono::high_resolution_clock::now() - m_customDataChannelSendTime;
-    if (timeDelta > 5s)
-    {
-        m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
-
-        // Send ping every couple of frames if we have a custom data channel.
-        std::lock_guard lock(m_customDataChannelLock);
-        if (m_customDataChannel)
+        // We complete the frame update by using information about our content positioning to set the focus point.
+        if (!m_canCommitDirect3D11DepthBuffer || !m_commitDirect3D11DepthBuffer)
         {
-            // Try to get send queue size. The send queue size returns the size of data, that has not been send yet, in bytes.
-            // A big number might indicate that more data is queued to send than the amount of data, that is actually sent.
-            // If possible skip sending data in this case, to help the queue getting smaller again.
-            uint32_t sendQueueSize = m_customDataChannel.SendQueueSize();
-
-            // Only send the packet if the send queue is smaller than 1MiB
-            if (sendQueueSize < 1 * 1024 * 1024)
+            for (auto cameraPose : prediction.CameraPoses())
             {
-                uint8_t data = 1;
-
                 try
                 {
-                    m_customDataChannel.SendData(
-                        winrt::array_view<const uint8_t>(
-                            reinterpret_cast<const uint8_t*>(&data), reinterpret_cast<const uint8_t*>(&data + 1)),
-                        true);
-                    OutputDebugString(TEXT("Request Sent.\n"));
+                    HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
+
+                    // Set the focus point for image stabilization to the center of the sample hologram.
+                    // NOTE: A focus point can be set for every HolographicFrame. If a focus point is set on a HolographicFrame,
+                    //       it will get transmitted to the player and will get set during the PlayerContext::BlitRemoteFrame() call.
+                    renderingParameters.SetFocusPoint(coordinateSystem, m_spinningCubeRenderer->GetPosition());
                 }
-                catch (...)
+                catch (winrt::hresult_error&)
                 {
-                    // SendData might throw if channel is closed, but we did not get or process the async closed event yet.
                 }
             }
         }
-    }
+
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+        timeDelta = std::chrono::high_resolution_clock::now() - m_customDataChannelSendTime;
+        if (timeDelta > 5s)
+        {
+            m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
+
+            // Send ping every couple of frames if we have a custom data channel.
+            std::lock_guard lock(m_customDataChannelLock);
+            if (m_customDataChannel)
+            {
+                // Try to get send queue size. The send queue size returns the size of data, that has not been send yet, in bytes.
+                // A big number might indicate that more data is queued to send than the amount of data, that is actually sent.
+                // If possible skip sending data in this case, to help the queue getting smaller again.
+                uint32_t sendQueueSize = m_customDataChannel.SendQueueSize();
+
+                // Only send the packet if the send queue is smaller than 1MiB
+                if (sendQueueSize < 1 * 1024 * 1024)
+                {
+                    uint8_t data = 1;
+
+                    try
+                    {
+                        m_customDataChannel.SendData(
+                            winrt::array_view<const uint8_t>(
+                                reinterpret_cast<const uint8_t*>(&data), reinterpret_cast<const uint8_t*>(&data + 1)),
+                            true);
+                        OutputDebugString(TEXT("Request Sent.\n"));
+                    }
+                    catch (...)
+                    {
+                        // SendData might throw if channel is closed, but we did not get or process the async closed event yet.
+                    }
+                }
+            }
+        }
 #endif
 
-    return holographicFrame;
+        return holographicFrame;
+    }
+    catch (const winrt::hresult_error&)
+    {
+        return nullptr;
+    }
 }
 
 void SampleRemoteApp::Render(HolographicFrame holographicFrame)
@@ -518,12 +530,15 @@ void SampleRemoteApp::Render(HolographicFrame holographicFrame)
 
                         // Render the scene objects.
                         m_spinningCubeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
-                        if (m_spatialSurfaceMeshRenderer != nullptr)
+
+                        m_sceneUnderstandingRenderer->Render(pCameraResources->IsRenderingStereoscopic());
+                        m_qrCodeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
+
+                        if (m_spatialSurfaceMeshRenderer)
                         {
                             m_spatialSurfaceMeshRenderer->Render(pCameraResources->IsRenderingStereoscopic());
                         }
                         m_spatialInputRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
-                        m_qrCodeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
 
                         // Commit depth buffer if available and enabled.
                         if (m_canCommitDirect3D11DepthBuffer && m_commitDirect3D11DepthBuffer)
@@ -608,6 +623,8 @@ void SampleRemoteApp::InitializeStandalone()
         m_isStandalone = true;
         CreateHolographicSpaceAndDeviceResources();
     }
+
+    InitializeAccessToFeatures();
 }
 
 void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
@@ -727,9 +744,8 @@ void SampleRemoteApp::CreateHolographicSpaceAndDeviceResources()
 
     m_spinningCubeRenderer = std::make_unique<SpinningCubeRenderer>(m_deviceResources);
 
+    m_sceneUnderstandingRenderer = std::make_unique<SceneUnderstandingRenderer>(m_deviceResources);
     m_qrCodeRenderer = std::make_unique<QRCodeRenderer>(m_deviceResources);
-
-    CreatePerceptionDeviceHandler();
 
     m_locator = SpatialLocator::GetDefault();
 
@@ -938,6 +954,23 @@ winrt::fire_and_forget SampleRemoteApp::ExportPosition()
     }
 }
 
+void SampleRemoteApp::InitializeAccessToFeatures()
+{
+    // Request access to eyes pose data.
+    RequestEyesPoseAccess();
+
+    // Request access to scene observer.
+    RequestSceneObserverAccess();
+
+    // Request updates from qr code watcher.
+    RequestQRCodeWatcherUpdates();
+
+    // If not in standalone mode the spatial surface renderer needs to get recreated on every connect, because its SpatialSurfaceObserver
+    // stops working on disconnect. Uncomment the line below to render spatial surfaces. This creates the SpatialSurfaceMeshRenderer and
+    // requests access from the SpatialSurfaceObserver.
+    // m_spatialSurfaceMeshRenderer = std::make_unique<SpatialSurfaceMeshRenderer>(m_deviceResources);
+}
+
 void SampleRemoteApp::RequestEyesPoseAccess()
 {
     try
@@ -970,51 +1003,122 @@ void SampleRemoteApp::RequestEyesPoseAccess()
     }
 }
 
-winrt::fire_and_forget SampleRemoteApp::CreatePerceptionDeviceHandler()
+winrt::fire_and_forget SampleRemoteApp::RequestSceneObserverAccess()
 {
-    AppCapability webcamCapability{nullptr};
-    if (m_isStandalone)
+    m_hasSceneObserverAccess = false;
+
+    try
     {
-        if (!winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(
-                L"Windows.Security.Authorization.AppCapabilityAccess.AppCapability"))
+        if (!SceneObserver::IsSupported())
         {
+            OutputDebugStringA("SceneObserver Unsupported\n");
+            co_return;
+        }
+
+        auto keepAlive = shared_from_this();
+        SceneObserverAccessStatus accessStatus = co_await SceneObserver::RequestAccessAsync();
+
+        if (accessStatus == winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObserverAccessStatus::Allowed)
+        {
+            OutputDebugStringA("SceneObserver Access Allowed\n");
+            m_hasSceneObserverAccess = true;
+        }
+        else
+        {
+            OutputDebugStringA("SceneObserver Access Denied\n");
+            m_hasSceneObserverAccess = false;
+        }
+    }
+    catch (...)
+    {
+        OutputDebugStringA("SceneObserver Access Failed\n");
+    }
+}
+
+void SampleRemoteApp::ToggleSceneUnderstanding()
+{
+    if (!m_hasSceneObserverAccess)
+    {
+        return;
+    }
+
+    // Create Query settings for the scene update
+    SceneQuerySettings querySettings{};
+    querySettings.EnableSceneObjectQuads = true;                             // Requests that the scene updates quads.
+    querySettings.EnableSceneObjectMeshes = true;                            // Requests that the scene updates watertight mesh data.
+    querySettings.EnableOnlyObservedSceneObjects = false;                    // Do not explicitly turn off quad inference.
+    querySettings.EnableWorldMesh = true;                                    // Requests a static version of the spatial mapping mesh.
+    querySettings.RequestedMeshLevelOfDetail = SceneMeshLevelOfDetail::Fine; // Requests the finest LOD of the static spatial mapping mesh.
+
+    SceneObserver::ComputeAsync(querySettings, 10.0f)
+        .Completed([&, weakThis = weak_from_this()](winrt::Windows::Foundation::IAsyncOperation<Scene> result, auto asyncStatus) {
+            if (result.Status() != winrt::Windows::Foundation::AsyncStatus::Completed)
+            {
+                return;
+            }
+
+            if (auto strongThis = weakThis.lock())
+            {
+                SpatialStationaryFrameOfReference updateLocation = m_locator.CreateStationaryFrameOfReferenceAtCurrentLocation();
+                Scene scene = result.GetResults();
+
+                m_sceneUnderstandingRenderer->SetScene(scene, updateLocation);
+                m_sceneUnderstandingRenderer->ToggleRenderingType();
+            }
+        });
+}
+
+winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
+{
+    try
+    {
+        if (!QRCodeWatcher::IsSupported())
+        {
+            OutputDebugStringA("QRCodeWatcher Unsupported\n");
             return;
         }
 
-        webcamCapability = AppCapability::Create(L"webcam");
-        if (!webcamCapability)
+        auto keepAlive = shared_from_this();
+        QRCodeWatcherAccessStatus accessStatus = co_await QRCodeWatcher::RequestAccessAsync();
+
+        if (accessStatus == winrt::Microsoft::MixedReality::QR::QRCodeWatcherAccessStatus::Allowed)
         {
-            return;
+            OutputDebugStringA("QRCodeWatcher Access Allowed\n");
+
+            m_qrWatcher = QRCodeWatcher();
+
+            m_qrAddedRevoker = m_qrWatcher.Added(
+                winrt::auto_revoke,
+                [&, weakThis = weak_from_this()](
+                    const winrt::Microsoft::MixedReality::QR::QRCodeWatcher&,
+                    const winrt::Microsoft::MixedReality::QR::QRCodeAddedEventArgs& args) {
+                    if (auto strongThis = weakThis.lock())
+                    {
+                        m_qrCodeRenderer->OnAddedQRCode(args.Code());
+                    }
+                });
+
+            m_qrUpdatedRevoker = m_qrWatcher.Updated(
+                winrt::auto_revoke,
+                [&, weakThis = weak_from_this()](
+                    const winrt::Microsoft::MixedReality::QR::QRCodeWatcher&,
+                    const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args) {
+                    if (auto strongThis = weakThis.lock())
+                    {
+                        m_qrCodeRenderer->OnUpdatedQRCode(args.Code());
+                    }
+                });
+
+            m_qrWatcher.Start();
+        }
+        else
+        {
+            OutputDebugStringA("QRCodeWatcher Access Denied\n");
         }
     }
-
-    auto weakThis = weak_from_this();
-    co_await winrt::resume_background();
-
-    AppCapabilityAccessStatus status;
-    if (webcamCapability)
+    catch (...)
     {
-        auto webcamRequest = webcamCapability.RequestAccessAsync();
-        status = webcamRequest.get();
-    }
-    else
-    {
-        status = AppCapabilityAccessStatus::Allowed;
-    }
-
-    // Create the perception device if we have web cam access in standalone mode.
-    // Create the perception device if we do not use the standalone mode. In this case, the decision is made on the player side, whereby the
-    // assumption is that the access is allowed.
-    if (status == AppCapabilityAccessStatus::Allowed)
-    {
-        if (auto strongThis = weakThis.lock())
-        {
-            auto perceptionDeviceHandler = std::make_shared<PerceptionDeviceHandler>();
-            perceptionDeviceHandler->Start();
-
-            // Do not use the PerceptionDeviceHandler before initialization has been completed.
-            m_perceptionDeviceHandler = perceptionDeviceHandler;
-        }
+        OutputDebugStringA("QRCodeWatcher Access Failed\n");
     }
 }
 
@@ -1060,7 +1164,9 @@ void SampleRemoteApp::OnDeviceLost()
 {
     m_spinningCubeRenderer->ReleaseDeviceDependentResources();
     m_spatialInputRenderer->ReleaseDeviceDependentResources();
+
     m_qrCodeRenderer->ReleaseDeviceDependentResources();
+    m_sceneUnderstandingRenderer->ReleaseDeviceDependentResources();
 
     if (m_spatialSurfaceMeshRenderer)
     {
@@ -1072,7 +1178,9 @@ void SampleRemoteApp::OnDeviceRestored()
 {
     m_spinningCubeRenderer->CreateDeviceDependentResources();
     m_spatialInputRenderer->CreateDeviceDependentResources();
+
     m_qrCodeRenderer->CreateDeviceDependentResources();
+    m_sceneUnderstandingRenderer->CreateDeviceDependentResources();
 
     if (m_spatialSurfaceMeshRenderer)
     {
@@ -1134,8 +1242,7 @@ void SampleRemoteApp::OnConnected()
 {
     WindowUpdateTitle();
 
-    // Request access to eyes pose data after connection.
-    RequestEyesPoseAccess();
+    InitializeAccessToFeatures();
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
     if (m_remoteContext)
@@ -1143,10 +1250,6 @@ void SampleRemoteApp::OnConnected()
         m_remoteContext.CreateDataChannel(0, DataChannelPriority::Low);
     }
 #endif
-
-    // The spatial surface renderer needs to get recreated on every connect, because its SpatialSurfaceObserver stops working on
-    // disconnect. Uncomment the below line to render spatial surfaces
-    // m_spatialSurfaceMeshRenderer = std::make_unique<SpatialSurfaceMeshRenderer>(m_deviceResources);
 }
 
 void SampleRemoteApp::OnDisconnected(winrt::Microsoft::Holographic::AppRemoting::ConnectionFailureReason failureReason)
@@ -1187,6 +1290,11 @@ void SampleRemoteApp::OnDisconnected(winrt::Microsoft::Holographic::AppRemoting:
     WindowUpdateTitle();
 
     m_spatialSurfaceMeshRenderer = nullptr;
+
+    m_hasSceneObserverAccess = false;
+
+    m_sceneUnderstandingRenderer->Reset();
+    m_qrCodeRenderer->Reset();
 }
 
 void SampleRemoteApp::OnSendFrame(const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture)

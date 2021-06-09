@@ -23,7 +23,7 @@ namespace sample {
         xr::SpaceHandle Space{};
         std::optional<XrPosef> PoseInSpace{}; // Relative pose in cube Space. Default to identity.
         XrVector3f Scale{0.1f, 0.1f, 0.1f};
-
+        XrVector3f colorFilter{1.0f, 1.0f, 1.0f};
         XrPosef PoseInAppSpace = xr::math::Pose::Identity(); // Cube pose in app space that gets updated every frame
     };
 

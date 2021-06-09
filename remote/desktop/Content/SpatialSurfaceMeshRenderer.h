@@ -122,7 +122,7 @@ private:
 
     // rendering
     bool m_zfillOnly = false;
-    bool m_loadingComplete = false;
+    std::atomic<bool> m_loadingComplete = false;
     winrt::com_ptr<ID3D11InputLayout> m_inputLayout;
 
     winrt::com_ptr<ID3D11VertexShader> m_vertexShader;

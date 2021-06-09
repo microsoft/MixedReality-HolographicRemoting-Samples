@@ -95,7 +95,8 @@ namespace DXHelper
         immediateContext->OMSetBlendState(blendState.get(), blendFactor, sampleMask);
         immediateContext->IASetPrimitiveTopology(primitiveTopoloy);
         immediateContext->IASetInputLayout(inputLayout.get());
-        immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.put(), &vertexBufferStrides, &vertexBufferOffsets);
+        ID3D11Buffer* vb = vertexBuffer.get();
+        immediateContext->IASetVertexBuffers(0, 1, &vb, &vertexBufferStrides, &vertexBufferOffsets);
         immediateContext->IASetIndexBuffer(indexBuffer.get(), indexBufferFormat, indexBufferOffset);
     }
 
@@ -154,4 +155,18 @@ namespace DXHelper
         return SUCCEEDED(hr);
     }
 #endif
+
+    inline DirectX::XMFLOAT3 Float3ToXMFloat3(winrt::Windows::Foundation::Numerics::float3 i)
+    {
+        DirectX::XMFLOAT3 o;
+        XMStoreFloat3(&o, DirectX::XMLoadFloat3(&i));
+        return o;
+    };
+
+    inline DirectX::XMFLOAT2 Float2ToXMFloat2(winrt::Windows::Foundation::Numerics::float2 i)
+    {
+        DirectX::XMFLOAT2 o;
+        XMStoreFloat2(&o, DirectX::XMLoadFloat2(&i));
+        return o;
+    };
 } // namespace DXHelper
