@@ -42,6 +42,7 @@
 
 #include <openxr/openxr_msft_holographic_remoting.h>
 #include <openxr/openxr_msft_remoting_frame_mirroring.h>
+#include <openxr/openxr_msft_remoting_speech.h>
 
 #include <XrUtility/XrError.h>
 #include <XrUtility/XrHandle.h>

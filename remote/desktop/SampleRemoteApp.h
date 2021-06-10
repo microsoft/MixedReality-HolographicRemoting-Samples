@@ -19,8 +19,8 @@
 #include <holographic/Speech.h>
 #include <holographic/SpinningCubeRenderer.h>
 
-#include <content/PerceptionDeviceHandler.h>
 #include <content/QRCodeRenderer.h>
+#include <content/SceneUnderstandingRenderer.h>
 #include <content/SpatialSurfaceMeshRenderer.h>
 
 #include <memory>
@@ -119,11 +119,20 @@ private:
     // Exports a test anchor via SpatialAnchorExporter.
     winrt::fire_and_forget ExportPosition();
 
+    // Triggers all the capability requests and creates the SpatialSurfaceMeshRenderer.
+    void InitializeAccessToFeatures();
+
     // Request access for eyes pose data.
     void RequestEyesPoseAccess();
 
-    // Create the perception device handler which is required for qr code tracking.
-    winrt::fire_and_forget CreatePerceptionDeviceHandler();
+    // Request access for scene observer data.
+    winrt::fire_and_forget RequestSceneObserverAccess();
+
+    // Request updates for qr code watcher data.
+    winrt::fire_and_forget RequestQRCodeWatcherUpdates();
+
+    // Compute scene update and toggle rendering mode.
+    void ToggleSceneUnderstanding();
 
     // Clears event registration state. Used when changing to a new HolographicSpace
     // and when tearing down SampleRemoteApp.
@@ -213,8 +222,11 @@ private:
     std::shared_ptr<SpatialInputHandler> m_spatialInputHandler;
     std::shared_ptr<SpatialInputRenderer> m_spatialInputRenderer;
 
-    // Handles perception root objects and their events/updates
-    std::shared_ptr<PerceptionDeviceHandler> m_perceptionDeviceHandler;
+    // Renders scene objects.
+    std::atomic<bool> m_hasSceneObserverAccess = false;
+    std::shared_ptr<SceneUnderstandingRenderer> m_sceneUnderstandingRenderer;
+
+    // Renders qr codes.
     std::unique_ptr<QRCodeRenderer> m_qrCodeRenderer;
 
     // Event registration tokens.
@@ -258,4 +270,8 @@ private:
     winrt::Microsoft::Holographic::AppRemoting::IDataChannel2::OnClosed_revoker m_customChannelClosedEventRevoker;
     std::chrono::high_resolution_clock::time_point m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
 #endif
+
+    winrt::Microsoft::MixedReality::QR::QRCodeWatcher m_qrWatcher{nullptr};
+    winrt::Microsoft::MixedReality::QR::QRCodeWatcher::Added_revoker m_qrAddedRevoker;
+    winrt::Microsoft::MixedReality::QR::QRCodeWatcher::Updated_revoker m_qrUpdatedRevoker;
 };

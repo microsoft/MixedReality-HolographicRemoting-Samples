@@ -34,6 +34,20 @@ protected:
 
     std::future<void> CreateDeviceDependentResourcesInternal();
 
+    static void AppendColoredTriangle(
+        DirectX::XMFLOAT3 p0,
+        DirectX::XMFLOAT3 p1,
+        DirectX::XMFLOAT3 p2,
+        DirectX::XMFLOAT3 color,
+        std::vector<VertexPositionNormalColor>& vertices);
+
+    static void AppendColoredTriangle(
+        winrt::Windows::Foundation::Numerics::float3 p0,
+        winrt::Windows::Foundation::Numerics::float3 p1,
+        winrt::Windows::Foundation::Numerics::float3 p2,
+        winrt::Windows::Foundation::Numerics::float3 color,
+        std::vector<VertexPositionNormalColor>& vertices);
+
     // Cached pointer to device resources.
     std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
 
@@ -55,7 +69,7 @@ private:
     uint32_t m_indexCount = 0;
 
     // Variables used with the rendering loop.
-    bool m_loadingComplete = false;
+    std::atomic<bool> m_loadingComplete = false;
 
     // If the current D3D Device supports VPRT, we can avoid using a geometry
     // shader just to set the render target array index.

@@ -22,7 +22,7 @@ struct PixelShaderInput
     uint        idx         : TEXCOORD0;
 };
 
-// The pixel shader applies Blinn-Phong BRDF shading.
+// Simple pixel shader.
 min16float4 main(PixelShaderInput input) : SV_TARGET
 {
     return min16float4(input.color, 1.f) * min16float4(colorFilter);

@@ -25,25 +25,6 @@
 #include <winrt/Windows.Perception.People.h>
 #include <winrt/Windows.Perception.Spatial.h>
 
-namespace
-{
-    using namespace DirectX;
-
-    void AppendColoredTriangle(XMFLOAT3 p0, XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 color, std::vector<VertexPositionNormalColor>& vertices)
-    {
-        VertexPositionNormalColor vertex;
-        vertex.color = color;
-        vertex.normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
-
-        vertex.pos = p0;
-        vertices.push_back(vertex);
-        vertex.pos = p1;
-        vertices.push_back(vertex);
-        vertex.pos = p2;
-        vertices.push_back(vertex);
-    }
-} // namespace
-
 SpatialInputRenderer::SpatialInputRenderer(
     const std::shared_ptr<DXHelper::DeviceResources>& deviceResources,
     winrt::Windows::UI::Input::Spatial::SpatialInteractionManager interactionManager)

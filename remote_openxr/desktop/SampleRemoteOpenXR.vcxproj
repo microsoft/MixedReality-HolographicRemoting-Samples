@@ -21,7 +21,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C3E46858-377B-3010-AEA6-30315A9BB5A7}</ProjectGuid>
+    <ProjectGuid>{BDD6541B-7845-3E17-B3C6-6011A4343E9E}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
@@ -80,7 +80,6 @@
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <CompileAs>CompileAsCpp</CompileAs>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -131,7 +130,6 @@
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
       <ConformanceMode>true</ConformanceMode>
       <ControlFlowGuard>Guard</ControlFlowGuard>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -182,7 +180,6 @@
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -238,13 +235,23 @@
     <ClInclude Include=".\DxUtility.h" />
     <ClCompile Include=".\SampleShared\CommandLineUtility.cpp" />
     <ClCompile Include=".\SampleShared\SampleWindowWin32.cpp" />
-    <Image Include=".\Assets\LockScreenLogo.scale-200.png" />
-    <Image Include=".\Assets\SplashScreen.scale-200.png" />
-    <Image Include=".\Assets\Square150x150Logo.scale-200.png" />
-    <Image Include=".\Assets\Square44x44Logo.scale-200.png" />
-    <Image Include=".\Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Image Include=".\Assets\StoreLogo.png" />
-    <Image Include=".\Assets\Wide310x150Logo.scale-200.png" />
+    <Image Include=".\Assets\LockScreenLogo.scale-200.png">
+    </Image>
+    <Image Include=".\Assets\SplashScreen.scale-200.png">
+    </Image>
+    <Image Include=".\Assets\Square150x150Logo.scale-200.png">
+    </Image>
+    <Image Include=".\Assets\Square44x44Logo.scale-200.png">
+    </Image>
+    <Image Include=".\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+    </Image>
+    <Image Include=".\Assets\StoreLogo.png">
+    </Image>
+    <Image Include=".\Assets\Wide310x150Logo.scale-200.png">
+    </Image>
+    <None Include=".\OpenXRSpeechGrammar.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <AppxManifest Include=".\Package.appxmanifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -252,6 +259,6 @@
     <Import Project="packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets" Condition="Exists('packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets')" />
     <Import Project="packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets" Condition="Exists('packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.5.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.5.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.6.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.6.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
   </ImportGroup>
 </Project>

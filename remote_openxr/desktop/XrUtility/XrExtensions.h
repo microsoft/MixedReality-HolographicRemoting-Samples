@@ -48,10 +48,19 @@
 #define FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_)
 #endif
 
-#define FOR_EACH_SAMPLE_EXTENSION_FUNCTION(_) \
-    FOR_EACH_D3D11_EXTENSION_FUNCTION(_)      \
-    FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_)       \
-    FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_)
+#if XR_MSFT_holographic_remoting_speech
+#define FOR_EACH_HAR_EXPERIMENTAL_SPEECH_EXTENSION_FUNCTION(_) \
+    _(xrInitializeRemotingSpeechMSFT)                          \
+    _(xrRetrieveRemotingSpeechRecognizedTextMSFT)
+#else
+#define FOR_EACH_HAR_EXPERIMENTAL_SPEECH_EXTENSION_FUNCTION(_)
+#endif
+
+#define FOR_EACH_SAMPLE_EXTENSION_FUNCTION(_)       \
+    FOR_EACH_D3D11_EXTENSION_FUNCTION(_)            \
+    FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_)             \
+    FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_) \
+    FOR_EACH_HAR_EXPERIMENTAL_SPEECH_EXTENSION_FUNCTION(_)
 
 #define GET_INSTANCE_PROC_ADDRESS(name) \
     (void)xrGetInstanceProcAddr(instance, #name, reinterpret_cast<PFN_xrVoidFunction*>(const_cast<PFN_##name*>(&name)));

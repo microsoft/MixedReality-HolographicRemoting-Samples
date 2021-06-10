@@ -26,11 +26,13 @@ namespace {
         };
 
         constexpr XrVector3f Red{1, 0, 0};
-        constexpr XrVector3f DarkRed{0.25f, 0, 0};
         constexpr XrVector3f Green{0, 1, 0};
-        constexpr XrVector3f DarkGreen{0, 0.25f, 0};
         constexpr XrVector3f Blue{0, 0, 1};
-        constexpr XrVector3f DarkBlue{0, 0, 0.25f};
+        constexpr XrVector3f Yellow{0, 1, 1};
+        constexpr XrVector3f Purple{1, 0, 1};
+        constexpr XrVector3f Brown{1, 1, 0};
+        constexpr XrVector3f Black{0, 0, 0};
+        constexpr XrVector3f White{1, 1, 1};
 
         // Vertices for a 1x1x1 meter cube. (Left/Right, Top/Bottom, Front/Back)
         constexpr XrVector3f LBB{-0.5f, -0.5f, -0.5f};
@@ -45,22 +47,34 @@ namespace {
 #define CUBE_SIDE(V1, V2, V3, V4, V5, V6, COLOR) {V1, COLOR}, {V2, COLOR}, {V3, COLOR}, {V4, COLOR}, {V5, COLOR}, {V6, COLOR},
 
         constexpr Vertex c_cubeVertices[] = {
-            CUBE_SIDE(LTB, LBF, LBB, LTB, LTF, LBF, DarkRed)   // -X
-            CUBE_SIDE(RTB, RBB, RBF, RTB, RBF, RTF, Red)       // +X
-            CUBE_SIDE(LBB, LBF, RBF, LBB, RBF, RBB, DarkGreen) // -Y
-            CUBE_SIDE(LTB, RTB, RTF, LTB, RTF, LTF, Green)     // +Y
-            CUBE_SIDE(LBB, RBB, RTB, LBB, RTB, LTB, DarkBlue)  // -Z
-            CUBE_SIDE(LBF, LTF, RTF, LBF, RTF, RBF, Blue)      // +Z
+            {LBB, Black},
+            {LBF, Blue},
+            {LTB, Green},
+            {LTF, Yellow},
+            {RBB, Red},
+            {RBF, Purple},
+            {RTB, Brown},
+            {RTF, White},
         };
 
-        // Winding order is clockwise. Each side uses a different color.
         constexpr unsigned short c_cubeIndices[] = {
-            0,  1,  2,  3,  4,  5,  // -X
-            6,  7,  8,  9,  10, 11, // +X
-            12, 13, 14, 15, 16, 17, // -Y
-            18, 19, 20, 21, 22, 23, // +Y
-            24, 25, 26, 27, 28, 29, // -Z
-            30, 31, 32, 33, 34, 35, // +Z
+            2, 1, 0, // -x
+            2, 3, 1,
+
+            6, 4, 5, // +x
+            6, 5, 7,
+
+            0, 1, 5, // -y
+            0, 5, 4,
+
+            2, 6, 7, // +y
+            2, 7, 3,
+
+            0, 4, 6, // -z
+            0, 6, 2,
+
+            1, 3, 7, // +z
+            1, 7, 5,
         };
 
         struct ModelConstantBuffer {
@@ -69,6 +83,10 @@ namespace {
 
         struct ViewProjectionConstantBuffer {
             DirectX::XMFLOAT4X4 ViewProjection[2];
+        };
+
+        struct ColorFilterConstantBuffer {
+            DirectX::XMFLOAT4 colorFilter;
         };
 
         constexpr uint32_t MaxViewInstance = 2;
@@ -91,6 +109,9 @@ namespace {
             cbuffer ViewProjectionConstantBuffer : register(b1) {
                 float4x4 ViewProjection[2];
             };
+            cbuffer ColorFilterConstantBuffer: register(b0) {
+                float4 colorFilter;
+            };
 
             VSOutput MainVS(VSInput input) {
                 VSOutput output;
@@ -101,7 +122,7 @@ namespace {
             }
 
             float4 MainPS(VSOutput input) : SV_TARGET {
-                return float4(input.Color, 1);
+                return float4(input.Color, 1) * colorFilter;
             }
             )_";
 
@@ -144,6 +165,10 @@ namespace {
             const CD3D11_BUFFER_DESC viewProjectionConstantBufferDesc(sizeof(CubeShader::ViewProjectionConstantBuffer),
                                                                       D3D11_BIND_CONSTANT_BUFFER);
             CHECK_HRCMD(m_device->CreateBuffer(&viewProjectionConstantBufferDesc, nullptr, m_viewProjectionCBuffer.put()));
+
+            const CD3D11_BUFFER_DESC colorFilterConstantBufferDesc(sizeof(CubeShader::ColorFilterConstantBuffer),
+                                                                   D3D11_BIND_CONSTANT_BUFFER);
+            CHECK_HRCMD(m_device->CreateBuffer(&colorFilterConstantBufferDesc, nullptr, m_colorFilterCBuffer.put()));
 
             const D3D11_SUBRESOURCE_DATA vertexBufferData{CubeShader::c_cubeVertices};
             const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(CubeShader::c_cubeVertices), D3D11_BIND_VERTEX_BUFFER);
@@ -222,9 +247,12 @@ namespace {
             ID3D11RenderTargetView* renderTargets[] = {renderTargetView.get()};
             m_deviceContext->OMSetRenderTargets((UINT)std::size(renderTargets), renderTargets, depthStencilView.get());
 
-            ID3D11Buffer* const constantBuffers[] = {m_modelCBuffer.get(), m_viewProjectionCBuffer.get()};
-            m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(constantBuffers), constantBuffers);
+            ID3D11Buffer* const vsConstantBuffers[] = {m_modelCBuffer.get(), m_viewProjectionCBuffer.get()};
+            m_deviceContext->VSSetConstantBuffers(0, (UINT)std::size(vsConstantBuffers), vsConstantBuffers);
             m_deviceContext->VSSetShader(m_vertexShader.get(), nullptr, 0);
+
+            ID3D11Buffer* const psConstantBuffers[] = {m_colorFilterCBuffer.get()};
+            m_deviceContext->PSSetConstantBuffers(0, (UINT)std::size(psConstantBuffers), psConstantBuffers);
             m_deviceContext->PSSetShader(m_pixelShader.get(), nullptr, 0);
 
             CubeShader::ViewProjectionConstantBuffer viewProjectionCBufferData{};
@@ -257,6 +285,10 @@ namespace {
                                          DirectX::XMMatrixTranspose(scaleMatrix * xr::math::LoadXrPose(cube->PoseInAppSpace)));
                 m_deviceContext->UpdateSubresource(m_modelCBuffer.get(), 0, nullptr, &model, 0, 0);
 
+                CubeShader::ColorFilterConstantBuffer color;
+                color.colorFilter = DirectX::XMFLOAT4(cube->colorFilter.x, cube->colorFilter.y, cube->colorFilter.z, 1.0f);
+                m_deviceContext->UpdateSubresource(m_colorFilterCBuffer.get(), 0, nullptr, &color, 0, 0);
+
                 // Draw the cube.
                 m_deviceContext->DrawIndexedInstanced((UINT)std::size(CubeShader::c_cubeIndices), viewInstanceCount, 0, 0, 0);
             }
@@ -276,6 +308,7 @@ namespace {
         winrt::com_ptr<ID3D11InputLayout> m_inputLayout;
         winrt::com_ptr<ID3D11Buffer> m_modelCBuffer;
         winrt::com_ptr<ID3D11Buffer> m_viewProjectionCBuffer;
+        winrt::com_ptr<ID3D11Buffer> m_colorFilterCBuffer;
         winrt::com_ptr<ID3D11Buffer> m_cubeVertexBuffer;
         winrt::com_ptr<ID3D11Buffer> m_cubeIndexBuffer;
         winrt::com_ptr<ID3D11DepthStencilState> m_reversedZDepthNoStencilTest;

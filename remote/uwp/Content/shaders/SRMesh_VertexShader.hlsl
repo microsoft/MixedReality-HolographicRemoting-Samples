@@ -24,8 +24,8 @@ cbuffer ViewProjectionConstantBuffer : register(b1)
 // Per-vertex data used as input to the vertex shader.
 struct VertexShaderInput
 {
-    float4      pos      : POSITION;
-    uint        instId   : SV_InstanceID;
+    float4  pos      : POSITION;
+    uint    instId   : SV_InstanceID;
 };
 
 // Per-vertex data passed to the geometry shader.
@@ -33,8 +33,8 @@ struct VertexShaderInput
 // using the value of viewId.
 struct VertexShaderOutput
 {
-    float4      pos      : SV_POSITION;
-    uint        viewId   : TEXCOORD1;  // SV_InstanceID % 2
+    float4  pos      : SV_POSITION;
+    uint    viewId   : TEXCOORD1;  // SV_InstanceID % 2
 };
 
 // Simple shader to do vertex processing on the GPU.

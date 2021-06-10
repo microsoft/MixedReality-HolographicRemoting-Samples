@@ -156,3 +156,38 @@ void RenderableObject::ReleaseDeviceDependentResources()
     m_modelConstantBuffer = nullptr;
     m_rasterizerState = nullptr;
 }
+
+void RenderableObject::AppendColoredTriangle(
+    DirectX::XMFLOAT3 p0,
+    DirectX::XMFLOAT3 p1,
+    DirectX::XMFLOAT3 p2,
+    DirectX::XMFLOAT3 color,
+    std::vector<VertexPositionNormalColor>& vertices)
+{
+    VertexPositionNormalColor vertex;
+    vertex.color = color;
+    vertex.normal = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+    vertex.pos = p0;
+    vertices.push_back(vertex);
+    vertex.pos = p1;
+    vertices.push_back(vertex);
+    vertex.pos = p2;
+    vertices.push_back(vertex);
+}
+
+void RenderableObject::AppendColoredTriangle(
+    winrt::Windows::Foundation::Numerics::float3 p0,
+    winrt::Windows::Foundation::Numerics::float3 p1,
+    winrt::Windows::Foundation::Numerics::float3 p2,
+    winrt::Windows::Foundation::Numerics::float3 color,
+    std::vector<VertexPositionNormalColor>& vertices)
+{
+
+    AppendColoredTriangle(
+        DXHelper::Float3ToXMFloat3(p0),
+        DXHelper::Float3ToXMFloat3(p1),
+        DXHelper::Float3ToXMFloat3(p2),
+        DXHelper::Float3ToXMFloat3(color),
+        vertices);
+}

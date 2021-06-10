@@ -95,7 +95,8 @@ namespace DXHelper
         immediateContext->OMSetBlendState(blendState.get(), blendFactor, sampleMask);
         immediateContext->IASetPrimitiveTopology(primitiveTopoloy);
         immediateContext->IASetInputLayout(inputLayout.get());
-        immediateContext->IASetVertexBuffers(0, 1, vertexBuffer.put(), &vertexBufferStrides, &vertexBufferOffsets);
+        ID3D11Buffer* vb = vertexBuffer.get();
+        immediateContext->IASetVertexBuffers(0, 1, &vb, &vertexBufferStrides, &vertexBufferOffsets);
         immediateContext->IASetIndexBuffer(indexBuffer.get(), indexBufferFormat, indexBufferOffset);
     }
 
@@ -138,9 +139,20 @@ namespace DXHelper
     // Check for SDK Layer support.
     inline bool SdkLayersAvailable()
     {
+        D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_NULL;
+
+#    if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+        if (GetModuleHandleW(L"renderdoc.dll") != NULL)
+        {
+            // In theory there is no need to create a real hardware device for this check.
+            // Unfortunately, RenderDoc can fail without a real hardware device.
+            driverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE;
+        }
+#    endif
+
         HRESULT hr = D3D11CreateDevice(
             nullptr,
-            D3D_DRIVER_TYPE_NULL, // There is no need to create a real hardware device.
+            driverType,
             0,
             D3D11_CREATE_DEVICE_DEBUG, // Check for the SDK layers.
             nullptr,                   // Any feature level will do.
@@ -154,4 +166,18 @@ namespace DXHelper
         return SUCCEEDED(hr);
     }
 #endif
+
+    inline DirectX::XMFLOAT3 Float3ToXMFloat3(winrt::Windows::Foundation::Numerics::float3 i)
+    {
+        DirectX::XMFLOAT3 o;
+        XMStoreFloat3(&o, DirectX::XMLoadFloat3(&i));
+        return o;
+    };
+
+    inline DirectX::XMFLOAT2 Float2ToXMFloat2(winrt::Windows::Foundation::Numerics::float2 i)
+    {
+        DirectX::XMFLOAT2 o;
+        XMStoreFloat2(&o, DirectX::XMLoadFloat2(&i));
+        return o;
+    };
 } // namespace DXHelper

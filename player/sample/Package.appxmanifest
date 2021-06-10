@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2" xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" IgnorableNamespaces="uap mp uap2 uap5">
-  <Identity Name="SampleHolographicRemotingPlayer" Publisher="CN=SampleHolographicRemotingPlayer" Version="2.5.0.0" />
+  <Identity Name="SampleHolographicRemotingPlayer" Publisher="CN=SampleHolographicRemotingPlayer" Version="2.6.0.0" />
   <mp:PhoneIdentity PhoneProductId="b65c9a46-d0b3-4954-829a-6a60bed54d0a" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Sample Holographic AppRemoting Player</DisplayName>

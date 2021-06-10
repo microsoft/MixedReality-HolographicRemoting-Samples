@@ -84,7 +84,6 @@
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -137,7 +136,6 @@
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
       <ConformanceMode>true</ConformanceMode>
       <ControlFlowGuard>Guard</ControlFlowGuard>
@@ -190,7 +188,6 @@
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
       <CompileAsWinRT>false</CompileAsWinRT>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -268,14 +265,10 @@
     <ClInclude Include="..\common\holographic\SpinningCubeRenderer.h" />
     <ClCompile Include="..\common\holographic\RemoteWindowHolographicUwp.cpp" />
     <ClInclude Include="..\common\holographic\RemoteWindowHolographicUwp.h" />
-    <ClCompile Include=".\Content\PerceptionDeviceHandler.cpp" />
-    <ClInclude Include=".\Content\PerceptionDeviceHandler.h" />
-    <ClCompile Include=".\Content\PerceptionTypes.cpp" />
-    <ClInclude Include=".\Content\PerceptionTypes.h" />
     <ClCompile Include=".\Content\QRCodeRenderer.cpp" />
     <ClInclude Include=".\Content\QRCodeRenderer.h" />
-    <ClCompile Include=".\Content\QRCodeTracker.cpp" />
-    <ClInclude Include=".\Content\QRCodeTracker.h" />
+    <ClCompile Include=".\Content\SceneUnderstandingRenderer.cpp" />
+    <ClInclude Include=".\Content\SceneUnderstandingRenderer.h" />
     <ClCompile Include=".\Content\SpatialSurfaceMeshRenderer.cpp" />
     <ClInclude Include=".\Content\SpatialSurfaceMeshRenderer.h" />
     <Image Include=".\Assets\LockScreenLogo.scale-200.png">
@@ -322,38 +315,63 @@
     </Image>
     <AppxManifest Include=".\Package.appxmanifest" />
     <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
+      <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
     <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShaderVprt.hlsl">
-      <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
+      <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
     <FXCompile Include=".\Content\shaders\SRMesh_VertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
       <EntryPointName>main</EntryPointName>
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\SU_VertexShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
     <FXCompile Include="..\common\d3d11\shaders\SimpleColor_PixelShader.hlsl">
-      <ShaderType>Pixel</ShaderType>
       <EntryPointName>main</EntryPointName>
+      <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
     <FXCompile Include=".\Content\shaders\SRMesh_PixelShader.hlsl">
-      <ShaderType>Pixel</ShaderType>
       <EntryPointName>main</EntryPointName>
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\SULabel_PixelShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\SUMesh_PixelShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\SUQuads_PixelShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
     <FXCompile Include="..\common\d3d11\shaders\SimpleColor_GeometryShader.hlsl">
-      <ShaderType>Geometry</ShaderType>
       <EntryPointName>main</EntryPointName>
+      <ShaderType>Geometry</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
     <FXCompile Include=".\Content\shaders\SRMesh_GeometryShader.hlsl">
-      <ShaderType>Geometry</ShaderType>
       <EntryPointName>main</EntryPointName>
+      <ShaderType>Geometry</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FXCompile>
+    <FXCompile Include=".\Content\shaders\SU_GeometryShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Geometry</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
     <None Include=".\SpeechGrammar.xml">
@@ -364,9 +382,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.props" />
+  <Import Project="packages\Microsoft.MixedReality.QR.0.5.2112\build\native\Microsoft.MixedReality.QR.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets" Condition="Exists('packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
+    <Import Project="packages\Microsoft.MixedReality.QR.0.5.2112\build\native\Microsoft.MixedReality.QR.targets" Condition="Exists('packages\Microsoft.MixedReality.QR.0.5.2112\build\native\Microsoft.MixedReality.QR.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.5.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.5.0\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.6.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.6.0\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>

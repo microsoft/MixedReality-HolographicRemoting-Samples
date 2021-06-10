@@ -11,13 +11,13 @@
 
 #pragma once
 
-#include <holographic/RenderableObject.h>
-
 #include <vector>
 
-#include <winrt/Windows.UI.Input.Spatial.h>
+#include <holographic/RenderableObject.h>
 
-class PerceptionDeviceHandler;
+#include <winrt/Microsoft.MixedReality.QR.h>
+#include <winrt/Windows.Perception.Spatial.h>
+#include <winrt/Windows.UI.Input.Spatial.h>
 
 struct RenderableQRCode
 {
@@ -30,14 +30,22 @@ class QRCodeRenderer : public RenderableObject
 public:
     QRCodeRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources);
 
-    void Update(
-        PerceptionDeviceHandler& perceptionDeviceHandler,
-        winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem);
+    void Update(winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem);
+
+    void OnAddedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code);
+
+    void OnUpdatedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code);
+
+    void Reset();
 
 private:
     void Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum) override;
 
 private:
     std::vector<VertexPositionNormalColor> m_vertices;
-    std::vector<RenderableQRCode> m_renderableQRCodes{};
+
+    std::map<winrt::Microsoft::MixedReality::QR::QRCode, winrt::Windows::Perception::Spatial::SpatialCoordinateSystem> m_qrCodes{};
+    std::vector<RenderableQRCode> m_renderableQrCodes{};
+
+    std::mutex m_mutex;
 };

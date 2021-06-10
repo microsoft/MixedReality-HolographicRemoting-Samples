@@ -75,7 +75,7 @@ namespace {
                         if (timeDelta > std::chrono::seconds(5)) {
                             m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
 
-                            if (!m_userDataChannelDestroyed) {
+                            if (!m_userDataChannelDestroyed && m_usingRemotingRuntime) {
                                 SendDataViaUserDataChannel(m_userDataChannel);
                             }
                         }
@@ -185,6 +185,55 @@ namespace {
             }
         }
 
+        bool LoadGrammarFile(std::vector<uint8_t>& grammarFileContent) {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+            char executablePath[MAX_PATH];
+            if (GetModuleFileNameA(NULL, executablePath, ARRAYSIZE(executablePath)) == 0) {
+                return false;
+            }
+
+            std::filesystem::path filename(executablePath);
+            filename = filename.replace_filename("OpenXRSpeechGrammar.xml");
+
+            if (!std::filesystem::exists(filename)) {
+                return false;
+            }
+
+            std::string grammarFilePath{filename.generic_u8string()};
+            std::ifstream grammarFileStream(grammarFilePath, std::ios::binary);
+            const size_t grammarFileSize = std::filesystem::file_size(filename);
+            if (!grammarFileStream.good() || grammarFileSize == 0) {
+                return false;
+            }
+
+            grammarFileContent.resize(grammarFileSize);
+            grammarFileStream.read(reinterpret_cast<char*>(grammarFileContent.data()), grammarFileSize);
+            if (grammarFileStream.fail()) {
+                return false;
+            }
+
+            return true;
+#else
+            return false;
+#endif
+        }
+
+        void InitializeSpeechRecognition(XrRemotingSpeechInitInfoMSFT& speechInitInfo) {
+            // Specify the speech recognition language.
+            strcpy_s(speechInitInfo.language, "en-US");
+
+            // Initialize the dictionary.
+            m_dictionaryEntries = {"Red", "Blue", "Green", "Aquamarine", "Default"};
+            speechInitInfo.dictionaryEntries = m_dictionaryEntries.data();
+            speechInitInfo.dictionaryEntriesCount = static_cast<uint32_t>(m_dictionaryEntries.size());
+
+            // Initialize the grammar file if it exists.
+            if (LoadGrammarFile(m_grammarFileContent)) {
+                speechInitInfo.grammarFileSize = static_cast<uint32_t>(m_grammarFileContent.size());
+                speechInitInfo.grammarFileContent = m_grammarFileContent.data();
+            }
+        }
+
         void CreateInstance() {
             CHECK(m_instance.Get() == XR_NULL_HANDLE);
 
@@ -198,6 +247,7 @@ namespace {
 
             createInfo.applicationInfo = {"SampleRemoteOpenXr", 1, "", 1, XR_CURRENT_API_VERSION};
             strcpy_s(createInfo.applicationInfo.applicationName, m_applicationName.c_str());
+
             CHECK_XRCMD(xrCreateInstance(&createInfo, m_instance.Put()));
 
             m_extensions.PopulateDispatchTable(m_instance.Get());
@@ -235,6 +285,7 @@ namespace {
             if (m_usingRemotingRuntime) {
                 CHECK(EnableExtensionIfSupported(XR_MSFT_HOLOGRAPHIC_REMOTING_EXTENSION_NAME));
                 CHECK(EnableExtensionIfSupported(XR_MSFT_HOLOGRAPHIC_REMOTING_FRAME_MIRRORING_EXTENSION_NAME));
+                CHECK(EnableExtensionIfSupported(XR_MSFT_HOLOGRAPHIC_REMOTING_SPEECH_EXTENSION_NAME));
             }
 
             // Additional optional extensions for enhanced functionality. Track whether enabled in m_optionalExtensions.
@@ -553,7 +604,16 @@ namespace {
             XrSessionCreateInfo createInfo{XR_TYPE_SESSION_CREATE_INFO};
             createInfo.next = &graphicsBinding;
             createInfo.systemId = m_systemId;
+
             CHECK_XRCMD(xrCreateSession(m_instance.Get(), &createInfo, m_session.Put()));
+
+            // If remoting speech extension is enabled
+            if (m_usingRemotingRuntime) {
+                XrRemotingSpeechInitInfoMSFT speechInitInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_SPEECH_INIT_INFO_MSFT)};
+                InitializeSpeechRecognition(speechInitInfo);
+
+                CHECK_XRCMD(m_extensions.xrInitializeRemotingSpeechMSFT(m_session.Get(), &speechInitInfo));
+            }
 
             XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
             std::vector<XrActionSet> actionSets = {m_actionSet.Get()};
@@ -758,6 +818,26 @@ namespace {
             return swapchain;
         }
 
+        void HandleRecognizedSpeechText(const std::string& text) {
+            if (text == "Red") {
+                m_cubeColorFilter = {1.0f, 0.0f, 0.0f};
+            } else if (text == "Green") {
+                m_cubeColorFilter = {0.0f, 1.0f, 0.0f};
+            } else if (text == "Blue") {
+                m_cubeColorFilter = {0.0f, 0.0f, 1.0f};
+            } else if (text == "Aquamarine") {
+                m_cubeColorFilter = {0.0f, 1.0f, 1.0f};
+            } else if (text == "Default") {
+                m_cubeColorFilter = {1.0f, 1.0f, 1.0f};
+            } else if (text == "Exit Program") {
+                CHECK_XRCMD(xrRequestExitSession(m_session.Get()));
+            } else if (text == "Reverse Direction") {
+                // Reverse the rotation direction of the spinning cube
+                // from anticlockwise to clockwise or vice versa.
+                m_rotationDirection *= -1;
+            }
+        }
+
         void ProcessEvents(bool* exitRenderLoop, bool* requestRestart) {
             *exitRenderLoop = *requestRestart = false;
 
@@ -816,6 +896,11 @@ namespace {
                 }
                 case XR_TYPE_REMOTING_EVENT_DATA_CONNECTED_MSFT: {
                     DEBUG_PRINT("Holographic Remoting: Connected.");
+
+#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+                    CreateUserDataChannel();
+                    m_userDataChannelDestroyed = false;
+#endif
                     break;
                 }
                 case XR_TYPE_REMOTING_EVENT_DATA_DISCONNECTED_MSFT: {
@@ -853,6 +938,33 @@ namespace {
                 }
 
 #endif
+                case XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZED_MSFT: {
+                    auto speechEventData = reinterpret_cast<const XrEventDataRemotingSpeechRecognizedMSFT*>(&eventData);
+                    std::string text;
+                    uint32_t dataBytesCount = 0;
+                    CHECK_XRCMD(m_extensions.xrRetrieveRemotingSpeechRecognizedTextMSFT(
+                        m_session.Get(), speechEventData->packetId, 0, &dataBytesCount, nullptr));
+                    text.resize(dataBytesCount);
+                    CHECK_XRCMD(m_extensions.xrRetrieveRemotingSpeechRecognizedTextMSFT(
+                        m_session.Get(), speechEventData->packetId, static_cast<uint32_t>(text.size()), &dataBytesCount, text.data()));
+                    HandleRecognizedSpeechText(text);
+                    break;
+                }
+
+                case XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZER_STATE_CHANGED_MSFT: {
+                    auto recognizerStateEventData =
+                        reinterpret_cast<const XrEventDataRemotingSpeechRecognizerStateChangedMSFT*>(&eventData);
+                    auto state = recognizerStateEventData->speechRecognizerState;
+                    if (strlen(recognizerStateEventData->stateMessage) > 0) {
+                        DEBUG_PRINT("Speech recognizer initialization error: %s.", recognizerStateEventData->stateMessage);
+                    }
+
+                    if (state == XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZATION_FAILED_MSFT) {
+                        DEBUG_PRINT("Remoting speech recognizer initialization failed.");
+                    }
+
+                    break;
+                }
 
                 case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:
                 case XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED:
@@ -1068,11 +1180,15 @@ namespace {
                 return space;
             };
 
+            m_cubeColorFilter = {1, 1, 1};
+            m_rotationDirection = 1.0f;
+
             {
                 // Initialize a big cube 1 meter in front of user.
                 Hologram hologram{};
                 hologram.Cube.Scale = {0.25f, 0.25f, 0.25f};
                 hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({0, 0, -1}));
+                hologram.Cube.colorFilter = m_cubeColorFilter;
                 m_holograms.push_back(std::move(hologram));
                 m_mainCubeIndex = (uint32_t)m_holograms.size() - 1;
             }
@@ -1082,6 +1198,7 @@ namespace {
                 Hologram hologram{};
                 hologram.Cube.Scale = {0.1f, 0.1f, 0.1f};
                 hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({0, 0, -1}));
+                hologram.Cube.colorFilter = m_cubeColorFilter;
                 m_holograms.push_back(std::move(hologram));
                 m_spinningCubeIndex = (uint32_t)m_holograms.size() - 1;
 
@@ -1104,8 +1221,8 @@ namespace {
 
                 const XrDuration duration = predictedDisplayTime - m_spinningCubeStartTime;
                 const float seconds = convertToSeconds(duration);
-                const float angle = DirectX::XM_PIDIV2 * seconds; // Rotate 90 degrees per second
-                const float radius = 0.5f;                        // Rotation radius in meters
+                const float angle = m_rotationDirection * DirectX::XM_PIDIV2 * seconds; // Rotate 90 degrees per second
+                const float radius = 0.5f;                                              // Rotation radius in meters
 
                 // Let spinning cube rotate around the main cube's y axis.
                 XrPosef pose;
@@ -1139,6 +1256,9 @@ namespace {
                         }
                         visibleCubes.push_back(&cube);
                     }
+
+                    // Update cube color
+                    cube.colorFilter = m_cubeColorFilter;
                 }
             };
 
@@ -1225,6 +1345,8 @@ namespace {
             m_holograms.clear();
             m_renderResources.reset();
             m_appSpace.Reset();
+            m_cubesInHand[LeftSide].Space.Reset();
+            m_cubesInHand[RightSide].Space.Reset();
             m_session.Reset();
             m_sessionRunning = false;
 
@@ -1262,27 +1384,30 @@ namespace {
                 *exitRenderLoop = true;
                 *requestRestart = false;
             } else {
-                std::scoped_lock lock{m_keyPressedMutex};
-                while (!m_keyPressedQueue.empty()) {
-                    wchar_t keyPress = m_keyPressedQueue.front();
-                    m_keyPressedQueue.pop();
+                while (true) {
+                    wchar_t keyPress;
+                    {
+                        std::scoped_lock lock{m_keyPressedMutex};
+
+                        if (m_keyPressedQueue.empty()) {
+                            break;
+                        }
+
+                        keyPress = m_keyPressedQueue.front();
+                        m_keyPressedQueue.pop();
+                    }
 
                     switch (keyPress) {
                     case ' ': {
                         if (m_session.Get() == XR_NULL_HANDLE) {
                             ConnectOrListen();
                             InitializeSession();
-
-#ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-                            CreateUserDataChannel();
-                            m_userDataChannelDestroyed = false;
-#endif
                         }
                         break;
                     }
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
                     case 'x': {
-                        if (m_sessionRunning && !m_userDataChannelDestroyed) {
+                        if (m_sessionRunning && m_usingRemotingRuntime && !m_userDataChannelDestroyed) {
                             DestroyUserDataChannel(m_userDataChannel);
                             m_userDataChannelDestroyed = true;
                         }
@@ -1290,14 +1415,14 @@ namespace {
                     }
 #endif
                     case 'd': {
-                        if (m_sessionRunning) {
-                            Disconnect();
+                        if (m_sessionRunning && m_usingRemotingRuntime) {
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
                             if (!m_userDataChannelDestroyed) {
                                 DestroyUserDataChannel(m_userDataChannel);
                                 m_userDataChannelDestroyed = true;
                             }
 #endif
+                            Disconnect();
                         }
                         break;
                     }
@@ -1408,6 +1533,10 @@ namespace {
         XrRemotingDataChannelMSFT m_userDataChannel;
         bool m_userDataChannelDestroyed = false;
 #endif
+        std::vector<uint8_t> m_grammarFileContent;
+        std::vector<const char*> m_dictionaryEntries;
+        XrVector3f m_cubeColorFilter{1, 1, 1};
+        float m_rotationDirection = 1.0f;
     }; // namespace
 } // namespace
 

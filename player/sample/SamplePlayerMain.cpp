@@ -35,6 +35,11 @@ using namespace winrt::Windows::Perception::Spatial;
 using namespace winrt::Windows::UI::Core;
 using namespace winrt::Windows::UI::Input::Spatial;
 
+namespace
+{
+    constexpr int64_t s_loadingDotsMaxCount = 3;
+}
+
 SamplePlayerMain::SamplePlayerMain()
 {
     m_canCommitDirect3D11DepthBuffer = winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
@@ -143,7 +148,7 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds, const Hologr
         // Update the accumulated statistics with the statistics from the last frame.
         m_statisticsHelper.Update(m_playerContext.LastFrameStatistics());
 
-        if (m_statisticsHelper.StatisticsHaveChanged())
+        if (m_statisticsHelper.StatisticsHaveChanged() || !m_firstRemoteFrameWasBlitted)
         {
             UpdateStatusDisplay();
         }
@@ -237,14 +242,14 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                     const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
 
                     // Reduce the fov of the statistics view.
-                    bool isLandscape = m_playerOptions.m_showStatistics && connected && !m_trackingLost;
+                    bool useLandscape = m_playerOptions.m_showStatistics && connected && !m_trackingLost && m_firstRemoteFrameWasBlitted;
 
                     // Pass data from the camera resources to the status display.
                     m_statusDisplay->UpdateTextScale(
                         pCameraResources->GetProjectionTransform(),
                         pCameraResources->GetRenderTargetSize().Width,
                         pCameraResources->GetRenderTargetSize().Height,
-                        isLandscape,
+                        useLandscape,
                         pCameraResources->IsOpaque());
                 }
 
@@ -280,6 +285,10 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                         // Clear the back buffer and depth stencil view.
                         deviceContext->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
                         deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+                    }
+                    else
+                    {
+                        m_firstRemoteFrameWasBlitted = true;
                     }
 
                     // Render local content.
@@ -362,6 +371,15 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
 
     // Projection transform always reflects what has been configured on the remote side.
     m_playerContext.ProjectionTransformConfig(ProjectionTransformMode::Remote);
+
+    // Enable 10% overRendering with 10% resolution increase. With this configuration, the viewport gets increased by 5% in each direction
+    // and the DPI remains equal.
+    OverRenderingConfig overRenderingConfig;
+    overRenderingConfig.HorizontalViewportIncrease = 0.1f;
+    overRenderingConfig.VerticalViewportIncrease = 0.1f;
+    overRenderingConfig.HorizontalResolutionIncrease = 0.1f;
+    overRenderingConfig.VerticalResolutionIncrease = 0.1f;
+    m_playerContext.ConfigureOverRendering(overRenderingConfig);
 
     // Register event handlers for app lifecycle.
     m_suspendingEventRevoker = CoreApplication::Suspending(winrt::auto_revoke, {this, &SamplePlayerMain::OnSuspending});
@@ -723,6 +741,23 @@ void SamplePlayerMain::UpdateStatusDisplay()
                 m_statusDisplay->AddLine(StatusDisplay::Line{L"Diagnostics Enabled", StatusDisplay::Small, StatusDisplay::Yellow});
             }
         }
+        else if (m_playerContext.ConnectionState() == ConnectionState::Connected && !m_firstRemoteFrameWasBlitted)
+        {
+            using namespace std::chrono;
+
+            int64_t loadingDotsCount =
+                (duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count() / 250) % (s_loadingDotsMaxCount + 1);
+
+            std::wstring dotsText;
+            for (int64_t i = 0; i < loadingDotsCount; ++i)
+            {
+                dotsText.append(L".");
+            }
+
+            m_statusDisplay->AddLine(StatusDisplay::Line{L"", StatusDisplay::Medium, StatusDisplay::White, 7});
+            m_statusDisplay->AddLine(StatusDisplay::Line{L"Receiving", StatusDisplay::Medium, StatusDisplay::White, 0.3f});
+            m_statusDisplay->AddLine(StatusDisplay::Line{dotsText, StatusDisplay::Medium, StatusDisplay::White});
+        }
         else
         {
             if (m_playerOptions.m_showStatistics)
@@ -791,6 +826,8 @@ void SamplePlayerMain::OnDisconnected(ConnectionFailureReason reason)
 {
     m_errorHelper.ClearErrors();
     bool error = m_errorHelper.ProcessOnDisconnect(reason);
+
+    m_firstRemoteFrameWasBlitted = false;
 
     UpdateStatusDisplay();
 
