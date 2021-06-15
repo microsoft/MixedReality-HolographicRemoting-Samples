@@ -47,12 +47,26 @@ The player sample shows how to write an application running on your Microsoft Ho
 
 ## Prerequisites
 
-* Visual Studio 2017 
-    * With C++ Build Packages
-    * With C++ UWP Build Packages
-    * With Spectre Mitigation Libraries Packages (for release builds only)
-    * With ARM and ARM64 C++ Packages
-* Windows SDK 10.0.18362.0 (for Windows 10, version 1903)
+Visual Studio 2019 with
+
+- Workloads:
+    - Desktop development with C++
+    - Universal Windows Platform development
+- Individual components
+    - Windows 10 SDK (10.0.19041.0)
+    - MSVC v142 - VS 2019 C++ x64/x86 build tools (newest)
+    - MSVC v142 - VS 2019 C++ x64/x86 Spectre-mitigated libs (newest)
+    - Net Native
+    - .Net Framework 4.5 targeting pack
+    - Nuget Package manager        
+    - C++ 2019 Redistributable Update
+
+For ARM builds additionally
+- Individual components
+    - MSVC v142 - VS 2019 C++ ARM64 build tools (newest)
+    - MSVC v142 - VS 2019 C++ ARM64 Spectre-mitigated libs (newest)
+    - C++ Universal Windows Platform support for v142 build tools (ARM64)
+
 
 ## Setup
 
