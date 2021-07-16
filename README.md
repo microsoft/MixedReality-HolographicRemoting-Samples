@@ -16,7 +16,7 @@ products:
 
 | Holographic Remoting version |
 :-----------------: |
-|2.5.0 |
+|2.6.0 |
 
 The [Holographic Remoting Samples](https://github.com/microsoft/MixedReality-HolographicRemoting-Samples) repository hosts sample applications for [Holographic Remoting](https://docs.microsoft.com/en-us/windows/mixed-reality/holographic-remoting-player). The two remote samples show how to write an application for streaming content to a Microsoft HoloLens 2 or a PC running Windows Mixed Reality.
 
