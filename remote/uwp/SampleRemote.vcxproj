@@ -383,11 +383,11 @@
     </None>
   </ItemGroup>
   <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.props" />
-  <Import Project="packages\Microsoft.MixedReality.QR.0.5.2112\build\native\Microsoft.MixedReality.QR.props" />
+  <Import Project="packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets" Condition="Exists('packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
-    <Import Project="packages\Microsoft.MixedReality.QR.0.5.2112\build\native\Microsoft.MixedReality.QR.targets" Condition="Exists('packages\Microsoft.MixedReality.QR.0.5.2112\build\native\Microsoft.MixedReality.QR.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
+    <Import Project="packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets" Condition="Exists('packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="packages\Microsoft.Holographic.Remoting.2.6.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.6.0\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
