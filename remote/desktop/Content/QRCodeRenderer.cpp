@@ -29,12 +29,6 @@ QRCodeRenderer::QRCodeRenderer(const std::shared_ptr<DXHelper::DeviceResources>&
 {
 }
 
-void QRCodeRenderer::OnAddedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code)
-{
-    std::scoped_lock lock(m_mutex);
-    m_qrCodes.insert({code, nullptr});
-}
-
 void QRCodeRenderer::OnUpdatedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code)
 {
     std::scoped_lock lock(m_mutex);

@@ -32,8 +32,6 @@ public:
 
     void Update(winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem);
 
-    void OnAddedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code);
-
     void OnUpdatedQRCode(const winrt::Microsoft::MixedReality::QR::QRCode& code);
 
     void Reset();

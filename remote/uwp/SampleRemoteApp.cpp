@@ -159,7 +159,15 @@ void SampleRemoteApp::OnResize(int width, int height)
 
         if (m_swapChain)
         {
-            winrt::check_hresult(m_swapChain->ResizeBuffers(2, m_width, m_height, DXGI_FORMAT_B8G8R8A8_UNORM, 0));
+            winrt::hresult hr = m_swapChain->ResizeBuffers(2, m_width, m_height, DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+            if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+            {
+                m_swapChain = nullptr;
+            }
+            else
+            {
+                winrt::check_hresult(hr);
+            }
         }
     }
 }
@@ -573,16 +581,15 @@ void SampleRemoteApp::Render(HolographicFrame holographicFrame)
             //   * Holographic streamer
             //   * Renderer
             //   * Holographic space
-            // The InitializeRemoteContext() function will call the functions necessary to recreate these resources.
+            // Call the InitializeRemoteContextAndConnectOrListen() function will call the functions necessary to recreate these resources.
             ShutdownRemoteContext();
-            InitializeRemoteContextAndConnectOrListen();
         }
 
         // Determine whether or not to copy to the preview buffer.
         bool copyPreview;
         {
             std::lock_guard remoteContextLock(m_remoteContextAccess);
-            copyPreview = m_remoteContext == nullptr || m_remoteContext.ConnectionState() != ConnectionState::Connected;
+            copyPreview = m_swapChain && (m_remoteContext == nullptr || m_remoteContext.ConnectionState() != ConnectionState::Connected);
         }
         if (copyPreview && m_isInitialized)
         {
@@ -710,16 +717,29 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
             });
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-        m_onDataChannelCreatedEventRevoker =
-            m_remoteContext.OnDataChannelCreated(winrt::auto_revoke, [this](const IDataChannel& dataChannel, uint8_t channelId) {
-                std::lock_guard lock(m_customDataChannelLock);
-                m_customDataChannel = dataChannel.as<IDataChannel2>();
+        m_onDataChannelCreatedEventRevoker = m_remoteContext.OnDataChannelCreated(
+            winrt::auto_revoke, [weakThis = weak_from_this()](const IDataChannel& dataChannel, uint8_t channelId) {
+                if (auto strongThis = weakThis.lock())
+                {
+                    std::lock_guard lock(strongThis->m_customDataChannelLock);
+                    strongThis->m_customDataChannel = dataChannel.as<IDataChannel2>();
 
-                m_customChannelDataReceivedEventRevoker = m_customDataChannel.OnDataReceived(
-                    winrt::auto_revoke, [this](winrt::array_view<const uint8_t> dataView) { OnCustomDataChannelDataReceived(dataView); });
+                    strongThis->m_customChannelDataReceivedEventRevoker = strongThis->m_customDataChannel.OnDataReceived(
+                        winrt::auto_revoke, [weakThis](winrt::array_view<const uint8_t> dataView) {
+                            if (auto strongThis = weakThis.lock())
+                            {
+                                strongThis->OnCustomDataChannelDataReceived(dataView);
+                            }
+                        });
 
-                m_customChannelClosedEventRevoker =
-                    m_customDataChannel.OnClosed(winrt::auto_revoke, [this]() { OnCustomDataChannelClosed(); });
+                    strongThis->m_customChannelClosedEventRevoker =
+                        strongThis->m_customDataChannel.OnClosed(winrt::auto_revoke, [weakThis]() {
+                            if (auto strongThis = weakThis.lock())
+                            {
+                                strongThis->OnCustomDataChannelClosed();
+                            }
+                        });
+                }
             });
 #endif
 
@@ -866,23 +886,26 @@ void SampleRemoteApp::SavePosition()
 
     auto position = SpatialAnchor::TryCreateRelativeTo(m_referenceFrame.CoordinateSystem(), m_spinningCubeRenderer->GetPosition());
 
-    auto storeRequest = SpatialAnchorManager::RequestStoreAsync();
-    storeRequest.Completed([position](winrt::Windows::Foundation::IAsyncOperation<SpatialAnchorStore> result, auto asyncStatus) {
-        if (result.Status() != winrt::Windows::Foundation::AsyncStatus::Completed)
-        {
-            return;
-        }
-
-        const SpatialAnchorStore& store = result.GetResults();
-        if (store)
-        {
-            store.Clear();
-            if (store.TrySave(L"position", position))
+    if (position)
+    {
+        auto storeRequest = SpatialAnchorManager::RequestStoreAsync();
+        storeRequest.Completed([position](winrt::Windows::Foundation::IAsyncOperation<SpatialAnchorStore> result, auto asyncStatus) {
+            if (result.Status() != winrt::Windows::Foundation::AsyncStatus::Completed)
             {
-                OutputDebugStringW(L"Saved cube position to SpatialAnchorStore.\n");
+                return;
             }
-        }
-    });
+
+            const SpatialAnchorStore& store = result.GetResults();
+            if (store)
+            {
+                store.Clear();
+                if (store.TrySave(L"position", position))
+                {
+                    OutputDebugStringW(L"Saved cube position to SpatialAnchorStore.\n");
+                }
+            }
+        });
+    }
 }
 
 winrt::fire_and_forget SampleRemoteApp::ExportPosition()
@@ -1087,17 +1110,6 @@ winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
 
             m_qrWatcher = QRCodeWatcher();
 
-            m_qrAddedRevoker = m_qrWatcher.Added(
-                winrt::auto_revoke,
-                [&, weakThis = weak_from_this()](
-                    const winrt::Microsoft::MixedReality::QR::QRCodeWatcher&,
-                    const winrt::Microsoft::MixedReality::QR::QRCodeAddedEventArgs& args) {
-                    if (auto strongThis = weakThis.lock())
-                    {
-                        m_qrCodeRenderer->OnAddedQRCode(args.Code());
-                    }
-                });
-
             m_qrUpdatedRevoker = m_qrWatcher.Updated(
                 winrt::auto_revoke,
                 [&, weakThis = weak_from_this()](
@@ -1290,8 +1302,15 @@ void SampleRemoteApp::OnDisconnected(winrt::Microsoft::Holographic::AppRemoting:
 
     m_hasSceneObserverAccess = false;
 
-    m_sceneUnderstandingRenderer->Reset();
-    m_qrCodeRenderer->Reset();
+    if (m_sceneUnderstandingRenderer)
+    {
+        m_sceneUnderstandingRenderer->Reset();
+    }
+
+    if (m_qrCodeRenderer)
+    {
+        m_qrCodeRenderer->Reset();
+    }
 }
 
 void SampleRemoteApp::OnSendFrame(const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture)
