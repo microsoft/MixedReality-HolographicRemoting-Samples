@@ -424,14 +424,27 @@ void SamplePlayerMain::SetWindow(const CoreWindow& window)
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
     try
     {
-        m_playerContext.OnDataChannelCreated([this](const IDataChannel& dataChannel, uint8_t channelId) {
-            std::lock_guard lock(m_customDataChannelLock);
-            m_customDataChannel = dataChannel.as<IDataChannel2>();
+        m_playerContext.OnDataChannelCreated([weakThis = get_weak()](const IDataChannel& dataChannel, uint8_t channelId) {
+            if (auto strongThis = weakThis.get())
+            {
+                std::lock_guard lock(strongThis->m_customDataChannelLock);
+                strongThis->m_customDataChannel = dataChannel.as<IDataChannel2>();
 
-            m_customChannelDataReceivedEventRevoker = m_customDataChannel.OnDataReceived(
-                winrt::auto_revoke, [this](winrt::array_view<const uint8_t> dataView) { OnCustomDataChannelDataReceived(); });
+                strongThis->m_customChannelDataReceivedEventRevoker = strongThis->m_customDataChannel.OnDataReceived(
+                    winrt::auto_revoke, [weakThis](winrt::array_view<const uint8_t> dataView) {
+                        if (auto strongThis = weakThis.get())
+                        {
+                            strongThis->OnCustomDataChannelDataReceived();
+                        }
+                    });
 
-            m_customChannelClosedEventRevoker = m_customDataChannel.OnClosed(winrt::auto_revoke, [this]() { OnCustomDataChannelClosed(); });
+                strongThis->m_customChannelClosedEventRevoker = strongThis->m_customDataChannel.OnClosed(winrt::auto_revoke, [weakThis]() {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        strongThis->OnCustomDataChannelClosed();
+                    }
+                });
+            }
         });
     }
     catch (winrt::hresult_error err)
