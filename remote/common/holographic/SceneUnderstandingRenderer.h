@@ -14,14 +14,15 @@
 #include <future>
 #include <string>
 
-#include <holographic/DeviceResources.h>
+#include <DeviceResourcesD3D11.h>
 
 #include <winrt/Microsoft.MixedReality.SceneUnderstanding.h>
+#include <winrt/Windows.Perception.Spatial.h>
 
 class SceneUnderstandingRenderer : public std::enable_shared_from_this<SceneUnderstandingRenderer>
 {
 public:
-    SceneUnderstandingRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources);
+    SceneUnderstandingRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
     ~SceneUnderstandingRenderer();
 
     void SetScene(
@@ -98,7 +99,7 @@ private:
     std::vector<VertexPositionUVColor> m_meshVertices;
 
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesD3D11> m_deviceResources;
 
     // Direct3D resources.
     winrt::com_ptr<ID3D11Buffer> m_quadVerticesBuffer;

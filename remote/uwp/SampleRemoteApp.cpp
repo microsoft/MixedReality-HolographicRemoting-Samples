@@ -14,8 +14,8 @@
 #include <SampleRemoteApp.h>
 
 #include <DbgLog.h>
+#include <DirectXHelper.h>
 #include <Utils.h>
-#include <d3d11/DirectXHelper.h>
 #include <holographic/RemoteWindowHolographic.h>
 #include <holographic/Speech.h>
 
@@ -82,11 +82,14 @@ void SampleRemoteApp::SetWindow(RemoteWindowHolographic* window)
 {
     m_window = window;
 
-    m_deviceResources = std::make_shared<DXHelper::DeviceResources>();
-    m_deviceResources->RegisterDeviceNotify(this);
+    if (window != nullptr)
+    {
+        m_deviceResources = std::make_shared<DXHelper::DeviceResourcesD3D11Holographic>();
+        m_deviceResources->RegisterDeviceNotify(this);
 
-    m_canCommitDirect3D11DepthBuffer = winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
-        L"Windows.Graphics.Holographic.HolographicCameraRenderingParameters", L"CommitDirect3D11DepthBuffer");
+        m_canCommitDirect3D11DepthBuffer = winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
+            L"Windows.Graphics.Holographic.HolographicCameraRenderingParameters", L"CommitDirect3D11DepthBuffer");
+    }
 }
 
 void SampleRemoteApp::Tick()
@@ -341,7 +344,7 @@ HolographicFrame SampleRemoteApp::Update()
         m_framesPerSecond = 0;
     }
 
-    if (!m_holographicSpace)
+    if (!m_deviceResources->GetHolographicSpace())
     {
         return nullptr;
     }
@@ -349,13 +352,13 @@ HolographicFrame SampleRemoteApp::Update()
     try
     {
         // Create the next holographic frame early.
-        HolographicFrame holographicFrame = m_holographicSpace.CreateNextFrame();
+        HolographicFrame holographicFrame = m_deviceResources->GetHolographicSpace().CreateNextFrame();
 
         // NOTE: DXHelper::DeviceResources::Present does not wait for the frame to finish.
         //       Instead we wait here before we do the call to CreateNextFrame on the HolographicSpace.
         //       We do this to avoid that PeekMessage causes frame delta time spikes, say if we wait
         //       after PeekMessage WaitForNextFrameReady will compensate any time spend in PeekMessage.
-        m_holographicSpace.WaitForNextFrameReady();
+        m_deviceResources->GetHolographicSpace().WaitForNextFrameReady();
 
         // Update to latest prediction immediately after waiting.
         holographicFrame.UpdateCurrentPrediction();
@@ -363,7 +366,7 @@ HolographicFrame SampleRemoteApp::Update()
         HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
 
         // Back buffers can change from frame to frame. Validate each buffer, and recreate resource views and depth buffers as needed.
-        m_deviceResources->EnsureCameraResources(holographicFrame, prediction);
+        m_deviceResources->EnsureCameraResources(holographicFrame, prediction, nullptr, {0, 0, 0});
 
         SpatialCoordinateSystem coordinateSystem = nullptr;
         coordinateSystem = m_referenceFrame.CoordinateSystem();
@@ -414,6 +417,22 @@ HolographicFrame SampleRemoteApp::Update()
 
         std::chrono::duration<float> timeSinceStart = std::chrono::high_resolution_clock::now() - m_startTime;
         m_spinningCubeRenderer->Update(timeSinceStart.count(), prediction.Timestamp(), coordinateSystem);
+
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+        {
+            std::lock_guard lock(m_userCoordinateSystemLock);
+
+            if (!m_spatialUserFrameOfReference && m_remoteContext)
+            {
+                m_spatialUserFrameOfReference = m_remoteContext.GetUserSpatialFrameOfReference();
+            }
+
+            if (m_spatialUserFrameOfReference)
+            {
+                m_simpleCubeRenderer->Update(coordinateSystem, m_spatialUserFrameOfReference.CoordinateSystem());
+            }
+        }
+#endif
 
         m_sceneUnderstandingRenderer->Update(coordinateSystem);
         m_qrCodeRenderer->Update(coordinateSystem);
@@ -493,78 +512,85 @@ void SampleRemoteApp::Render(HolographicFrame holographicFrame)
 {
     bool atLeastOneCameraRendered = false;
 
-    m_deviceResources->UseHolographicCameraResources([this, holographicFrame, &atLeastOneCameraRendered](
-                                                         std::map<UINT32, std::unique_ptr<DXHelper::CameraResources>>& cameraResourceMap) {
-        holographicFrame.UpdateCurrentPrediction();
-        HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
+    m_deviceResources->UseHolographicCameraResources(
+        [this, holographicFrame, &atLeastOneCameraRendered](
+            std::map<UINT32, std::unique_ptr<DXHelper::CameraResourcesD3D11Holographic>>& cameraResourceMap) {
+            holographicFrame.UpdateCurrentPrediction();
+            HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
 
-        SpatialCoordinateSystem coordinateSystem = nullptr;
-        coordinateSystem = m_referenceFrame.CoordinateSystem();
+            SpatialCoordinateSystem coordinateSystem = nullptr;
+            coordinateSystem = m_referenceFrame.CoordinateSystem();
 
-        for (auto cameraPose : prediction.CameraPoses())
-        {
-            try
+            for (auto cameraPose : prediction.CameraPoses())
             {
-                DXHelper::CameraResources* pCameraResources = cameraResourceMap[cameraPose.HolographicCamera().Id()].get();
-
-                if (pCameraResources == nullptr || pCameraResources->GetBackBufferRenderTargetView() == nullptr)
+                try
                 {
-                    continue;
-                }
+                    DXHelper::CameraResourcesD3D11Holographic* pCameraResources =
+                        cameraResourceMap[cameraPose.HolographicCamera().Id()].get();
 
-                winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum =
-                    cameraPose.TryGetCullingFrustum(coordinateSystem);
-
-                m_deviceResources->UseD3DDeviceContext([&](ID3D11DeviceContext3* context) {
-                    // Clear the back buffer view.
-                    context->ClearRenderTargetView(pCameraResources->GetBackBufferRenderTargetView(), DirectX::Colors::Transparent);
-                    context->ClearDepthStencilView(
-                        pCameraResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-                    // The view and projection matrices for each holographic camera will change
-                    // every frame. This function refreshes the data in the constant buffer for
-                    // the holographic camera indicated by cameraPose.
-                    pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, coordinateSystem);
-
-                    // Set up the camera buffer.
-                    bool cameraActive = pCameraResources->AttachViewProjectionBuffer(m_deviceResources);
-
-                    // Only render world-locked content when positional tracking is active.
-                    if (cameraActive)
+                    if (pCameraResources == nullptr || pCameraResources->GetBackBufferRenderTargetView() == nullptr)
                     {
-                        // Set the render target, and set the depth target drawing buffer.
-                        ID3D11RenderTargetView* const targets[1] = {pCameraResources->GetBackBufferRenderTargetView()};
-                        context->OMSetRenderTargets(1, targets, pCameraResources->GetDepthStencilView());
-
-                        // Render the scene objects.
-                        m_spinningCubeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
-
-                        m_sceneUnderstandingRenderer->Render(pCameraResources->IsRenderingStereoscopic());
-                        m_qrCodeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
-
-                        if (m_spatialSurfaceMeshRenderer)
-                        {
-                            m_spatialSurfaceMeshRenderer->Render(pCameraResources->IsRenderingStereoscopic());
-                        }
-                        m_spatialInputRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
-
-                        // Commit depth buffer if available and enabled.
-                        if (m_canCommitDirect3D11DepthBuffer && m_commitDirect3D11DepthBuffer)
-                        {
-                            auto interopSurface = pCameraResources->GetDepthStencilTextureInteropObject();
-                            HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
-                            renderingParameters.CommitDirect3D11DepthBuffer(interopSurface);
-                        }
+                        continue;
                     }
-                });
 
-                atLeastOneCameraRendered = true;
+                    winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum =
+                        cameraPose.TryGetCullingFrustum(coordinateSystem);
+
+                    m_deviceResources->UseD3DDeviceContext([&](ID3D11DeviceContext3* context) {
+                        // Clear the back buffer view.
+                        context->ClearRenderTargetView(pCameraResources->GetBackBufferRenderTargetView(), DirectX::Colors::Transparent);
+                        context->ClearDepthStencilView(
+                            pCameraResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+                        // The view and projection matrices for each holographic camera will change
+                        // every frame. This function refreshes the data in the constant buffer for
+                        // the holographic camera indicated by cameraPose.
+                        pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, coordinateSystem);
+
+                        // Set up the camera buffer.
+                        bool cameraActive = pCameraResources->AttachViewProjectionBuffer(m_deviceResources);
+
+                        // Only render world-locked content when positional tracking is active.
+                        if (cameraActive)
+                        {
+                            // Set the render target, and set the depth target drawing buffer.
+                            ID3D11RenderTargetView* const targets[1] = {pCameraResources->GetBackBufferRenderTargetView()};
+                            context->OMSetRenderTargets(1, targets, pCameraResources->GetDepthStencilView());
+
+                            // Render the scene objects.
+                            m_spinningCubeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
+
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+                            m_simpleCubeRenderer->Render(pCameraResources->IsRenderingStereoscopic());
+#endif
+
+                            m_sceneUnderstandingRenderer->Render(pCameraResources->IsRenderingStereoscopic());
+                            m_qrCodeRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
+
+                            if (m_spatialSurfaceMeshRenderer)
+                            {
+                                m_spatialSurfaceMeshRenderer->Render(pCameraResources->IsRenderingStereoscopic());
+                            }
+                            m_spatialInputRenderer->Render(pCameraResources->IsRenderingStereoscopic(), cullingFrustum);
+
+                            // Commit depth buffer if available and enabled.
+                            if (m_canCommitDirect3D11DepthBuffer && m_commitDirect3D11DepthBuffer)
+                            {
+                                auto interopSurface = pCameraResources->GetDepthStencilTextureInteropObject();
+                                HolographicCameraRenderingParameters renderingParameters =
+                                    holographicFrame.GetRenderingParameters(cameraPose);
+                                renderingParameters.CommitDirect3D11DepthBuffer(interopSurface);
+                            }
+                        }
+                    });
+
+                    atLeastOneCameraRendered = true;
+                }
+                catch (const winrt::hresult_error&)
+                {
+                }
             }
-            catch (const winrt::hresult_error&)
-            {
-            }
-        }
-    });
+        });
 
     if (atLeastOneCameraRendered)
     {
@@ -581,7 +607,7 @@ void SampleRemoteApp::Render(HolographicFrame holographicFrame)
             //   * Holographic streamer
             //   * Renderer
             //   * Holographic space
-            // Call the InitializeRemoteContextAndConnectOrListen() function will call the functions necessary to recreate these resources.
+            // Call the InitializeRemoteContextAndConnectOrListen() function to recreate these resources.
             ShutdownRemoteContext();
         }
 
@@ -753,27 +779,29 @@ void SampleRemoteApp::CreateHolographicSpaceAndDeviceResources()
 
     if (m_window)
     {
-        m_holographicSpace = m_window->CreateHolographicSpace();
         m_interactionManager = m_window->CreateInteractionManager();
+        m_deviceResources->SetHolographicSpace(m_window->CreateHolographicSpace());
     }
 
-    m_deviceResources->SetHolographicSpace(m_holographicSpace);
-
-    m_spatialInputRenderer = std::make_shared<SpatialInputRenderer>(m_deviceResources, m_interactionManager);
+    m_spatialInputRenderer = std::make_unique<SpatialInputRenderer>(m_deviceResources, m_interactionManager);
     m_spatialInputHandler = std::make_shared<SpatialInputHandler>(m_interactionManager);
 
     m_spinningCubeRenderer = std::make_unique<SpinningCubeRenderer>(m_deviceResources);
 
-    m_sceneUnderstandingRenderer = std::make_unique<SceneUnderstandingRenderer>(m_deviceResources);
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+    // The green cube rendered by the remote is aligned on top of the blue cube which is rendered by the player.
+    float3 simpleCubePosition = {0.0f, 0.2f, 0.0f};
+    float3 simpleCubeColor = {0.0f, 1.0f, 0.0f};
+    m_simpleCubeRenderer = std::make_unique<SimpleCubeRenderer>(m_deviceResources, simpleCubePosition, simpleCubeColor);
+#endif
+
+    m_sceneUnderstandingRenderer = std::make_shared<SceneUnderstandingRenderer>(m_deviceResources);
     m_qrCodeRenderer = std::make_unique<QRCodeRenderer>(m_deviceResources);
 
     m_locator = SpatialLocator::GetDefault();
 
     // Be able to respond to changes in the positional tracking state.
     m_locatabilityChangedToken = m_locator.LocatabilityChanged({this, &SampleRemoteApp::OnLocatabilityChanged});
-
-    m_cameraAddedToken = m_holographicSpace.CameraAdded({this, &SampleRemoteApp::OnCameraAdded});
-    m_cameraRemovedToken = m_holographicSpace.CameraRemoved({this, &SampleRemoteApp::OnCameraRemoved});
 
     m_referenceFrame = m_locator.CreateStationaryFrameOfReferenceAtCurrentLocation(float3::zero(), quaternion(0, 0, 0, 1), 0.0);
 
@@ -1000,7 +1028,7 @@ void SampleRemoteApp::RequestEyesPoseAccess()
     {
         auto asyncOpertation = winrt::Windows::Perception::People::EyesPose::RequestAccessAsync();
         asyncOpertation.Completed(
-            [this](winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::UI::Input::GazeInputAccessStatus> result, auto asyncStatus) {
+            [](winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::UI::Input::GazeInputAccessStatus> result, auto asyncStatus) {
                 winrt::Windows::UI::Input::GazeInputAccessStatus status = result.GetResults();
                 switch (status)
                 {
@@ -1028,6 +1056,8 @@ void SampleRemoteApp::RequestEyesPoseAccess()
 
 winrt::fire_and_forget SampleRemoteApp::RequestSceneObserverAccess()
 {
+    co_await winrt::resume_background();
+
     m_hasSceneObserverAccess = false;
 
     try
@@ -1093,12 +1123,14 @@ void SampleRemoteApp::ToggleSceneUnderstanding()
 
 winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
 {
+    co_await winrt::resume_background();
+
     try
     {
         if (!QRCodeWatcher::IsSupported())
         {
             OutputDebugStringA("QRCodeWatcher Unsupported\n");
-            return;
+            co_return;
         }
 
         auto keepAlive = shared_from_this();
@@ -1112,12 +1144,12 @@ winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
 
             m_qrUpdatedRevoker = m_qrWatcher.Updated(
                 winrt::auto_revoke,
-                [&, weakThis = weak_from_this()](
+                [weakThis = weak_from_this()](
                     const winrt::Microsoft::MixedReality::QR::QRCodeWatcher&,
                     const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args) {
                     if (auto strongThis = weakThis.lock())
                     {
-                        m_qrCodeRenderer->OnUpdatedQRCode(args.Code());
+                        strongThis->m_qrCodeRenderer->OnUpdatedQRCode(args.Code());
                     }
                 });
 
@@ -1136,12 +1168,6 @@ winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
 
 void SampleRemoteApp::UnregisterHolographicEventHandlers()
 {
-    if (m_holographicSpace != nullptr)
-    {
-        m_holographicSpace.CameraAdded(m_cameraAddedToken);
-        m_holographicSpace.CameraRemoved(m_cameraRemovedToken);
-    }
-
     if (m_locator != nullptr)
     {
         m_locator.LocatabilityChanged(m_locatabilityChangedToken);
@@ -1198,23 +1224,6 @@ void SampleRemoteApp::OnDeviceRestored()
     {
         m_spatialSurfaceMeshRenderer->CreateDeviceDependentResources();
     }
-}
-
-void SampleRemoteApp::OnCameraAdded(const HolographicSpace& sender, const HolographicSpaceCameraAddedEventArgs& args)
-{
-    winrt::Windows::Foundation::Deferral deferral = args.GetDeferral();
-    auto holographicCamera = args.Camera();
-
-    create_task([this, deferral, holographicCamera]() {
-        m_deviceResources->AddHolographicCamera(holographicCamera);
-
-        deferral.Complete();
-    });
-}
-
-void SampleRemoteApp::OnCameraRemoved(const HolographicSpace& sender, const HolographicSpaceCameraRemovedEventArgs& args)
-{
-    m_deviceResources->RemoveHolographicCamera(args.Camera());
 }
 
 void SampleRemoteApp::OnLocatabilityChanged(const SpatialLocator& sender, const winrt::Windows::Foundation::IInspectable& args)
@@ -1311,6 +1320,13 @@ void SampleRemoteApp::OnDisconnected(winrt::Microsoft::Holographic::AppRemoting:
     {
         m_qrCodeRenderer->Reset();
     }
+
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+    {
+        std::lock_guard lock(m_userCoordinateSystemLock);
+        m_spatialUserFrameOfReference = nullptr;
+    }
+#endif
 }
 
 void SampleRemoteApp::OnSendFrame(const winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface& texture)

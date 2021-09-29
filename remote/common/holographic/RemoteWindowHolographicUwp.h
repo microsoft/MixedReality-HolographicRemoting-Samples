@@ -18,8 +18,8 @@ public:
     // IRemoteWindowHolographic methods
     // --------------------------------
 
-    virtual winrt::com_ptr<IDXGISwapChain1>
-        CreateSwapChain(const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc) override;
+    virtual winrt::com_ptr<IDXGISwapChain1> CreateSwapChain(
+        const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc) override;
 
     virtual winrt::Windows::Graphics::Holographic::HolographicSpace CreateHolographicSpace() override;
 

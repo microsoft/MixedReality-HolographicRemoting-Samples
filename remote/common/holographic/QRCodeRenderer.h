@@ -28,7 +28,7 @@ struct RenderableQRCode
 class QRCodeRenderer : public RenderableObject
 {
 public:
-    QRCodeRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources);
+    QRCodeRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
 
     void Update(winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem);
 
@@ -37,7 +37,9 @@ public:
     void Reset();
 
 private:
-    void Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum) override;
+    void Draw(
+        unsigned int numInstances,
+        winrt::Windows::Foundation::IReference<winrt::Windows::Perception::Spatial::SpatialBoundingFrustum> cullingFrustum) override;
 
 private:
     std::vector<VertexPositionNormalColor> m_vertices;

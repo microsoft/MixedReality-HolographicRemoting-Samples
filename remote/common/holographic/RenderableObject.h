@@ -11,26 +11,31 @@
 
 #pragma once
 
-#include <d3d11/SimpleColor_ShaderStructures.h>
-#include <holographic/DeviceResources.h>
+#include <DeviceResourcesD3D11.h>
+#include <SimpleColor_ShaderStructures.h>
 
 #include <future>
+
+#include <winrt/Windows.Perception.Spatial.h>
 
 class RenderableObject
 {
 public:
-    RenderableObject(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources);
+    RenderableObject(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
     virtual ~RenderableObject();
 
     virtual std::future<void> CreateDeviceDependentResources();
     virtual void ReleaseDeviceDependentResources();
 
-    void Render(bool isStereo, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum);
+    void Render(
+        bool isStereo, winrt::Windows::Foundation::IReference<winrt::Windows::Perception::Spatial::SpatialBoundingFrustum> cullingFrustum);
 
 protected:
     void UpdateModelConstantBuffer(const winrt::Windows::Foundation::Numerics::float4x4& modelTransform);
 
-    virtual void Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum) = 0;
+    virtual void Draw(
+        unsigned int numInstances,
+        winrt::Windows::Foundation::IReference<winrt::Windows::Perception::Spatial::SpatialBoundingFrustum> cullingFrustum) = 0;
 
     std::future<void> CreateDeviceDependentResourcesInternal();
 
@@ -49,7 +54,7 @@ protected:
         std::vector<VertexPositionNormalColor>& vertices);
 
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesD3D11> m_deviceResources;
 
     std::future<void> m_deviceResourcesCreated;
 

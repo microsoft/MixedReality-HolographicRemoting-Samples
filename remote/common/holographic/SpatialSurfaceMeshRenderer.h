@@ -11,8 +11,8 @@
 
 #pragma once
 
+#include <DeviceResourcesD3D11.h>
 #include <Utils.h>
-#include <holographic/DeviceResources.h>
 
 #include <winrt/windows.perception.spatial.surfaces.h>
 
@@ -86,7 +86,7 @@ private:
 class SpatialSurfaceMeshRenderer
 {
 public:
-    SpatialSurfaceMeshRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources);
+    SpatialSurfaceMeshRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
     virtual ~SpatialSurfaceMeshRenderer();
 
     void Update(
@@ -108,7 +108,7 @@ private:
     friend class SpatialSurfaceMeshPart;
 
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesD3D11> m_deviceResources;
 
     // observer:
     int m_surfaceChangedCounter = 0;
