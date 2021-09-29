@@ -13,15 +13,19 @@
 
 // #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
 
+// #define ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+
 #include "../common/Content/ErrorHelper.h"
 #include "../common/Content/StatusDisplay.h"
-#include "../common/DeviceResourcesUWP.h"
 #include "../common/IpAddressUpdater.h"
 #include "../common/PlayerFrameStatisticsHelper.h"
 
 #include <winrt/Microsoft.Holographic.AppRemoting.h>
 
 #include <chrono>
+
+#include <DeviceResourcesD3D11Holographic.h>
+#include <SimpleCubeRenderer.h>
 
 class SamplePlayerMain : public winrt::implements<
                              SamplePlayerMain,
@@ -40,8 +44,8 @@ public:
     winrt::fire_and_forget ConnectOrListenAfter(std::chrono::system_clock::duration time);
 
     // Starts the holographic frame and updates the content.
-    winrt::Windows::Graphics::Holographic::HolographicFrame
-        Update(float deltaTimeInSeconds, const winrt::Windows::Graphics::Holographic::HolographicFrame& prevHolographicFrame);
+    winrt::Windows::Graphics::Holographic::HolographicFrame Update(
+        float deltaTimeInSeconds, const winrt::Windows::Graphics::Holographic::HolographicFrame& prevHolographicFrame);
 
     // Renders the current frame to each holographic camera and presents it.
     void Render(const winrt::Windows::Graphics::Holographic::HolographicFrame& holographicFrame);
@@ -110,7 +114,7 @@ private:
 
 private:
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResourcesUWP> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesD3D11Holographic> m_deviceResources;
 
     // SpatialLocator that is attached to the default HolographicDisplay.
     winrt::Windows::Perception::Spatial::SpatialLocator m_spatialLocator = nullptr;
@@ -126,6 +130,15 @@ private:
 
     // Renders a AppRemoting logo together with the connection state and IP address
     std::unique_ptr<StatusDisplay> m_statusDisplay;
+
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+    // Renders a colored holographic cube that's 20 centimeters wide. This sample content is used to demonstrate rendering in the user
+    // coordinate system.
+    std::unique_ptr<SimpleCubeRenderer> m_simpleCubeRenderer;
+
+    // The userSpatialFrameOfReference.
+    winrt::Windows::Perception::Spatial::SpatialStationaryFrameOfReference m_userSpatialFrameOfReference = nullptr;
+#endif
 
     // Texture holding the AppRemoting logo
     winrt::com_ptr<ID3D11Resource> m_logoImage;

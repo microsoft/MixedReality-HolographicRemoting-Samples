@@ -13,16 +13,20 @@
 
 #include <holographic/SpinningCubeRenderer.h>
 
-#include <d3d11/DirectXHelper.h>
+#include <DirectXHelper.h>
 #include <holographic/FrustumCulling.h>
 
+#include <winrt/Windows.Graphics.Holographic.h>
 #include <winrt/Windows.Perception.People.h>
 #include <winrt/Windows.Storage.Streams.h>
 
 using namespace DirectX;
 
+using namespace winrt::Windows::Graphics::Holographic;
+using namespace winrt::Windows::Perception::Spatial;
+
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
-SpinningCubeRenderer::SpinningCubeRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources)
+SpinningCubeRenderer::SpinningCubeRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources)
     : m_deviceResources(deviceResources)
 {
     CreateDeviceDependentResources();

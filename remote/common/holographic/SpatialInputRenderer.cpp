@@ -13,7 +13,7 @@
 
 #include <holographic/SpatialInputRenderer.h>
 
-#include <d3d11/DirectXHelper.h>
+#include <DirectXHelper.h>
 #include <holographic/FrustumCulling.h>
 
 #include <algorithm>
@@ -25,8 +25,10 @@
 #include <winrt/Windows.Perception.People.h>
 #include <winrt/Windows.Perception.Spatial.h>
 
+using namespace winrt::Windows::Perception::Spatial;
+
 SpatialInputRenderer::SpatialInputRenderer(
-    const std::shared_ptr<DXHelper::DeviceResources>& deviceResources,
+    const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources,
     winrt::Windows::UI::Input::Spatial::SpatialInteractionManager interactionManager)
     : RenderableObject(deviceResources)
     , m_interactionManager(interactionManager)

@@ -21,8 +21,8 @@ public:
     RemoteWindowHolographic(const std::shared_ptr<IRemoteAppHolographic>& app);
 
     // Create a SwapChain for this window
-    virtual winrt::com_ptr<IDXGISwapChain1>
-        CreateSwapChain(const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc) = 0;
+    virtual winrt::com_ptr<IDXGISwapChain1> CreateSwapChain(
+        const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc) = 0;
 
     // Create a HolographicSpace for this window
     virtual winrt::Windows::Graphics::Holographic::HolographicSpace CreateHolographicSpace() = 0;

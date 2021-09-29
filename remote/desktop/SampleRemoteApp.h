@@ -13,15 +13,15 @@
 
 #include <holographic/IRemoteAppHolographic.h>
 
-#include <holographic/DeviceResources.h>
+#include <DeviceResourcesD3D11Holographic.h>
+#include <SimpleCubeRenderer.h>
+#include <holographic/QRCodeRenderer.h>
+#include <holographic/SceneUnderstandingRenderer.h>
 #include <holographic/SpatialInputHandler.h>
 #include <holographic/SpatialInputRenderer.h>
+#include <holographic/SpatialSurfaceMeshRenderer.h>
 #include <holographic/Speech.h>
 #include <holographic/SpinningCubeRenderer.h>
-
-#include <content/QRCodeRenderer.h>
-#include <content/SceneUnderstandingRenderer.h>
-#include <content/SpatialSurfaceMeshRenderer.h>
 
 #include <memory>
 
@@ -38,6 +38,8 @@
 #define TITLE_DISABLE_PREVIEW_TEXT L"Preview Enabled (press P to disable)"
 
 // #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
+
+// #define ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
 
 class SampleRemoteApp : public std::enable_shared_from_this<SampleRemoteApp>,
                         public IRemoteAppHolographic,
@@ -85,7 +87,7 @@ public:
     // Renders the current frame to each holographic camera and presents it.
     void Render(winrt::Windows::Graphics::Holographic::HolographicFrame holographicFrame);
 
-    const std::shared_ptr<DXHelper::DeviceResources>& GetDeviceResources()
+    const std::shared_ptr<DXHelper::DeviceResourcesD3D11Holographic>& GetDeviceResources()
     {
         return m_deviceResources;
     }
@@ -150,17 +152,6 @@ private:
     // Updates the title of the host window
     void WindowUpdateTitle();
 
-    // Asynchronously creates resources for new holographic cameras.
-    void OnCameraAdded(
-        const winrt::Windows::Graphics::Holographic::HolographicSpace& sender,
-        const winrt::Windows::Graphics::Holographic::HolographicSpaceCameraAddedEventArgs& args);
-
-    // Synchronously releases resources for holographic cameras that are no longer
-    // attached to the system.
-    void OnCameraRemoved(
-        const winrt::Windows::Graphics::Holographic::HolographicSpace& sender,
-        const winrt::Windows::Graphics::Holographic::HolographicSpaceCameraRemovedEventArgs& args);
-
     // Used to notify the app when the positional tracking state changes.
     void OnLocatabilityChanged(
         const winrt::Windows::Perception::Spatial::SpatialLocator& sender, const winrt::Windows::Foundation::IInspectable& args);
@@ -196,14 +187,11 @@ private:
     // Whether a disconnect is currently pending.
     bool m_disconnectPending{false};
 
-    // Represents the holographic space around the user.
-    winrt::Windows::Graphics::Holographic::HolographicSpace m_holographicSpace = nullptr;
-
     // The interaction manager provides an event that informs the app when spatial interactions are detected.
     winrt::Windows::UI::Input::Spatial::SpatialInteractionManager m_interactionManager = nullptr;
 
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesD3D11Holographic> m_deviceResources;
 
     // SpatialLocator that is attached to the primary camera.
     winrt::Windows::Perception::Spatial::SpatialLocator m_locator = nullptr;
@@ -220,7 +208,7 @@ private:
 
     // Listens for the Pressed spatial input event.
     std::shared_ptr<SpatialInputHandler> m_spatialInputHandler;
-    std::shared_ptr<SpatialInputRenderer> m_spatialInputRenderer;
+    std::unique_ptr<SpatialInputRenderer> m_spatialInputRenderer;
 
     // Renders scene objects.
     std::atomic<bool> m_hasSceneObserverAccess = false;
@@ -263,6 +251,9 @@ private:
 
     uint32_t m_depthDownscale = 2;
 
+    winrt::Microsoft::MixedReality::QR::QRCodeWatcher m_qrWatcher{nullptr};
+    winrt::Microsoft::MixedReality::QR::QRCodeWatcher::Updated_revoker m_qrUpdatedRevoker;
+
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
     std::recursive_mutex m_customDataChannelLock;
     winrt::Microsoft::Holographic::AppRemoting::IDataChannel2 m_customDataChannel = nullptr;
@@ -271,7 +262,13 @@ private:
     std::chrono::high_resolution_clock::time_point m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
 #endif
 
-    winrt::Microsoft::MixedReality::QR::QRCodeWatcher m_qrWatcher{nullptr};
-    winrt::Microsoft::MixedReality::QR::QRCodeWatcher::Added_revoker m_qrAddedRevoker;
-    winrt::Microsoft::MixedReality::QR::QRCodeWatcher::Updated_revoker m_qrUpdatedRevoker;
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+    // Renders a colored holographic cube that's 20 centimeters wide. This sample content is used to demonstrate rendering in the user
+    // coordinate system.
+    std::unique_ptr<SimpleCubeRenderer> m_simpleCubeRenderer;
+
+    winrt::Windows::Perception::Spatial::SpatialStationaryFrameOfReference m_spatialUserFrameOfReference = nullptr;
+
+    std::recursive_mutex m_userCoordinateSystemLock;
+#endif
 };

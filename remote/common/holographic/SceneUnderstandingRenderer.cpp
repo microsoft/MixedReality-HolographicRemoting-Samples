@@ -11,11 +11,11 @@
 
 #include <pch.h>
 
-#include <content/SceneUnderstandingRenderer.h>
+#include <holographic/SceneUnderstandingRenderer.h>
 
 #include <DbgLog.h>
 #include <DirectXColors.h>
-#include <d3d11/DirectXHelper.h>
+#include <DirectXHelper.h>
 
 #include <winrt/Windows.Perception.Spatial.Preview.h>
 
@@ -62,7 +62,7 @@ namespace
 
 } // namespace
 
-SceneUnderstandingRenderer::SceneUnderstandingRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources)
+SceneUnderstandingRenderer::SceneUnderstandingRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources)
     : m_deviceResources(deviceResources)
 {
     CreateDeviceDependentResources();

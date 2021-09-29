@@ -11,9 +11,9 @@
 
 #include <pch.h>
 
-#include <content/SpatialSurfaceMeshRenderer.h>
+#include <holographic/SpatialSurfaceMeshRenderer.h>
 
-#include <d3d11/DirectXHelper.h>
+#include <DirectXHelper.h>
 
 using namespace winrt::Windows;
 using namespace winrt::Windows::Perception::Spatial;
@@ -26,7 +26,7 @@ bool g_freeze = false;
 bool g_freezeOnFrame = false;
 
 // Initializes D2D resources used for text rendering.
-SpatialSurfaceMeshRenderer::SpatialSurfaceMeshRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources)
+SpatialSurfaceMeshRenderer::SpatialSurfaceMeshRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources)
     : m_deviceResources(deviceResources)
 {
     CreateDeviceDependentResources();

@@ -11,54 +11,39 @@
 
 #pragma once
 
-#include <holographic/CameraResources.h>
+#include <winrt/base.h>
+
+#include <mutex>
+
+#define ARRAY_SIZE(a) (std::extent<decltype(a)>::value)
 
 #include <d2d1_2.h>
 #include <d3d11_4.h>
 #include <dwrite_2.h>
-#include <mutex>
+#include <dxgi1_4.h>
 #include <wincodec.h>
-#include <wrl/client.h>
+
+#include <DirectXSdkLayerSupport.h>
 
 namespace DXHelper
 {
     // Provides an interface for an application that owns DeviceResources to be notified of the device being lost or created.
-    interface IDeviceNotify
+    struct IDeviceNotify
     {
         virtual void OnDeviceLost() = 0;
         virtual void OnDeviceRestored() = 0;
     };
 
     // Creates and manages a Direct3D device and immediate context, Direct2D device and context (for debug), and the holographic swap chain.
-    class DeviceResources
+    class DeviceResourcesD3D11
     {
     public:
-        DeviceResources();
-        ~DeviceResources();
+        DeviceResourcesD3D11();
+        virtual ~DeviceResourcesD3D11();
 
         // Public methods related to Direct3D devices.
-        void HandleDeviceLost();
         void RegisterDeviceNotify(IDeviceNotify* deviceNotify);
         void Trim();
-        void Present(winrt::Windows::Graphics::Holographic::HolographicFrame frame);
-
-        // Public methods related to holographic devices.
-        void SetHolographicSpace(winrt::Windows::Graphics::Holographic::HolographicSpace space);
-        void EnsureCameraResources(
-            winrt::Windows::Graphics::Holographic::HolographicFrame frame,
-            winrt::Windows::Graphics::Holographic::HolographicFramePrediction prediction);
-
-        void AddHolographicCamera(winrt::Windows::Graphics::Holographic::HolographicCamera camera);
-        void RemoveHolographicCamera(winrt::Windows::Graphics::Holographic::HolographicCamera camera);
-
-        // Holographic accessors.
-        template <typename LCallback>
-        void UseHolographicCameraResources(LCallback const& callback);
-
-        winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice GetD3DInteropDevice() const
-        {
-            return m_d3dInteropDevice;
-        }
 
         // D3D accessors.
         ID3D11Device4* GetD3DDevice() const
@@ -101,27 +86,26 @@ namespace DXHelper
         }
 
     protected:
-        void CreateDeviceResources();
-
-    private:
         // Private methods related to the Direct3D device, and resources based on that device.
         void CreateDeviceIndependentResources();
-        void InitializeUsingHolographicSpace();
+        virtual void CreateDeviceResources();
 
-    protected:
+        void NotifyDeviceLost();
+        void NotifyDeviceRestored();
+
         // Direct3D objects.
         winrt::com_ptr<ID3D11Device4> m_d3dDevice;
         mutable std::recursive_mutex m_d3dContextMutex;
         winrt::com_ptr<ID3D11DeviceContext3> m_d3dContext;
         winrt::com_ptr<IDXGIAdapter3> m_dxgiAdapter;
 
-        // Direct3D interop objects.
-        winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice m_d3dInteropDevice;
-
         // Direct2D factories.
         winrt::com_ptr<ID2D1Factory2> m_d2dFactory;
         winrt::com_ptr<IDWriteFactory2> m_dwriteFactory;
         winrt::com_ptr<IWICImagingFactory2> m_wicFactory;
+
+        // Properties of the Direct3D device currently in use.
+        D3D_FEATURE_LEVEL m_d3dFeatureLevel = D3D_FEATURE_LEVEL_10_0;
 
         // The IDeviceNotify can be held directly as it owns the DeviceResources.
         IDeviceNotify* m_deviceNotify = nullptr;
@@ -129,29 +113,5 @@ namespace DXHelper
         // Whether or not the current Direct3D device supports the optional feature
         // for setting the render target array index from the vertex shader stage.
         bool m_supportsVprt = false;
-
-    private:
-        // The holographic space provides a preferred DXGI adapter ID.
-        winrt::Windows::Graphics::Holographic::HolographicSpace m_holographicSpace = nullptr;
-
-        // Properties of the Direct3D device currently in use.
-        D3D_FEATURE_LEVEL m_d3dFeatureLevel = D3D_FEATURE_LEVEL_10_0;
-
-        // Back buffer resources, etc. for attached holographic cameras.
-        std::map<UINT32, std::unique_ptr<CameraResources>> m_cameraResources;
-        std::mutex m_cameraResourcesLock;
     };
 } // namespace DXHelper
-
-// Device-based resources for holographic cameras are stored in a std::map. Access this list by providing a
-// callback to this function, and the std::map will be guarded from add and remove
-// events until the callback returns. The callback is processed immediately and must
-// not contain any nested calls to UseHolographicCameraResources.
-// The callback takes a parameter of type std::map<UINT32, std::unique_ptr<DXHelper::CameraResources>>&
-// through which the list of cameras will be accessed.
-template <typename LCallback>
-void DXHelper::DeviceResources::UseHolographicCameraResources(LCallback const& callback)
-{
-    std::lock_guard<std::mutex> guard(m_cameraResourcesLock);
-    callback(m_cameraResources);
-}

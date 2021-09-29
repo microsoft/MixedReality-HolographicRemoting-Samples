@@ -15,12 +15,9 @@
 
 #include <d3d11.h>
 
-using namespace winrt::Windows::Graphics::Holographic;
-using namespace winrt::Windows::Perception::Spatial;
-
 namespace DXHelper
 {
-    class DeviceResources;
+    class DeviceResourcesD3D11Holographic;
 
     // Constant buffer used to send the view-projection matrices to the shader pipeline.
     struct ViewProjectionConstantBuffer
@@ -35,21 +32,23 @@ namespace DXHelper
 
     // Manages DirectX device resources that are specific to a holographic camera, such as the
     // back buffer, ViewProjection constant buffer, and viewport.
-    class CameraResources
+    class CameraResourcesD3D11Holographic
     {
     public:
-        CameraResources(const HolographicCamera& holographicCamera);
+        CameraResourcesD3D11Holographic(
+            winrt::Windows::Graphics::Holographic::HolographicCamera const& holographicCamera, DXGI_FORMAT renderTargetViewFormat);
 
         void CreateResourcesForBackBuffer(
-            DXHelper::DeviceResources* pDeviceResources, const HolographicCameraRenderingParameters& cameraParameters);
-        void ReleaseResourcesForBackBuffer(DXHelper::DeviceResources* pDeviceResources);
+            DeviceResourcesD3D11Holographic* pDeviceResources,
+            winrt::Windows::Graphics::Holographic::HolographicCameraRenderingParameters const& cameraParameters);
+        void ReleaseResourcesForBackBuffer(DeviceResourcesD3D11Holographic* pDeviceResources);
 
         void UpdateViewProjectionBuffer(
-            std::shared_ptr<DXHelper::DeviceResources> deviceResources,
-            const HolographicCameraPose& cameraPose,
-            const SpatialCoordinateSystem& coordinateSystem);
+            const std::shared_ptr<DeviceResourcesD3D11Holographic>& deviceResources,
+            winrt::Windows::Graphics::Holographic::HolographicCameraPose const& cameraPose,
+            winrt::Windows::Perception::Spatial::SpatialCoordinateSystem const& coordinateSystem);
 
-        bool AttachViewProjectionBuffer(std::shared_ptr<DXHelper::DeviceResources> deviceResources);
+        bool AttachViewProjectionBuffer(std::shared_ptr<DeviceResourcesD3D11Holographic>& deviceResources);
 
         // Direct3D device resources.
         ID3D11RenderTargetView* GetBackBufferRenderTargetView() const
@@ -78,7 +77,7 @@ namespace DXHelper
         }
 
         // Render target properties.
-        winrt::Windows::Foundation::Size GetRenderTargetSize() const
+        winrt::Windows::Foundation::Size GetRenderTargetSize() const&
         {
             return m_d3dRenderTargetSize;
         }
@@ -87,11 +86,28 @@ namespace DXHelper
             return m_isStereo;
         }
 
+        bool IsOpaque() const
+        {
+            return m_isOpaque;
+        }
         // The holographic camera these resources are for.
-        const HolographicCamera& GetHolographicCamera() const
+        winrt::Windows::Graphics::Holographic::HolographicCamera const& GetHolographicCamera() const
         {
             return m_holographicCamera;
         }
+
+        winrt::Windows::Graphics::Holographic::HolographicStereoTransform GetProjectionTransform()
+        {
+            return m_cameraProjectionTransform;
+        }
+
+        // MakeDropCmd-StripStart
+        // Freeze the camera position for debugging
+        void SetFreezeCameraPosition(bool freezeCamera)
+        {
+            m_freezeCamera = freezeCamera;
+        }
+        // MakeDropCmd-StripEnd
 
         winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface GetDepthStencilTextureInteropObject();
 
@@ -107,16 +123,27 @@ namespace DXHelper
 
         // Direct3D rendering properties.
         DXGI_FORMAT m_dxgiFormat = DXGI_FORMAT_UNKNOWN;
+        DXGI_FORMAT m_renderTargetViewFormat;
         winrt::Windows::Foundation::Size m_d3dRenderTargetSize = {};
         D3D11_VIEWPORT m_d3dViewport = {};
 
         // Indicates whether the camera supports stereoscopic rendering.
         bool m_isStereo = false;
+        bool m_isOpaque = false;
+
+        // MakeDropCmd-StripStart
+        // If true, the camera position is frozen in place, ignoring the device position.
+        bool m_freezeCamera = false;
+        winrt::Windows::Perception::Spatial::SpatialCoordinateSystem m_frozenCoordinateSystem = nullptr;
+        winrt::Windows::Graphics::Holographic::HolographicStereoTransform m_frozenViewTransform;
+        // MakeDropCmd-StripEnd
 
         // Indicates whether this camera has a pending frame.
         bool m_framePending = false;
 
         // Pointer to the holographic camera these resources are for.
-        HolographicCamera m_holographicCamera = nullptr;
+        winrt::Windows::Graphics::Holographic::HolographicCamera m_holographicCamera = nullptr;
+
+        winrt::Windows::Graphics::Holographic::HolographicStereoTransform m_cameraProjectionTransform;
     };
 } // namespace DXHelper

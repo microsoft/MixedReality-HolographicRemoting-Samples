@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9306F15C-3C47-396A-996E-026F571A32F8}</ProjectGuid>
+    <ProjectGuid>{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
@@ -73,7 +73,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -91,15 +91,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -124,7 +124,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -143,15 +143,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -174,7 +174,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -191,15 +191,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -230,92 +230,97 @@
     <ClInclude Include="..\common\DbgLog.h" />
     <ClCompile Include="..\common\Utils.cpp" />
     <ClInclude Include="..\common\Utils.h" />
-    <ClInclude Include="..\common\d3d11\DirectXHelper.h" />
-    <ClInclude Include="..\common\d3d11\SimpleColor_ShaderStructures.h" />
-    <ClCompile Include="..\common\holographic\CameraResources.cpp" />
-    <ClInclude Include="..\common\holographic\CameraResources.h" />
-    <ClCompile Include="..\common\holographic\DeviceResources.cpp" />
-    <ClInclude Include="..\common\holographic\DeviceResources.h" />
     <ClInclude Include="..\common\holographic\FrustumCulling.h" />
     <ClCompile Include="..\common\holographic\FrustumCulling.cpp" />
     <ClInclude Include="..\common\holographic\IRemoteAppHolographic.h" />
+    <ClCompile Include="..\common\holographic\QRCodeRenderer.cpp" />
+    <ClInclude Include="..\common\holographic\QRCodeRenderer.h" />
     <ClCompile Include="..\common\holographic\RemoteWindowHolographic.cpp" />
     <ClInclude Include="..\common\holographic\RemoteWindowHolographic.h" />
     <ClCompile Include="..\common\holographic\RenderableObject.cpp" />
     <ClInclude Include="..\common\holographic\RenderableObject.h" />
+    <ClCompile Include="..\common\holographic\SceneUnderstandingRenderer.cpp" />
+    <ClInclude Include="..\common\holographic\SceneUnderstandingRenderer.h" />
     <ClCompile Include="..\common\holographic\Speech.cpp" />
     <ClInclude Include="..\common\holographic\Speech.h" />
     <ClCompile Include="..\common\holographic\SpatialInputHandler.cpp" />
     <ClInclude Include="..\common\holographic\SpatialInputHandler.h" />
     <ClCompile Include="..\common\holographic\SpatialInputRenderer.cpp" />
     <ClInclude Include="..\common\holographic\SpatialInputRenderer.h" />
+    <ClCompile Include="..\common\holographic\SpatialSurfaceMeshRenderer.cpp" />
+    <ClInclude Include="..\common\holographic\SpatialSurfaceMeshRenderer.h" />
     <ClCompile Include="..\common\holographic\SpinningCubeRenderer.cpp" />
     <ClInclude Include="..\common\holographic\SpinningCubeRenderer.h" />
+    <ClCompile Include="..\..\common\CameraResourcesD3D11Holographic.cpp" />
+    <ClInclude Include="..\..\common\CameraResourcesD3D11Holographic.h" />
+    <ClCompile Include="..\..\common\DeviceResourcesD3D11.cpp" />
+    <ClInclude Include="..\..\common\DeviceResourcesD3D11.h" />
+    <ClCompile Include="..\..\common\DeviceResourcesD3D11Holographic.cpp" />
+    <ClInclude Include="..\..\common\DeviceResourcesD3D11Holographic.h" />
+    <ClInclude Include="..\..\common\DirectXHelper.h" />
+    <ClInclude Include="..\..\common\DirectXSdkLayerSupport.h" />
+    <ClInclude Include="..\..\common\SimpleColor_ShaderStructures.h" />
+    <ClCompile Include="..\..\common\SimpleCubeRenderer.cpp" />
+    <ClInclude Include="..\..\common\SimpleCubeRenderer.h" />
     <ClCompile Include="..\common\holographic\RemoteWindowHolographicWin32.cpp" />
     <ClInclude Include="..\common\holographic\RemoteWindowHolographicWin32.h" />
-    <ClCompile Include=".\Content\QRCodeRenderer.cpp" />
-    <ClInclude Include=".\Content\QRCodeRenderer.h" />
-    <ClCompile Include=".\Content\SceneUnderstandingRenderer.cpp" />
-    <ClInclude Include=".\Content\SceneUnderstandingRenderer.h" />
-    <ClCompile Include=".\Content\SpatialSurfaceMeshRenderer.cpp" />
-    <ClInclude Include=".\Content\SpatialSurfaceMeshRenderer.h" />
     <AppxManifest Include=".\Package.appxmanifest" />
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShader.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SRMesh_VertexShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_VertexShaderVprt.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SU_VertexShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SRMesh_VertexShader.hlsl">
+    <FXCompile Include="..\..\common\shaders\SimpleColor_VertexShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SU_VertexShader.hlsl">
+    <FXCompile Include="..\..\common\shaders\SimpleColor_VertexShaderVprt.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_PixelShader.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SRMesh_PixelShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SRMesh_PixelShader.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SULabel_PixelShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SULabel_PixelShader.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SUMesh_PixelShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SUMesh_PixelShader.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SUQuads_PixelShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SUQuads_PixelShader.hlsl">
+    <FXCompile Include="..\..\common\shaders\SimpleColor_PixelShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include="..\common\d3d11\shaders\SimpleColor_GeometryShader.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SRMesh_GeometryShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Geometry</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SRMesh_GeometryShader.hlsl">
+    <FXCompile Include="..\common\holographic\shaders\SU_GeometryShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Geometry</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FXCompile>
-    <FXCompile Include=".\Content\shaders\SU_GeometryShader.hlsl">
+    <FXCompile Include="..\..\common\shaders\SimpleColor_GeometryShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Geometry</ShaderType>
       <ShaderModel>5.0</ShaderModel>
@@ -332,6 +337,6 @@
     <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets" Condition="Exists('packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
     <Import Project="packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets" Condition="Exists('packages\Microsoft.MixedReality.QR.0.5.3011\build\native\Microsoft.MixedReality.QR.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.6.2\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.6.2\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.7.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.7.0\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>

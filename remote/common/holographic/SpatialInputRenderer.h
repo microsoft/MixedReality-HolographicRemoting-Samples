@@ -72,7 +72,7 @@ class SpatialInputRenderer : public RenderableObject
 {
 public:
     SpatialInputRenderer(
-        const std::shared_ptr<DXHelper::DeviceResources>& deviceResources,
+        const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources,
         winrt::Windows::UI::Input::Spatial::SpatialInteractionManager interactionManager);
 
     void Update(
@@ -105,10 +105,12 @@ private:
     };
 
 private:
-    static std::vector<VertexPositionNormalColor>
-        CalculateJointVisualizationVertices(float3 jointPosition, quaternion jointOrientation, float jointLength, float jointRadius);
+    static std::vector<VertexPositionNormalColor> CalculateJointVisualizationVertices(
+        float3 jointPosition, quaternion jointOrientation, float jointLength, float jointRadius);
 
-    void Draw(unsigned int numInstances, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum) override;
+    void Draw(
+        unsigned int numInstances,
+        winrt::Windows::Foundation::IReference<winrt::Windows::Perception::Spatial::SpatialBoundingFrustum> cullingFrustum) override;
 
     winrt::Windows::UI::Input::Spatial::SpatialInteractionManager m_interactionManager{nullptr};
     winrt::Windows::Perception::Spatial::SpatialLocatorAttachedFrameOfReference m_referenceFrame{nullptr};

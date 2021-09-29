@@ -21,8 +21,8 @@ RemoteWindowHolographicWin32::RemoteWindowHolographicWin32(const std::shared_ptr
 {
 }
 
-winrt::com_ptr<IDXGISwapChain1>
-    RemoteWindowHolographicWin32::CreateSwapChain(const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc)
+winrt::com_ptr<IDXGISwapChain1> RemoteWindowHolographicWin32::CreateSwapChain(
+    const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc)
 {
     winrt::com_ptr<IDXGIDevice1> dxgiDevice;
     device.as(dxgiDevice);

@@ -13,18 +13,26 @@
 
 #include <chrono>
 
-#include <content/QRCodeRenderer.h>
-
-#include <d3d11/DirectXHelper.h>
+#include <DirectXHelper.h>
 #include <holographic/FrustumCulling.h>
+#include <holographic/QRCodeRenderer.h>
 
 #include <winrt/Windows.Foundation.Numerics.h>
 #include <winrt/Windows.Perception.Spatial.Preview.h>
 
+#include <winrt/Windows.Globalization.DateTimeFormatting.h>
+
 using namespace winrt::Microsoft::MixedReality::QR;
 using namespace winrt::Windows::Foundation::Numerics;
+using namespace winrt::Windows::Perception::Spatial;
+using namespace winrt::Windows::Globalization;
 
-QRCodeRenderer::QRCodeRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources)
+namespace
+{
+    DateTimeFormatting::DateTimeFormatter formatter{L"year month day hour minute second"};
+}
+
+QRCodeRenderer::QRCodeRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources)
     : RenderableObject(deviceResources)
 {
 }
@@ -40,6 +48,17 @@ void QRCodeRenderer::OnUpdatedQRCode(const winrt::Microsoft::MixedReality::QR::Q
     }
 
     m_qrCodes.insert({code, nullptr});
+
+    {
+        wchar_t lastDetectedTimeLog[128];
+        swprintf_s(
+            lastDetectedTimeLog,
+            L"QR code %s was last seen %s\n",
+            winrt::to_hstring(code.Id()).c_str(),
+            formatter.Format(code.LastDetectedTime()).c_str());
+
+        OutputDebugStringW(lastDetectedTimeLog);
+    }
 }
 
 void QRCodeRenderer::Update(winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem)

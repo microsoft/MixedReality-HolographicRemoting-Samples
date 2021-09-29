@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{24B5B05B-28E8-35C2-A4F5-DABDF7BB5071}</ProjectGuid>
+    <ProjectGuid>{B1AC6C9F-CAF6-3636-8773-76C5A5A60E65}</ProjectGuid>
     <ApplicationType>Windows Store</ApplicationType>
     <DefaultLanguage>en-US</DefaultLanguage>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
@@ -80,7 +80,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -97,15 +97,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;UNICODE;_UNICODE;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -113,7 +113,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:ARM64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
@@ -131,7 +132,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -150,15 +151,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -166,7 +167,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:ARM64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
@@ -182,7 +184,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|ARM64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <CompileAsWinRT>false</CompileAsWinRT>
@@ -199,15 +201,15 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_MIRAGE;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\common;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -215,7 +217,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:ARM64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
@@ -236,18 +239,22 @@
     <ClCompile Include=".\pch.cpp" />
     <ClInclude Include=".\SamplePlayerMain.h" />
     <ClCompile Include=".\SamplePlayerMain.cpp" />
-    <ClCompile Include="..\common\CameraResources.cpp" />
-    <ClInclude Include="..\common\CameraResources.h" />
-    <ClCompile Include="..\common\DeviceResourcesCommon.cpp" />
-    <ClInclude Include="..\common\DeviceResourcesCommon.h" />
-    <ClCompile Include="..\common\DeviceResourcesUWP.cpp" />
-    <ClInclude Include="..\common\DeviceResourcesUWP.h" />
     <ClInclude Include="..\common\IpAddressUpdater.h" />
     <ClCompile Include="..\common\IpAddressUpdater.cpp" />
     <ClInclude Include="..\common\PlayerFrameStatisticsHelper.h" />
     <ClCompile Include="..\common\PlayerFrameStatisticsHelper.cpp" />
     <ClInclude Include="..\common\PlayerUtil.h" />
     <ClCompile Include="..\common\PlayerUtil.cpp" />
+    <ClCompile Include="..\..\common\CameraResourcesD3D11Holographic.cpp" />
+    <ClInclude Include="..\..\common\CameraResourcesD3D11Holographic.h" />
+    <ClCompile Include="..\..\common\DeviceResourcesD3D11.cpp" />
+    <ClInclude Include="..\..\common\DeviceResourcesD3D11.h" />
+    <ClCompile Include="..\..\common\DeviceResourcesD3D11Holographic.cpp" />
+    <ClInclude Include="..\..\common\DeviceResourcesD3D11Holographic.h" />
+    <ClInclude Include="..\..\common\DirectXSdkLayerSupport.h" />
+    <ClInclude Include="..\..\common\SimpleColor_ShaderStructures.h" />
+    <ClCompile Include="..\..\common\SimpleCubeRenderer.cpp" />
+    <ClInclude Include="..\..\common\SimpleCubeRenderer.h" />
     <ClCompile Include="..\common\Content\DDSTextureLoader.cpp" />
     <ClInclude Include="..\common\Content\DDSTextureLoader.h" />
     <ClInclude Include="..\common\Content\ErrorHelper.h" />
@@ -255,7 +262,7 @@
     <ClInclude Include="..\common\Content\ShaderStructures.h" />
     <ClInclude Include="..\common\Content\StatusDisplay.h" />
     <ClCompile Include="..\common\Content\StatusDisplay.cpp" />
-    <None Include=".\Content\RemotingLogo.dds">
+    <None Include=".\Assets\RemotingLogo.dds">
       <Link>.\%(FileName)%(Extension)</Link>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</DeploymentContent>
@@ -324,7 +331,28 @@
       <HeaderFileOutput>.\shaders\%(Filename).h</HeaderFileOutput>
       <VariableName>%(Filename)</VariableName>
     </FXCompile>
+    <FXCompile Include="..\..\common\shaders\SimpleColor_VertexShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <HeaderFileOutput>.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName>%(Filename)</VariableName>
+    </FXCompile>
+    <FXCompile Include="..\..\common\shaders\SimpleColor_VertexShaderVprt.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <HeaderFileOutput>.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName>%(Filename)</VariableName>
+    </FXCompile>
     <FXCompile Include="..\common\Shaders\PixelShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <HeaderFileOutput>.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName>%(Filename)</VariableName>
+    </FXCompile>
+    <FXCompile Include="..\..\common\shaders\SimpleColor_PixelShader.hlsl">
       <EntryPointName>main</EntryPointName>
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
@@ -338,10 +366,17 @@
       <HeaderFileOutput>.\shaders\%(Filename).h</HeaderFileOutput>
       <VariableName>%(Filename)</VariableName>
     </FXCompile>
+    <FXCompile Include="..\..\common\shaders\SimpleColor_GeometryShader.hlsl">
+      <EntryPointName>main</EntryPointName>
+      <ShaderType>Geometry</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <HeaderFileOutput>.\shaders\%(Filename).h</HeaderFileOutput>
+      <VariableName>%(Filename)</VariableName>
+    </FXCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.6.2\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.6.2\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.7.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.7.0\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>

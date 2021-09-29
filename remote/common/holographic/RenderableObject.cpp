@@ -13,9 +13,11 @@
 
 #include <holographic/RenderableObject.h>
 
-#include <d3d11/DirectXHelper.h>
+#include <DirectXHelper.h>
 
-RenderableObject::RenderableObject(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources)
+using namespace winrt::Windows::Perception::Spatial;
+
+RenderableObject::RenderableObject(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources)
     : m_deviceResources(deviceResources)
 {
     m_deviceResourcesCreated = CreateDeviceDependentResourcesInternal();

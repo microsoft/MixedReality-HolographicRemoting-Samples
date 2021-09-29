@@ -9,51 +9,29 @@
 //
 //*********************************************************
 
-#include "pch.h"
+#include <pch.h>
 
-#include "DeviceResourcesCommon.h"
-
-#include <d2d1_2.h>
-#include <d3d11_4.h>
-#include <dwrite_2.h>
-#include <dxgi1_4.h>
-#include <wincodec.h>
+#include <DeviceResourcesD3D11.h>
 
 namespace DXHelper
 {
-#if defined(_DEBUG)
-    // Check for SDK Layer support.
-    inline bool SdkLayersAvailable()
-    {
-        HRESULT hr = D3D11CreateDevice(
-            nullptr,
-            D3D_DRIVER_TYPE_NULL, // There is no need to create a real hardware device.
-            0,
-            D3D11_CREATE_DEVICE_DEBUG, // Check for the SDK layers.
-            nullptr,                   // Any feature level will do.
-            0,
-            D3D11_SDK_VERSION, // Always set this to D3D11_SDK_VERSION for Windows Runtime apps.
-            nullptr,           // No need to keep the D3D device reference.
-            nullptr,           // No need to know the feature level.
-            nullptr            // No need to keep the D3D device context reference.
-        );
-
-        return SUCCEEDED(hr);
-    }
-#endif
-
     // Constructor for DeviceResources.
-    DeviceResourcesCommon::DeviceResourcesCommon()
+    DeviceResourcesD3D11::DeviceResourcesD3D11()
     {
         CreateDeviceIndependentResources();
     }
 
-    DeviceResourcesCommon::~DeviceResourcesCommon()
+    DeviceResourcesD3D11::~DeviceResourcesD3D11()
     {
+        if (m_d3dContext)
+        {
+            m_d3dContext->Flush();
+            m_d3dContext->ClearState();
+        }
     }
 
     // Configures resources that don't depend on the Direct3D device.
-    void DeviceResourcesCommon::CreateDeviceIndependentResources()
+    void DeviceResourcesD3D11::CreateDeviceIndependentResources()
     {
         // Initialize Direct2D resources.
         D2D1_FACTORY_OPTIONS options{};
@@ -65,8 +43,7 @@ namespace DXHelper
 
         // Initialize the Direct2D Factory.
         m_d2dFactory = nullptr;
-        winrt::check_hresult(
-            D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory2), &options, m_d2dFactory.put_void()));
+        winrt::check_hresult(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, m_d2dFactory.put()));
 
         // Initialize the DirectWrite Factory.
         m_dwriteFactory = nullptr;
@@ -79,13 +56,13 @@ namespace DXHelper
     }
 
     // Configures the Direct3D device, and stores handles to it and the device context.
-    void DeviceResourcesCommon::CreateDeviceResources()
+    void DeviceResourcesD3D11::CreateDeviceResources()
     {
         // This flag adds support for surfaces with a different color channel ordering
         // than the API default. It is required for compatibility with Direct2D.
         UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
-#if defined(_DEBUG)
+#ifdef _DEBUG
         if (SdkLayersAvailable())
         {
             // If the project is in a debug build, enable debugging via SDK Layers with this flag.
@@ -169,7 +146,7 @@ namespace DXHelper
         }
     }
 
-    void DeviceResourcesCommon::NotifyDeviceLost()
+    void DeviceResourcesD3D11::NotifyDeviceLost()
     {
         if (m_deviceNotify != nullptr)
         {
@@ -177,7 +154,7 @@ namespace DXHelper
         }
     }
 
-    void DeviceResourcesCommon::NotifyDeviceRestored()
+    void DeviceResourcesD3D11::NotifyDeviceRestored()
     {
         if (m_deviceNotify != nullptr)
         {
@@ -186,14 +163,14 @@ namespace DXHelper
     }
 
     // Register our DeviceNotify to be informed on device lost and creation.
-    void DeviceResourcesCommon::RegisterDeviceNotify(IDeviceNotify* deviceNotify)
+    void DeviceResourcesD3D11::RegisterDeviceNotify(IDeviceNotify* deviceNotify)
     {
         m_deviceNotify = deviceNotify;
     }
 
     // Call this method when the app suspends. It provides a hint to the driver that the app
     // is entering an idle state and that temporary buffers can be reclaimed for use by other apps.
-    void DeviceResourcesCommon::Trim()
+    void DeviceResourcesD3D11::Trim()
     {
         if (m_d3dContext)
         {

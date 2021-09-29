@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include <d3d11/SimpleColor_ShaderStructures.h>
-#include <holographic/DeviceResources.h>
+#include <DeviceResourcesD3D11.h>
+#include <SimpleColor_ShaderStructures.h>
 
 #include <winrt/Windows.UI.Input.Spatial.h>
 
@@ -22,7 +22,7 @@
 class SpinningCubeRenderer
 {
 public:
-    SpinningCubeRenderer(const std::shared_ptr<DXHelper::DeviceResources>& deviceResources);
+    SpinningCubeRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
 
     void CreateWindowSizeDependentResources();
     std::future<void> CreateDeviceDependentResources();
@@ -32,7 +32,8 @@ public:
         winrt::Windows::Perception::PerceptionTimestamp timestamp,
         winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem);
     void SetColorFilter(DirectX::XMFLOAT4 color);
-    void Render(bool isStereo, winrt::Windows::Foundation::IReference<SpatialBoundingFrustum> cullingFrustum);
+    void Render(
+        bool isStereo, winrt::Windows::Foundation::IReference<winrt::Windows::Perception::Spatial::SpatialBoundingFrustum> cullingFrustum);
 
     // Repositions the sample hologram.
     void PositionHologram(const winrt::Windows::UI::Input::Spatial::SpatialPointerPose& pointerPose);
@@ -70,7 +71,7 @@ private:
     };
 
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResources> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesD3D11> m_deviceResources;
 
     // Direct3D resources for cube geometry.
     winrt::com_ptr<ID3D11InputLayout> m_inputLayout;

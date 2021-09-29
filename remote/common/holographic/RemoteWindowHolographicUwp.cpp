@@ -34,8 +34,8 @@ RemoteWindowHolographicUwp::RemoteWindowHolographicUwp(const std::shared_ptr<IRe
     m_onSizeChangedRevoker = m_coreWindow.SizeChanged(winrt::auto_revoke, {this, &RemoteWindowHolographicUwp::OnSizeChanged});
 }
 
-winrt::com_ptr<IDXGISwapChain1>
-    RemoteWindowHolographicUwp::CreateSwapChain(const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc)
+winrt::com_ptr<IDXGISwapChain1> RemoteWindowHolographicUwp::CreateSwapChain(
+    const winrt::com_ptr<ID3D11Device1>& device, const DXGI_SWAP_CHAIN_DESC1* desc)
 {
     winrt::com_ptr<IDXGIDevice3> dxgiDevice;
     device.as(dxgiDevice);
