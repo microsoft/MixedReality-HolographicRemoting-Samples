@@ -21,7 +21,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BDD6541B-7845-3E17-B3C6-6011A4343E9E}</ProjectGuid>
+    <ProjectGuid>{DDF1C254-A706-3B32-AD48-3D06B26CC00A}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
@@ -93,11 +93,11 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -145,11 +145,11 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -193,11 +193,11 @@
       <SDLCheck>true</SDLCheck>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;ALLOW_INSECURE_RANDOM_DEVICE=1;HAR_ENABLE_OPENXR;HAR_DEVELOPMENT;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;UNICODE;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -259,6 +259,6 @@
     <Import Project="packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets" Condition="Exists('packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets')" />
     <Import Project="packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets" Condition="Exists('packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.6.2\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.6.2\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.7.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.7.0\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
   </ImportGroup>
 </Project>

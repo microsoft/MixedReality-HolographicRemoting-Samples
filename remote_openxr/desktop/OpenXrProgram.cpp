@@ -28,6 +28,8 @@
 
 // #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
 
+// #define ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+
 namespace {
     constexpr DirectX::XMVECTORF32 clearColor = {0.392156899f, 0.584313750f, 0.929411829f, 1.000000000f};
 
@@ -1204,6 +1206,18 @@ namespace {
 
                 m_spinningCubeStartTime = predictedDisplayTime;
             }
+
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+            {
+                // Initialize a colored cube that's 20 centimeters wide. The cube is aligned on top of the blue cube which is rendered by
+                // the player.
+                Hologram hologram{};
+                hologram.Cube.Scale = {0.2f, 0.2f, 0.2f};
+                hologram.Cube.Space = createReferenceSpace(static_cast<XrReferenceSpaceType>(XR_REMOTING_REFERENCE_SPACE_TYPE_USER_MSFT),
+                                                           xr::math::Pose::Translation({0.0f, 0.2f, 0.0f}));
+                m_holograms.push_back(std::move(hologram));
+            }
+#endif
         }
 
         void UpdateSpinningCube(XrTime predictedDisplayTime) {

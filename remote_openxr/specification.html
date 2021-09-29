@@ -446,8 +446,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>OpenXR Remoting Extensions</h1>
 <div class="details">
 <span id="author" class="author">Copyright (c) 2021 Microsoft. All rights reserved.</span><br>
-<span id="revnumber">version 2.6.0,</span>
-<span id="revdate">Thu, 1 Jun 2021</span>
+<span id="revnumber">version 2.7.0,</span>
+<span id="revdate">Tue, 28 Sep 2021</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -482,7 +482,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </dd>
 <dt class="hdlist1"><strong>Revision</strong></dt>
 <dd>
-<p>2</p>
+<p>3</p>
 </dd>
 <dt class="hdlist1"><strong>Extension and Version Dependencies</strong></dt>
 <dd>
@@ -500,7 +500,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <dl>
 <dt class="hdlist1"><strong>Last Modified Date</strong></dt>
 <dd>
-<p>2021-06-01</p>
+<p>2021-09-28</p>
 </dd>
 <dt class="hdlist1"><strong>IP Status</strong></dt>
 <dd>
@@ -977,9 +977,6 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><a id="VUID-XrRemotingConnectInfoMSFT-remoteHostName-parameter" href="#VUID-XrRemotingConnectInfoMSFT-remoteHostName-parameter"></a> <code>remoteHostName</code> <strong class="purple">must</strong> be a pointer to a valid</p>
 </li>
-<li>
-<p><a id="VUID-XrRemotingConnectInfoMSFT-remotePort-parameter" href="#VUID-XrRemotingConnectInfoMSFT-remotePort-parameter"></a> <code>remotePort</code> <strong class="purple">must</strong> be a valid <code>uint16_t</code> value</p>
-</li>
 </ul>
 </div>
 </div>
@@ -1152,12 +1149,6 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p><a id="VUID-XrRemotingListenInfoMSFT-listenInterface-parameter" href="#VUID-XrRemotingListenInfoMSFT-listenInterface-parameter"></a> <code>listenInterface</code> <strong class="purple">must</strong> be a pointer to a valid</p>
-</li>
-<li>
-<p><a id="VUID-XrRemotingListenInfoMSFT-handshakeListenPort-parameter" href="#VUID-XrRemotingListenInfoMSFT-handshakeListenPort-parameter"></a> <code>handshakeListenPort</code> <strong class="purple">must</strong> be a valid <code>uint16_t</code> value</p>
-</li>
-<li>
-<p><a id="VUID-XrRemotingListenInfoMSFT-transportListenPort-parameter" href="#VUID-XrRemotingListenInfoMSFT-transportListenPort-parameter"></a> <code>transportListenPort</code> <strong class="purple">must</strong> be a valid <code>uint16_t</code> value</p>
 </li>
 </ul>
 </div>
@@ -1508,6 +1499,7 @@ all communication channels established (Client/Server).</p>
     XR_REMOTING_DISCONNECT_REASON_SESSION_OPEN_TIMEOUT_MSFT = 25,
     XR_REMOTING_DISCONNECT_REASON_REMOTING_HANDSHAKE_TIMEOUT_MSFT = 26,
     XR_REMOTING_DISCONNECT_REASON_INTERNAL_ERROR_MSFT = 27,
+    XR_REMOTING_DISCONNECT_REASON_HANDSHAKE_PERMISSION_DENIED_MSFT = 28,
     XR_REMOTING_DISCONNECT_REASON_MAX_ENUM_MSFT = 0x7FFFFFFF
 } XrRemotingDisconnectReasonMSFT;</code></pre>
 </div>
@@ -1636,6 +1628,10 @@ it timed out while waiting for the remoting handshake to complete (Client/Server
 <p><code>XR_REMOTING_DISCONNECT_REASON_INTERNAL_ERROR_MSFT</code> represents that the
 connection failed due to an internal error (Client/Server).</p>
 </li>
+<li>
+<p><code>XR_REMOTING_DISCONNECT_REASON_HANDSHAKE_PERMISSION_DENIED_MSFT</code> represents
+that the handshake could not be opened due to insufficient permissions (Client).</p>
+</li>
 </ul>
 </div>
 </div>
@@ -1698,9 +1694,6 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p><a id="VUID-XrRemotingEventDataListeningMSFT-next-next" href="#VUID-XrRemotingEventDataListeningMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
-</li>
-<li>
-<p><a id="VUID-XrRemotingEventDataListeningMSFT-listeningPort-parameter" href="#VUID-XrRemotingEventDataListeningMSFT-listeningPort-parameter"></a> <code>listeningPort</code> <strong class="purple">must</strong> be a valid <code>uint16_t</code> value</p>
 </li>
 </ul>
 </div>
@@ -3001,6 +2994,12 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>XR_ERROR_SYSTEM_INVALID</code></p>
 </li>
 <li>
+<p><code>XR_ERROR_OUT_OF_MEMORY</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_LIMIT_REACHED</code></p>
+</li>
+<li>
 <p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
 </li>
 <li>
@@ -3139,7 +3138,7 @@ For the creation, valid channel IDs on the remote side are from 0 up to and incl
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>In case the player side creates a data channel, a <a href="#XrEventDataRemotingDataChannelCreatedMSFT">XrEventDataRemotingDataChannelCreatedMSFT</a> event structure is placed in the event queue. The structure is defined as:</p>
+<p>In case the player side creates a data channel, an <a href="#XrEventDataRemotingDataChannelCreatedMSFT">XrEventDataRemotingDataChannelCreatedMSFT</a> event structure is placed in the event queue. The structure is defined as:</p>
 </div>
 <div id="XrEventDataRemotingDataChannelCreatedMSFT" class="paragraph">
 <p></p>
@@ -3323,6 +3322,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><code>XR_SUCCESS</code></p>
 </li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
 </ul>
 </div>
 </dd>
@@ -3335,6 +3337,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
 </li>
 <li>
 <p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
@@ -3468,7 +3473,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>size</code> is the amount of bytes that was received.</p>
 </li>
 <li>
-<p><code>packetId</code> is a <a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a> handle identifing the received packet.</p>
+<p><code>packetId</code> is an <a href="#XrRemotingPacketIdMSFT">XrRemotingPacketIdMSFT</a> handle identifing the received packet.</p>
 </li>
 </ul>
 </div>
@@ -3599,6 +3604,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><code>XR_SUCCESS</code></p>
 </li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
 </ul>
 </div>
 </dd>
@@ -3620,6 +3628,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p><code>XR_ERROR_VALIDATION_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
 </li>
 <li>
 <p><code>XR_ERROR_REMOTING_DATA_CHANNEL_CLOSED_MSFT</code></p>
@@ -3702,6 +3713,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><code>XR_SUCCESS</code></p>
 </li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
 </ul>
 </div>
 </dd>
@@ -3720,6 +3734,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
 </li>
 </ul>
 </div>
@@ -3980,6 +3997,18 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
+<div class="title">Thread Safety</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Access to <code>channel</code>, and any child handles, <strong class="purple">must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
 <div class="title">Return Codes</div>
 <div class="dlist">
 <dl>
@@ -4001,9 +4030,6 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>XR_ERROR_HANDLE_INVALID</code></p>
 </li>
 <li>
-<p><code>XR_ERROR_INSTANCE_LOST</code></p>
-</li>
-<li>
 <p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
 </li>
 <li>
@@ -4017,6 +4043,29 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </div>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_user_reference_space"><a class="anchor" href="#_user_reference_space"></a>1.1.3. User reference space</h4>
+<div class="paragraph">
+<p>The <code>REMOTING_USER_MSFT</code> reference space represents an aligned space between a custom player app and a custom remote app.
+With that it is possible to express spatial data within a common space even across different player and remote runtimes.</p>
+</div>
+<div class="paragraph">
+<p>This can be used, for example, to align content which was rendered by the player app with the content rendered by the remote app.
+Furthermore, this allows the custom remote app to correctly align sensor data from the player device.</p>
+</div>
+<div class="paragraph">
+<p>In general, the coordinate system synchronization consists of two parts.
+The player app sets and regularly updates the coordinate system (hereinafter referred to as user coordinate system) and the remote app gets the user coordinate system in a runtime dependent way.
+With that both the player app and remote app can transform spatial data into a common coordinate system.</p>
+</div>
+<div class="paragraph">
+<p>To create a <code>REMOTING_USER_MSFT</code> reference space in the remote app, the app <strong class="purple">can</strong> pass
+<code>XR_REFERENCE_SPACE_TYPE_REMOTING_USER_MSFT</code> to <a href="#xrCreateReferenceSpace">xrCreateReferenceSpace</a>.</p>
+</div>
+<div class="paragraph">
+<p>As long as the <code>REMOTING_USER_MSFT</code> reference space was not set by the custom player app, calls to <a href="#xrLocateSpace">xrLocateSpace</a> will return an invalid <a href="#XrSpaceLocation">XrSpaceLocation</a> indicated by the empty <a href="#XrSpaceLocationFlags">XrSpaceLocationFlags</a>.</p>
 </div>
 <div class="paragraph">
 <p><strong>New Object Types</strong></p>
@@ -4134,6 +4183,26 @@ No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
 <p><code>XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><a href="#XrObjectType">XrObjectType</a> enumeration is extended with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_OBJECT_TYPE_REMOTING_DATA_CHANNEL_MSFT</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><a href="#XrReferenceSpaceType">XrReferenceSpaceType</a> enumeration is extended with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_REFERENCE_SPACE_TYPE_REMOTING_USER_MSFT</code></p>
 </li>
 </ul>
 </div>
@@ -4332,11 +4401,21 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </li>
 <li>
-<p>Revision 2, 2021-02-05 (Hanaa Elghobashi, Vincent Musch)</p>
+<p>Revision 2, 2021-02-04 (Hanaa Elghobashi, Vincent Musch)</p>
 <div class="ulist">
 <ul>
 <li>
 <p>Custom data channels</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Revision 3, 2021-09-28 (Florian Bagar, Vincent Musch)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>User reference space</p>
 </li>
 </ul>
 </div>
@@ -4400,7 +4479,7 @@ Felix Reeh, Microsoft<br></p>
 <div class="sect3">
 <h4 id="_overview_6"><a class="anchor" href="#_overview_6"></a>1.2.1. Overview</h4>
 <div class="paragraph">
-<p>This holographic remoting extension allows the remote application to react to speech commands recognized by the player application using Windows Speech Recognition API.</p>
+<p>This holographic remoting extension allows the remote app to react to speech commands recognized by the player app using the Windows Speech Recognition API.</p>
 </div>
 <div class="paragraph">
 <p>The <a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a> function is defined as:</p>
@@ -4423,7 +4502,7 @@ Felix Reeh, Microsoft<br></p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>session</code> is a <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
+<p><code>session</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
 </li>
 <li>
 <p><code>speechInitInfo</code> is a pointer to a valid <a href="#XrRemotingSpeechInitInfoMSFT">XrRemotingSpeechInitInfoMSFT</a> which contains information to initialize the speech recognizer.</p>
@@ -4433,7 +4512,8 @@ Felix Reeh, Microsoft<br></p>
 </div>
 </div>
 <div class="paragraph">
-<p>To initialize a speech recognizer on the player application, the remote application <strong class="purple">can</strong> call <a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a>. This transmits speech initialization parameters, i.e. a language, a dictionary of phrases, and the contents of a grammar file, to the player application. it can also be used to reinitialize the speech recognizer with new parameters during a running <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a>.</p>
+<p>To initialize a speech recognizer on the player app, the remote app <strong class="purple">can</strong> call <a href="#xrInitializeRemotingSpeechMSFT">xrInitializeRemotingSpeechMSFT</a>. This transmits speech initialization parameters, i.e. a language, a dictionary of phrases, and the contents of a grammar file, to the player app.
+The remote app <strong class="purple">may</strong> re-initialize the speech recognizer multiple times with new parameters.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -4465,6 +4545,9 @@ Felix Reeh, Microsoft<br></p>
 <li>
 <p><code>XR_SUCCESS</code></p>
 </li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
 </ul>
 </div>
 </dd>
@@ -4485,13 +4568,10 @@ Felix Reeh, Microsoft<br></p>
 <p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
 </li>
 <li>
-<p><code>XR_ERROR_SESSION_LOST</code></p>
-</li>
-<li>
-<p><code>XR_SESSION_LOSS_PENDING</code></p>
-</li>
-<li>
 <p><code>XR_ERROR_VALIDATION_FAILURE</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
 </li>
 </ul>
 </div>
@@ -4733,13 +4813,13 @@ chain.
 No such structures are defined in core OpenXR or this extension.</p>
 </li>
 <li>
-<p><code>packetId</code> is the is a <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle identifing the received recognized speech packet.</p>
+<p><code>packetId</code> is the is an <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle identifing the received recognized speech packet.</p>
 </li>
 <li>
-<p><code>confidence</code> is the <a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a>. it represents the confidence level: high, medium and low as returned by Windows Speech Recognition API.</p>
+<p><code>confidence</code> is the <a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a>. it represents the confidence level: high, medium and low as returned by the Windows Speech Recognition API.</p>
 </li>
 <li>
-<p><code>rawConfidence</code> is the confidence level of the speech recognition result on a scale from 0 to 1, as returned by Windows Speech Recognition API.</p>
+<p><code>rawConfidence</code> is the confidence level of the speech recognition result on a scale from 0 to 1, as returned by the Windows Speech Recognition API.</p>
 </li>
 </ul>
 </div>
@@ -4789,7 +4869,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a> is a direct mapping of the SpeechRecognitionConfidence enum returned with the speech recognition result by Windows Speech Recognition API. It is defined as:</p>
+<p>The <a href="#XrRemotingSpeechRecognitionConfidenceMSFT">XrRemotingSpeechRecognitionConfidenceMSFT</a> is a direct mapping of the SpeechRecognitionConfidence enum returned with the speech recognition result by the Windows Speech Recognition API. It is defined as:</p>
 </div>
 <div id="XrRemotingSpeechRecognitionConfidenceMSFT" class="paragraph">
 <p></p>
@@ -4854,7 +4934,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>session</code> is a <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
+<p><code>session</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
 </li>
 <li>
 <p><code>packetId</code> is the <a href="#XrRemotingSpeechPacketIdMSFT">XrRemotingSpeechPacketIdMSFT</a> handle from the <a href="#XrEventDataRemotingSpeechRecognizedMSFT">XrEventDataRemotingSpeechRecognizedMSFT</a> event.</p>
@@ -4911,6 +4991,9 @@ No such structures are defined in core OpenXR or this extension.</p>
 <li>
 <p><code>XR_SUCCESS</code></p>
 </li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
 </ul>
 </div>
 </dd>
@@ -4928,13 +5011,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
 </li>
 <li>
-<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
-</li>
-<li>
 <p><code>XR_ERROR_SESSION_LOST</code></p>
 </li>
 <li>
-<p><code>XR_SESSION_LOSS_PENDING</code></p>
+<p><code>XR_ERROR_RUNTIME_FAILURE</code></p>
 </li>
 <li>
 <p><code>XR_ERROR_VALIDATION_FAILURE</code></p>
@@ -5077,6 +5157,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 </li>
 </ul>
+</div>
 </div>
 </div>
 <div class="sect2">
