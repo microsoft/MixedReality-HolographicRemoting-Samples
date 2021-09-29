@@ -1,18 +1,17 @@
 #pragma once
 
-#include "DeviceResourcesCommon.h"
+#include <CameraResourcesD3D11Holographic.h>
+#include <DeviceResourcesD3D11.h>
 
 #include <winrt/Windows.Graphics.Holographic.h>
 
 namespace DXHelper
 {
-    class CameraResources;
-
-    class DeviceResourcesUWP : public DeviceResourcesCommon
+    class DeviceResourcesD3D11Holographic : public DeviceResourcesD3D11
     {
     public:
-        DeviceResourcesUWP();
-        ~DeviceResourcesUWP();
+        DeviceResourcesD3D11Holographic();
+        ~DeviceResourcesD3D11Holographic();
 
         void HandleDeviceLost();
         void Present(winrt::Windows::Graphics::Holographic::HolographicFrame frame);
@@ -25,7 +24,7 @@ namespace DXHelper
         };
         WaitResult WaitForNextFrameReady();
 
-        void SetWindow(const winrt::Windows::UI::Core::CoreWindow& window);
+        void SetHolographicSpace(winrt::Windows::Graphics::Holographic::HolographicSpace holographicSpace);
 
         void EnsureCameraResources(
             winrt::Windows::Graphics::Holographic::HolographicFrame frame,
@@ -77,7 +76,7 @@ namespace DXHelper
         bool m_firstFramePresented = false;
 
         // Back buffer resources, etc. for attached holographic cameras.
-        std::map<UINT32, std::unique_ptr<CameraResources>> m_cameraResources;
+        std::map<UINT32, std::unique_ptr<CameraResourcesD3D11Holographic>> m_cameraResources;
         std::mutex m_cameraResourcesLock;
 
         winrt::event_token m_cameraAddedToken;
@@ -93,7 +92,7 @@ namespace DXHelper
 // The callback takes a parameter of type std::map<UINT32, std::unique_ptr<CameraResources>>&
 // through which the list of cameras will be accessed.
 template <typename LCallback>
-void DXHelper::DeviceResourcesUWP::UseHolographicCameraResources(LCallback const& callback)
+void DXHelper::DeviceResourcesD3D11Holographic::UseHolographicCameraResources(LCallback const& callback)
 {
     try
     {

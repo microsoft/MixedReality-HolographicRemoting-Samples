@@ -18,6 +18,8 @@
 #include <shaders\VPRTVertexShader.h>
 #include <shaders\VertexShader.h>
 
+#include <DirectXHelper.h>
+
 constexpr const wchar_t Font[] = L"Segoe UI";
 // Font size in percent.
 constexpr float FontSizeLarge = 0.045f;
@@ -65,7 +67,7 @@ namespace
 } // namespace
 
 // Initializes D2D resources used for text rendering.
-StatusDisplay::StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesCommon>& deviceResources)
+StatusDisplay::StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources)
     : m_deviceResources(deviceResources)
 {
     CreateDeviceDependentResources();
@@ -141,8 +143,8 @@ void StatusDisplay::Render()
     {
         m_deviceResources->UseD3DDeviceContext([&](auto context) {
             DXHelper::D3D11StoreAndRestoreState(context, [&]() {
-                // Each vertex is one instance of the VertexBufferElement struct.
-                const UINT stride = sizeof(VertexBufferElement);
+                // Each vertex is one instance of the VertexPositionUV struct.
+                const UINT stride = sizeof(VertexPositionUV);
                 const UINT offset = 0;
                 ID3D11Buffer* pBufferToSet = m_vertexBufferImage.get();
                 context->IASetVertexBuffers(0, 1, &pBufferToSet, &stride, &offset);
@@ -698,7 +700,7 @@ void StatusDisplay::UpdateTextScale(
         // Load mesh vertices. Each vertex has a position and a color.
         // Note that the quad size has changed from the default DirectX app
         // template. The quad size is based on the target FOV.
-        const VertexBufferElement quadVerticesText[] = {
+        const VertexPositionUV quadVerticesText[] = {
             {XMFLOAT3(-quadExtentX, quadExtentY, 0.f), XMFLOAT2(0.f, 0.f)},
             {XMFLOAT3(quadExtentX, quadExtentY, 0.f), XMFLOAT2(1.f, 0.f)},
             {XMFLOAT3(quadExtentX, -quadExtentY, 0.f), XMFLOAT2(1.f, 1.f)},
@@ -719,7 +721,7 @@ void StatusDisplay::UpdateTextScale(
         const float imageFOVDegree = (m_isOpaque ? 0.75f : 0.2f) * (m_currentQuadFov * 0.5f);
         const float imageQuadExtent = m_statusDisplayDistance / tan((90.0f - imageFOVDegree) * Degree2Rad);
 
-        const VertexBufferElement quadVertices[] = {
+        const VertexPositionUV quadVertices[] = {
             {XMFLOAT3(-imageQuadExtent, imageQuadExtent, 0.f), XMFLOAT2(0.f, 0.f)},
             {XMFLOAT3(imageQuadExtent, imageQuadExtent, 0.f), XMFLOAT2(1.f, 0.f)},
             {XMFLOAT3(imageQuadExtent, -imageQuadExtent, 0.f), XMFLOAT2(1.f, 1.f)},

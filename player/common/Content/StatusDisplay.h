@@ -11,8 +11,8 @@
 
 #pragma once
 
-#include "..\Common\DeviceResourcesCommon.h"
-#include "ShaderStructures.h"
+#include <DeviceResourcesD3D11.h>
+#include <SimpleColor_ShaderStructures.h>
 
 #include <string>
 
@@ -55,7 +55,7 @@ public:
     };
 
 public:
-    StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesCommon>& deviceResources);
+    StatusDisplay(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
 
     void Update(float deltaTimeInSeconds);
 
@@ -146,7 +146,7 @@ private:
     std::mutex m_lineMutex;
 
     // Cached pointer to device resources.
-    std::shared_ptr<DXHelper::DeviceResourcesCommon> m_deviceResources;
+    std::shared_ptr<DXHelper::DeviceResourcesD3D11> m_deviceResources;
 
     // Resources related to text rendering.
     winrt::com_ptr<ID3D11Texture2D> m_textTexture;

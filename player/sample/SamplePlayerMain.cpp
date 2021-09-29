@@ -13,7 +13,6 @@
 
 #include "SamplePlayerMain.h"
 
-#include "../common/CameraResources.h"
 #include "../common/Content/DDSTextureLoader.h"
 #include "../common/PlayerUtil.h"
 
@@ -186,6 +185,25 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds, const Hologr
     m_deviceResources->EnsureCameraResources(
         holographicFrame, holographicFrame.CurrentPrediction(), focusPointCoordinateSystem, focusPointPosition);
 
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+    if (m_playerContext.ConnectionState() == ConnectionState::Connected && !m_trackingLost && m_userSpatialFrameOfReference != nullptr)
+    {
+        SpatialCoordinateSystem userCoordinateSystem = m_userSpatialFrameOfReference.CoordinateSystem();
+
+        try
+        {
+            m_playerContext.UpdateUserSpatialFrameOfReference(userCoordinateSystem);
+        }
+        catch (...)
+        {
+        }
+
+        SpatialCoordinateSystem renderingCoordinateSystem =
+            m_attachedFrameOfReference.GetStationaryCoordinateSystemAtTimestamp(holographicFrame.CurrentPrediction().Timestamp());
+        m_simpleCubeRenderer->Update(renderingCoordinateSystem, userCoordinateSystem);
+    }
+#endif
+
     return holographicFrame;
 }
 
@@ -193,139 +211,147 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
 {
     bool atLeastOneCameraRendered = false;
 
-    m_deviceResources->UseHolographicCameraResources([this, holographicFrame, &atLeastOneCameraRendered](
-                                                         std::map<UINT32, std::unique_ptr<DXHelper::CameraResources>>& cameraResourceMap) {
-        HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
+    m_deviceResources->UseHolographicCameraResources(
+        [this, holographicFrame, &atLeastOneCameraRendered](
+            std::map<UINT32, std::unique_ptr<DXHelper::CameraResourcesD3D11Holographic>>& cameraResourceMap) {
+            HolographicFramePrediction prediction = holographicFrame.CurrentPrediction();
 
-        SpatialCoordinateSystem coordinateSystem = nullptr;
-        if (m_attachedFrameOfReference)
-        {
-            coordinateSystem = m_attachedFrameOfReference.GetStationaryCoordinateSystemAtTimestamp(prediction.Timestamp());
-        }
-
-        // Retrieve information about any pending render target size change requests
-        bool needRenderTargetSizeChange = false;
-        winrt::Windows::Foundation::Size newRenderTargetSize{};
-        {
-            std::lock_guard lock{m_renderTargetSizeChangeMutex};
-            if (m_needRenderTargetSizeChange)
+            SpatialCoordinateSystem coordinateSystem = nullptr;
+            if (m_attachedFrameOfReference)
             {
-                needRenderTargetSizeChange = true;
-                newRenderTargetSize = m_newRenderTargetSize;
-                m_needRenderTargetSizeChange = false;
+                coordinateSystem = m_attachedFrameOfReference.GetStationaryCoordinateSystemAtTimestamp(prediction.Timestamp());
             }
-        }
 
-        for (const HolographicCameraPose& cameraPose : prediction.CameraPoses())
-        {
-            DXHelper::CameraResources* pCameraResources = cameraResourceMap[cameraPose.HolographicCamera().Id()].get();
-
-            m_deviceResources->UseD3DDeviceContext([&](ID3D11DeviceContext3* deviceContext) {
-                ID3D11DepthStencilView* depthStencilView = pCameraResources->GetDepthStencilView();
-
-                // Set render targets to the current holographic camera.
-                ID3D11RenderTargetView* const targets[1] = {pCameraResources->GetBackBufferRenderTargetView()};
-                deviceContext->OMSetRenderTargets(1, targets, depthStencilView);
-
-                if (!targets[0] || !depthStencilView)
+            // Retrieve information about any pending render target size change requests
+            bool needRenderTargetSizeChange = false;
+            winrt::Windows::Foundation::Size newRenderTargetSize{};
+            {
+                std::lock_guard lock{m_renderTargetSizeChangeMutex};
+                if (m_needRenderTargetSizeChange)
                 {
-                    return;
+                    needRenderTargetSizeChange = true;
+                    newRenderTargetSize = m_newRenderTargetSize;
+                    m_needRenderTargetSizeChange = false;
                 }
+            }
 
-                if (coordinateSystem)
-                {
-                    // The view and projection matrices for each holographic camera will change
-                    // every frame. This function refreshes the data in the constant buffer for
-                    // the holographic camera indicated by cameraPose.
-                    pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, coordinateSystem);
+            for (const HolographicCameraPose& cameraPose : prediction.CameraPoses())
+            {
+                DXHelper::CameraResourcesD3D11Holographic* pCameraResources = cameraResourceMap[cameraPose.HolographicCamera().Id()].get();
 
-                    const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
+                m_deviceResources->UseD3DDeviceContext([&](ID3D11DeviceContext3* deviceContext) {
+                    ID3D11DepthStencilView* depthStencilView = pCameraResources->GetDepthStencilView();
 
-                    // Reduce the fov of the statistics view.
-                    bool useLandscape = m_playerOptions.m_showStatistics && connected && !m_trackingLost && m_firstRemoteFrameWasBlitted;
+                    // Set render targets to the current holographic camera.
+                    ID3D11RenderTargetView* const targets[1] = {pCameraResources->GetBackBufferRenderTargetView()};
+                    deviceContext->OMSetRenderTargets(1, targets, depthStencilView);
 
-                    // Pass data from the camera resources to the status display.
-                    m_statusDisplay->UpdateTextScale(
-                        pCameraResources->GetProjectionTransform(),
-                        pCameraResources->GetRenderTargetSize().Width,
-                        pCameraResources->GetRenderTargetSize().Height,
-                        useLandscape,
-                        pCameraResources->IsOpaque());
-                }
-
-                // Attach the view/projection constant buffer for this camera to the graphics pipeline.
-                bool cameraActive = pCameraResources->AttachViewProjectionBuffer(m_deviceResources);
-
-                // Only render world-locked content when positional tracking is active.
-                if (cameraActive)
-                {
-                    auto blitResult = BlitResult::Failed_NoRemoteFrameAvailable;
-
-                    try
+                    if (!targets[0] || !depthStencilView)
                     {
-                        if (m_playerContext.ConnectionState() == ConnectionState::Connected)
+                        return;
+                    }
+
+                    if (coordinateSystem)
+                    {
+                        // The view and projection matrices for each holographic camera will change
+                        // every frame. This function refreshes the data in the constant buffer for
+                        // the holographic camera indicated by cameraPose.
+                        pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, coordinateSystem);
+
+                        const bool connected = (m_playerContext.ConnectionState() == ConnectionState::Connected);
+
+                        // Reduce the fov of the statistics view.
+                        bool useLandscape =
+                            m_playerOptions.m_showStatistics && connected && !m_trackingLost && m_firstRemoteFrameWasBlitted;
+
+                        // Pass data from the camera resources to the status display.
+                        m_statusDisplay->UpdateTextScale(
+                            pCameraResources->GetProjectionTransform(),
+                            pCameraResources->GetRenderTargetSize().Width,
+                            pCameraResources->GetRenderTargetSize().Height,
+                            useLandscape,
+                            pCameraResources->IsOpaque());
+                    }
+
+                    // Attach the view/projection constant buffer for this camera to the graphics pipeline.
+                    bool cameraActive = pCameraResources->AttachViewProjectionBuffer(m_deviceResources);
+
+                    // Only render world-locked content when positional tracking is active.
+                    if (cameraActive)
+                    {
+                        auto blitResult = BlitResult::Failed_NoRemoteFrameAvailable;
+
+                        try
                         {
-                            // Blit the remote frame into the backbuffer for the HolographicFrame.
-                            // NOTE: This overwrites the focus point for the current frame, if the remote application
-                            // has specified a focus point during the rendering of the remote frame.
-                            blitResult = m_playerContext.BlitRemoteFrame();
+                            if (m_playerContext.ConnectionState() == ConnectionState::Connected)
+                            {
+                                // Blit the remote frame into the backbuffer for the HolographicFrame.
+                                // NOTE: This overwrites the focus point for the current frame, if the remote application
+                                // has specified a focus point during the rendering of the remote frame.
+                                blitResult = m_playerContext.BlitRemoteFrame();
+                            }
+                        }
+                        catch (winrt::hresult_error err)
+                        {
+                            winrt::hstring msg = err.message();
+                            m_errorHelper.AddError(std::wstring(L"BlitRemoteFrame failed: ") + msg.c_str());
+                            UpdateStatusDisplay();
+                        }
+
+                        // If a remote remote frame has been blitted then color and depth buffer are fully overwritten, otherwise we have to
+                        // clear both buffers before we render any local content.
+                        if (blitResult != BlitResult::Success_Color && blitResult != BlitResult::Success_Color_Depth)
+                        {
+                            // Clear the back buffer and depth stencil view.
+                            deviceContext->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
+                            deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+                        }
+                        else
+                        {
+                            m_firstRemoteFrameWasBlitted = true;
+                        }
+
+                        // Render local content.
+                        {
+                        // NOTE: Any local custom content would be rendered here.
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+                            if (m_playerContext.ConnectionState() == ConnectionState::Connected)
+                            {
+                                // Draw the cube.
+                                m_simpleCubeRenderer->Render(pCameraResources->IsRenderingStereoscopic());
+                            }
+#endif
+                            // Draw connection status and/or statistics.
+                            m_statusDisplay->Render();
+                        }
+
+                        // Commit depth buffer if it has been committed by the remote app which is indicated by Success_Color_Depth.
+                        // NOTE: CommitDirect3D11DepthBuffer should be the last thing before the frame is presented. By doing so the depth
+                        //       buffer submitted includes remote content and local content.
+                        if (m_canCommitDirect3D11DepthBuffer && blitResult == BlitResult::Success_Color_Depth)
+                        {
+                            auto interopSurface = pCameraResources->GetDepthStencilTextureInteropObject();
+                            HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
+                            renderingParameters.CommitDirect3D11DepthBuffer(interopSurface);
                         }
                     }
-                    catch (winrt::hresult_error err)
-                    {
-                        winrt::hstring msg = err.message();
-                        m_errorHelper.AddError(std::wstring(L"BlitRemoteFrame failed: ") + msg.c_str());
-                        UpdateStatusDisplay();
-                    }
 
-                    // If a remote remote frame has been blitted then color and depth buffer are fully overwritten, otherwise we have to
-                    // clear both buffers before we render any local content.
-                    if (blitResult != BlitResult::Success_Color && blitResult != BlitResult::Success_Color_Depth)
-                    {
-                        // Clear the back buffer and depth stencil view.
-                        deviceContext->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
-                        deviceContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-                    }
-                    else
-                    {
-                        m_firstRemoteFrameWasBlitted = true;
-                    }
+                    atLeastOneCameraRendered = true;
+                });
 
-                    // Render local content.
-                    {
-                        // NOTE: Any local custom content would be rendered here.
-
-                        // Draw connection status and/or statistics.
-                        m_statusDisplay->Render();
-                    }
-
-                    // Commit depth buffer if it has been committed by the remote app which is indicated by Success_Color_Depth.
-                    // NOTE: CommitDirect3D11DepthBuffer should be the last thing before the frame is presented. By doing so the depth
-                    //       buffer submitted includes remote content and local content.
-                    if (m_canCommitDirect3D11DepthBuffer && blitResult == BlitResult::Success_Color_Depth)
-                    {
-                        auto interopSurface = pCameraResources->GetDepthStencilTextureInteropObject();
-                        HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
-                        renderingParameters.CommitDirect3D11DepthBuffer(interopSurface);
-                    }
-                }
-
-                atLeastOneCameraRendered = true;
-            });
-
-            if (needRenderTargetSizeChange)
-            {
-                if (HolographicViewConfiguration viewConfig = cameraPose.HolographicCamera().ViewConfiguration())
+                if (needRenderTargetSizeChange)
                 {
-                    // Only request new render target size if we are dealing with an opaque (i.e., VR) display
-                    if (cameraPose.HolographicCamera().Display().IsOpaque())
+                    if (HolographicViewConfiguration viewConfig = cameraPose.HolographicCamera().ViewConfiguration())
                     {
-                        viewConfig.RequestRenderTargetSize(newRenderTargetSize);
+                        // Only request new render target size if we are dealing with an opaque (i.e., VR) display
+                        if (cameraPose.HolographicCamera().Display().IsOpaque())
+                        {
+                            viewConfig.RequestRenderTargetSize(newRenderTargetSize);
+                        }
                     }
                 }
             }
-        }
-    });
+        });
 
     if (atLeastOneCameraRendered)
     {
@@ -386,7 +412,7 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
 
     m_viewActivatedRevoker = applicationView.Activated(winrt::auto_revoke, {this, &SamplePlayerMain::OnViewActivated});
 
-    m_deviceResources = std::make_shared<DXHelper::DeviceResourcesUWP>();
+    m_deviceResources = std::make_shared<DXHelper::DeviceResourcesD3D11Holographic>();
     m_deviceResources->RegisterDeviceNotify(this);
 
     m_spatialLocator = SpatialLocator::GetDefault();
@@ -395,6 +421,12 @@ void SamplePlayerMain::Initialize(const CoreApplicationView& applicationView)
         m_locatabilityChangedRevoker =
             m_spatialLocator.LocatabilityChanged(winrt::auto_revoke, {this, &SamplePlayerMain::OnLocatabilityChanged});
         m_attachedFrameOfReference = m_spatialLocator.CreateAttachedFrameOfReferenceAtCurrentHeading();
+
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+        // Create a stationaryFrameOfReference in front of the user.
+        m_userSpatialFrameOfReference =
+            m_spatialLocator.CreateStationaryFrameOfReferenceAtCurrentLocation(float3(0.5f, 0.0f, -2.0f), quaternion(0, 0, 0, 1), 0.0);
+#endif
     }
 }
 
@@ -413,12 +445,17 @@ void SamplePlayerMain::SetWindow(const CoreWindow& window)
         return;
     }
 
-    // Forward the window to the device resources, so that it can create a holographic space for the window.
-    m_deviceResources->SetWindow(window);
+    // Create the HolographicSpace and forward the window to the device resources.
+    m_deviceResources->SetHolographicSpace(HolographicSpace::CreateForCoreWindow(window));
 
     // Initialize the status display.
     m_statusDisplay = std::make_unique<StatusDisplay>(m_deviceResources);
 
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+    float3 simpleCubePosition = {0.0f, 0.0f, 0.0f};
+    float3 simpleCubeColor = {0.0f, 0.0f, 1.0f};
+    m_simpleCubeRenderer = std::make_unique<SimpleCubeRenderer>(m_deviceResources, simpleCubePosition, simpleCubeColor);
+#endif
     LoadLogoImage();
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
@@ -572,6 +609,10 @@ void SamplePlayerMain::OnDeviceLost()
 void SamplePlayerMain::OnDeviceRestored()
 {
     m_statusDisplay->CreateDeviceDependentResources();
+
+#ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
+    m_simpleCubeRenderer->CreateDeviceDependentResources();
+#endif
 
     LoadLogoImage();
 }

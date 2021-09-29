@@ -1,9 +1,13 @@
 #include <pch.h>
 
-#include "CameraResources.h"
-#include "DeviceResourcesUWP.h"
+#include <DeviceResourcesD3D11Holographic.h>
+#include <HolographicSpaceInterop.h>
 
+#include <windows.graphics.directx.direct3d11.interop.h>
+#include <windows.graphics.holographic.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.Metadata.h>
+#include <winrt/Windows.Graphics.Display.h>
 
 using namespace D2D1;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
@@ -14,22 +18,41 @@ using namespace winrt::Windows::Foundation::Numerics;
 
 using namespace DXHelper;
 
-void DeviceResourcesUWP::SetWindow(const winrt::Windows::UI::Core::CoreWindow& window)
+DXHelper::DeviceResourcesD3D11Holographic::DeviceResourcesD3D11Holographic()
+{
+    try
+    {
+        // WaitForNextFrameReadyWithHeadStart has been added in 10.0.17763.0.
+        m_useLegacyWaitBehavior = !winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
+            L"Windows.Graphics.Holographic.HolographicSpace", L"WaitForNextFrameReadyWithHeadStart");
+    }
+    catch (const winrt::hresult_error&)
+    {
+        m_useLegacyWaitBehavior = true;
+    }
+}
+
+DeviceResourcesD3D11Holographic::~DeviceResourcesD3D11Holographic()
+{
+    UnregisterHolographicEventHandlers();
+}
+
+void DeviceResourcesD3D11Holographic::SetHolographicSpace(winrt::Windows::Graphics::Holographic::HolographicSpace holographicSpace)
 {
     UnregisterHolographicEventHandlers();
 
-    m_holographicSpace = HolographicSpace::CreateForCoreWindow(window);
+    m_holographicSpace = holographicSpace;
 
     InitializeUsingHolographicSpace();
 
-    m_cameraAddedToken = m_holographicSpace.CameraAdded({this, &DeviceResourcesUWP::OnCameraAdded});
-    m_cameraRemovedToken = m_holographicSpace.CameraRemoved({this, &DeviceResourcesUWP::OnCameraRemoved});
+    m_cameraAddedToken = m_holographicSpace.CameraAdded({this, &DeviceResourcesD3D11Holographic::OnCameraAdded});
+    m_cameraRemovedToken = m_holographicSpace.CameraRemoved({this, &DeviceResourcesD3D11Holographic::OnCameraRemoved});
 
     m_isAvailableChangedRevoker =
-        m_holographicSpace.IsAvailableChanged(winrt::auto_revoke, {this, &DeviceResourcesUWP::OnIsAvailableChanged});
+        m_holographicSpace.IsAvailableChanged(winrt::auto_revoke, {this, &DeviceResourcesD3D11Holographic::OnIsAvailableChanged});
 }
 
-void DeviceResourcesUWP::InitializeUsingHolographicSpace()
+void DeviceResourcesD3D11Holographic::InitializeUsingHolographicSpace()
 {
     // The holographic space might need to determine which adapter supports
     // holograms, in which case it will specify a non-zero PrimaryAdapterId.
@@ -42,12 +65,14 @@ void DeviceResourcesUWP::InitializeUsingHolographicSpace()
     if ((id.HighPart != 0) || (id.LowPart != 0))
     {
         UINT createFlags = 0;
-#ifdef DEBUG
+
+#ifdef _DEBUG
         if (SdkLayersAvailable())
         {
             createFlags |= DXGI_CREATE_FACTORY_DEBUG;
         }
 #endif
+
         // Create the DXGI factory.
         winrt::com_ptr<IDXGIFactory1> dxgiFactory;
         winrt::check_hresult(CreateDXGIFactory2(createFlags, IID_PPV_ARGS(dxgiFactory.put())));
@@ -68,31 +93,33 @@ void DeviceResourcesUWP::InitializeUsingHolographicSpace()
     m_holographicSpace.SetDirect3D11Device(m_d3dInteropDevice);
 }
 
-void DeviceResourcesUWP::OnCameraAdded(
+void DeviceResourcesD3D11Holographic::OnCameraAdded(
     winrt::Windows::Graphics::Holographic::HolographicSpace const& sender,
     winrt::Windows::Graphics::Holographic::HolographicSpaceCameraAddedEventArgs const& args)
 {
-    UseHolographicCameraResources([this, camera = args.Camera()](std::map<UINT32, std::unique_ptr<CameraResources>>& cameraResourceMap) {
-        cameraResourceMap[camera.Id()] = std::make_unique<CameraResources>(camera);
-    });
+    UseHolographicCameraResources(
+        [this, camera = args.Camera()](std::map<UINT32, std::unique_ptr<CameraResourcesD3D11Holographic>>& cameraResourceMap) {
+            cameraResourceMap[camera.Id()] = std::make_unique<CameraResourcesD3D11Holographic>(camera, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB);
+        });
 }
 
-void DeviceResourcesUWP::OnCameraRemoved(
+void DeviceResourcesD3D11Holographic::OnCameraRemoved(
     winrt::Windows::Graphics::Holographic::HolographicSpace const& sender,
     winrt::Windows::Graphics::Holographic::HolographicSpaceCameraRemovedEventArgs const& args)
 {
-    UseHolographicCameraResources([this, camera = args.Camera()](std::map<UINT32, std::unique_ptr<CameraResources>>& cameraResourceMap) {
-        CameraResources* pCameraResources = cameraResourceMap[camera.Id()].get();
+    UseHolographicCameraResources(
+        [this, camera = args.Camera()](std::map<UINT32, std::unique_ptr<CameraResourcesD3D11Holographic>>& cameraResourceMap) {
+            CameraResourcesD3D11Holographic* pCameraResources = cameraResourceMap[camera.Id()].get();
 
-        if (pCameraResources != nullptr)
-        {
-            pCameraResources->ReleaseResourcesForBackBuffer(this);
-            cameraResourceMap.erase(camera.Id());
-        }
-    });
+            if (pCameraResources != nullptr)
+            {
+                pCameraResources->ReleaseResourcesForBackBuffer(this);
+                cameraResourceMap.erase(camera.Id());
+            }
+        });
 }
 
-void DeviceResourcesUWP::UnregisterHolographicEventHandlers()
+void DeviceResourcesD3D11Holographic::UnregisterHolographicEventHandlers()
 {
     if (m_holographicSpace != nullptr)
     {
@@ -107,58 +134,45 @@ void DeviceResourcesUWP::UnregisterHolographicEventHandlers()
 // Validates the back buffer for each HolographicCamera and recreates
 // resources for back buffers that have changed.
 // Locks the set of holographic camera resources until the function exits.
-void DeviceResourcesUWP::EnsureCameraResources(
+void DeviceResourcesD3D11Holographic::EnsureCameraResources(
     HolographicFrame frame,
     HolographicFramePrediction prediction,
     SpatialCoordinateSystem focusPointCoordinateSystem,
     float3 focusPointPosition)
 {
     UseHolographicCameraResources([this, frame, prediction, focusPointCoordinateSystem, focusPointPosition](
-                                      std::map<UINT32, std::unique_ptr<CameraResources>>& cameraResourceMap) {
+                                      std::map<UINT32, std::unique_ptr<CameraResourcesD3D11Holographic>>& cameraResourceMap) {
         for (HolographicCameraPose const& cameraPose : prediction.CameraPoses())
         {
-            HolographicCameraRenderingParameters renderingParameters = frame.GetRenderingParameters(cameraPose);
-            if (focusPointCoordinateSystem)
+            try
             {
-                renderingParameters.SetFocusPoint(focusPointCoordinateSystem, focusPointPosition);
+                HolographicCameraRenderingParameters renderingParameters = frame.GetRenderingParameters(cameraPose);
+                if (focusPointCoordinateSystem)
+                {
+                    renderingParameters.SetFocusPoint(focusPointCoordinateSystem, focusPointPosition);
+                }
+
+                CameraResourcesD3D11Holographic* pCameraResources = cameraResourceMap[cameraPose.HolographicCamera().Id()].get();
+
+                pCameraResources->CreateResourcesForBackBuffer(this, renderingParameters);
             }
-
-            CameraResources* pCameraResources = cameraResourceMap[cameraPose.HolographicCamera().Id()].get();
-
-            pCameraResources->CreateResourcesForBackBuffer(this, renderingParameters);
+            catch (const winrt::hresult_error&)
+            {
+            }
         }
     });
 }
 
-DXHelper::DeviceResourcesUWP::DeviceResourcesUWP()
-{
-    try
-    {
-        // WaitForNextFrameReadyWithHeadStart has been added in 10.0.17763.0.
-        m_useLegacyWaitBehavior = !winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
-            L"Windows.Graphics.Holographic.HolographicSpace", L"WaitForNextFrameReadyWithHeadStart");
-    }
-    catch (const winrt::hresult_error&)
-    {
-        m_useLegacyWaitBehavior = true;
-    }
-}
-
-DeviceResourcesUWP::~DeviceResourcesUWP()
-{
-    UnregisterHolographicEventHandlers();
-}
-
 // Recreate all device resources and set them back to the current state.
 // Locks the set of holographic camera resources until the function exits.
-void DeviceResourcesUWP::HandleDeviceLost()
+void DeviceResourcesD3D11Holographic::HandleDeviceLost()
 {
     NotifyDeviceLost();
 
-    UseHolographicCameraResources([this](std::map<UINT32, std::unique_ptr<CameraResources>>& cameraResourceMap) {
+    UseHolographicCameraResources([this](std::map<UINT32, std::unique_ptr<CameraResourcesD3D11Holographic>>& cameraResourceMap) {
         for (auto& pair : cameraResourceMap)
         {
-            CameraResources* pCameraResources = pair.second.get();
+            CameraResourcesD3D11Holographic* pCameraResources = pair.second.get();
             pCameraResources->ReleaseResourcesForBackBuffer(this);
         }
     });
@@ -168,9 +182,9 @@ void DeviceResourcesUWP::HandleDeviceLost()
     NotifyDeviceRestored();
 }
 
-void DeviceResourcesUWP::CreateDeviceResources()
+void DeviceResourcesD3D11Holographic::CreateDeviceResources()
 {
-    DeviceResourcesCommon::CreateDeviceResources();
+    DeviceResourcesD3D11::CreateDeviceResources();
 
     // Acquire the DXGI interface for the Direct3D device.
     winrt::com_ptr<IDXGIDevice3> dxgiDevice;
@@ -184,7 +198,7 @@ void DeviceResourcesUWP::CreateDeviceResources()
 
 // Present the contents of the swap chain to the screen.
 // Locks the set of holographic camera resources until the function exits.
-void DeviceResourcesUWP::Present(HolographicFrame frame)
+void DeviceResourcesD3D11Holographic::Present(HolographicFrame frame)
 {
     if (m_nextPresentMustWait)
     {
@@ -200,9 +214,9 @@ void DeviceResourcesUWP::Present(HolographicFrame frame)
         }
     }
 
-    // Note, starting with Windows SDK 10.0.17763.0 we can use WaitForNextFrameReadyWithHeadStart which allows us to avoid pipelined mode.
-    // Pipelined mode is basically one frame queue which allows an app to do more on the CPU and GPU. For Holographic Remoting pipelined
-    // mode means one additional frame of latency.
+    // Note, starting with Windows SDK 10.0.17763.0 we can use WaitForNextFrameReadyWithHeadStart which allows us to avoid pipelined
+    // mode. Pipelined mode is basically one frame queue which allows an app to do more on the CPU and GPU. For Holographic Remoting
+    // pipelined mode means one additional frame of latency.
     HolographicFramePresentWaitBehavior waitBehavior = m_useLegacyWaitBehavior
                                                            ? HolographicFramePresentWaitBehavior::WaitForFrameToFinish
                                                            : HolographicFramePresentWaitBehavior::DoNotWaitForFrameToFinish;
@@ -217,7 +231,7 @@ void DeviceResourcesUWP::Present(HolographicFrame frame)
     }
 }
 
-void DXHelper::DeviceResourcesUWP::OnIsAvailableChanged(
+void DXHelper::DeviceResourcesD3D11Holographic::OnIsAvailableChanged(
     const winrt::Windows::Foundation::IInspectable& sender, const winrt::Windows::Foundation::IInspectable& args)
 {
     if (m_holographicSpace.IsAvailable() == false)
@@ -227,7 +241,7 @@ void DXHelper::DeviceResourcesUWP::OnIsAvailableChanged(
     }
 }
 
-DXHelper::DeviceResourcesUWP::WaitResult DXHelper::DeviceResourcesUWP::WaitForNextFrameReady()
+DXHelper::DeviceResourcesD3D11Holographic::WaitResult DXHelper::DeviceResourcesD3D11Holographic::WaitForNextFrameReady()
 {
     if (m_useLegacyWaitBehavior || !m_firstFramePresented)
     {
