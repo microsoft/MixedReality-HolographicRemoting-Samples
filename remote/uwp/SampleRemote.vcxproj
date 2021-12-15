@@ -121,9 +121,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>src/apps/remote/Holographic/Debug/SampleRemote.lib</ImportLibrary>
+      <ImportLibrary>src/remote/Holographic/Debug/SampleRemote.lib</ImportLibrary>
       <OptimizeReferences>false</OptimizeReferences>
-      <ProgramDataBaseFile>src/apps/remote/Holographic/Debug/SampleRemote.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>src/remote/Holographic/Debug/SampleRemote.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -174,8 +174,8 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>src/apps/remote/Holographic/Release/SampleRemote.lib</ImportLibrary>
-      <ProgramDataBaseFile>src/apps/remote/Holographic/Release/SampleRemote.pdb</ProgramDataBaseFile>
+      <ImportLibrary>src/remote/Holographic/Release/SampleRemote.lib</ImportLibrary>
+      <ProgramDataBaseFile>src/remote/Holographic/Release/SampleRemote.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -225,9 +225,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>src/apps/remote/Holographic/RelWithDebInfo/SampleRemote.lib</ImportLibrary>
+      <ImportLibrary>src/remote/Holographic/RelWithDebInfo/SampleRemote.lib</ImportLibrary>
       <OptimizeReferences>false</OptimizeReferences>
-      <ProgramDataBaseFile>src/apps/remote/Holographic/RelWithDebInfo/SampleRemote.pdb</ProgramDataBaseFile>
+      <ProgramDataBaseFile>src/remote/Holographic/RelWithDebInfo/SampleRemote.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
