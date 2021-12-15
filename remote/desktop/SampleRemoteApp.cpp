@@ -700,11 +700,6 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
         // Create the HolographicSpace
         CreateHolographicSpaceAndDeviceResources();
 
-        if (auto remoteSpeech = m_remoteContext.GetRemoteSpeech())
-        {
-            Speech::InitializeSpeechAsync(remoteSpeech, m_onRecognizedSpeechRevoker, weak_from_this());
-        }
-
         winrt::com_ptr<ID3D11Device1> device;
         device.copy_from(GetDeviceResources()->GetD3DDevice());
         WindowCreateSwapChain(device);
@@ -1261,6 +1256,11 @@ void SampleRemoteApp::OnConnected()
     WindowUpdateTitle();
 
     InitializeAccessToFeatures();
+
+    if (auto remoteSpeech = m_remoteContext.GetRemoteSpeech())
+    {
+        Speech::InitializeSpeechAsync(remoteSpeech, m_onRecognizedSpeechRevoker, weak_from_this());
+    }
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
     if (m_remoteContext)

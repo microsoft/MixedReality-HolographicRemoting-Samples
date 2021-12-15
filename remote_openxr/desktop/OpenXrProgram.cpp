@@ -609,14 +609,6 @@ namespace {
 
             CHECK_XRCMD(xrCreateSession(m_instance.Get(), &createInfo, m_session.Put()));
 
-            // If remoting speech extension is enabled
-            if (m_usingRemotingRuntime) {
-                XrRemotingSpeechInitInfoMSFT speechInitInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_SPEECH_INIT_INFO_MSFT)};
-                InitializeSpeechRecognition(speechInitInfo);
-
-                CHECK_XRCMD(m_extensions.xrInitializeRemotingSpeechMSFT(m_session.Get(), &speechInitInfo));
-            }
-
             XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
             std::vector<XrActionSet> actionSets = {m_actionSet.Get()};
             attachInfo.countActionSets = (uint32_t)actionSets.size();
@@ -898,6 +890,14 @@ namespace {
                 }
                 case XR_TYPE_REMOTING_EVENT_DATA_CONNECTED_MSFT: {
                     DEBUG_PRINT("Holographic Remoting: Connected.");
+
+                    // If remoting speech extension is enabled
+                    if (m_usingRemotingRuntime) {
+                        XrRemotingSpeechInitInfoMSFT speechInitInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_SPEECH_INIT_INFO_MSFT)};
+                        InitializeSpeechRecognition(speechInitInfo);
+
+                        CHECK_XRCMD(m_extensions.xrInitializeRemotingSpeechMSFT(m_session.Get(), &speechInitInfo));
+                    }
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
                     CreateUserDataChannel();
