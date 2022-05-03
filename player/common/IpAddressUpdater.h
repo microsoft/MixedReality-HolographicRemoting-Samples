@@ -11,23 +11,14 @@
 
 #pragma once
 
-#include <winrt/Windows.Networking.Connectivity.h>
+#include <string>
 
-class IpAddressUpdater
+class IIpAddressUpdater
 {
 public:
-    IpAddressUpdater();
-    ~IpAddressUpdater();
+    ~IIpAddressUpdater() = default;
 
-    winrt::hstring GetIpAddress(bool ipv6);
-
-private:
-    void UpdateIpAddress(winrt::Windows::Foundation::IInspectable sender);
-
-private:
-    std::mutex m_lock;
-    winrt::hstring m_ipAddressIpv6;
-    winrt::hstring m_ipAddressIpv4;
-
-    winrt::Windows::Networking::Connectivity::NetworkInformation::NetworkStatusChanged_revoker m_networkStatusChangedRevoker;
+    virtual std::wstring GetIpAddress(bool IPv6) = 0;
 };
+
+std::shared_ptr<IIpAddressUpdater> CreateIpAddressUpdater();

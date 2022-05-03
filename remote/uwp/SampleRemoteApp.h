@@ -56,6 +56,7 @@ public:
         bool showPreview = true;
         bool listen = false;
         bool autoReconnect = true;
+        bool enableAudio = true;
     };
 
 public:
@@ -128,7 +129,7 @@ private:
     void RequestEyesPoseAccess();
 
     // Request access for scene observer data.
-    winrt::fire_and_forget RequestSceneObserverAccess();
+    void RequestSceneObserverAccess();
 
     // Request updates for qr code watcher data.
     winrt::fire_and_forget RequestQRCodeWatcherUpdates();
@@ -171,8 +172,8 @@ private:
 
     // Used to notify the app when the custom data channel was closed
     void OnCustomDataChannelClosed();
-#endif
 
+#endif
 private:
     bool m_isInitialized = false;
 
@@ -213,6 +214,7 @@ private:
     // Renders scene objects.
     std::atomic<bool> m_hasSceneObserverAccess = false;
     std::shared_ptr<SceneUnderstandingRenderer> m_sceneUnderstandingRenderer;
+    std::shared_ptr<Microsoft::MixedReality::SceneUnderstanding::PerceptionSceneFactory> m_sceneFactory;
 
     // Renders qr codes.
     std::unique_ptr<QRCodeRenderer> m_qrCodeRenderer;

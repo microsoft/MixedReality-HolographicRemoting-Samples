@@ -43,6 +43,8 @@ SamplePlayerMain::SamplePlayerMain()
 {
     m_canCommitDirect3D11DepthBuffer = winrt::Windows::Foundation::Metadata::ApiInformation::IsMethodPresent(
         L"Windows.Graphics.Holographic.HolographicCameraRenderingParameters", L"CommitDirect3D11DepthBuffer");
+
+    m_ipAddressUpdater = CreateIpAddressUpdater();
 }
 SamplePlayerMain::~SamplePlayerMain()
 {
@@ -157,7 +159,7 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds, const Hologr
         {
             if (m_playerOptions.m_listen)
             {
-                auto deviceIpNew = m_ipAddressUpdater.GetIpAddress(m_playerOptions.m_ipv6);
+                auto deviceIpNew = m_ipAddressUpdater->GetIpAddress(m_playerOptions.m_ipv6);
                 if (m_deviceIp != deviceIpNew)
                 {
                     m_deviceIp = deviceIpNew;
@@ -471,7 +473,7 @@ void SamplePlayerMain::SetWindow(const CoreWindow& window)
                     winrt::auto_revoke, [weakThis](winrt::array_view<const uint8_t> dataView) {
                         if (auto strongThis = weakThis.get())
                         {
-                            strongThis->OnCustomDataChannelDataReceived();
+                            strongThis->OnCustomDataChannelDataReceived(dataView);
                         }
                     });
 
@@ -828,11 +830,23 @@ void SamplePlayerMain::UpdateStatusDisplay()
 }
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-void SamplePlayerMain::OnCustomDataChannelDataReceived()
+void SamplePlayerMain::OnCustomDataChannelDataReceived(winrt::array_view<const uint8_t> dataView)
 {
-    // TODO: React on data received via the custom data channel here.
+    std::vector<uint8_t> answer;
+    bool alwaysSend = false;
 
-    // For example: Send back artificial response
+    const uint8_t packetType = (dataView.size() > 0) ? dataView[0] : 1;
+    switch (packetType)
+    {
+        case 1: // simple echo ping
+            answer.resize(1);
+            answer[0] = 1;
+            break;
+
+        default:
+            return; // no answer to unknown packets
+    }
+
     std::lock_guard customDataChannelLockGuard(m_customDataChannelLock);
     if (m_customDataChannel)
     {
@@ -842,13 +856,11 @@ void SamplePlayerMain::OnCustomDataChannelDataReceived()
         uint32_t sendQueueSize = m_customDataChannel.SendQueueSize();
 
         // Only send the packet if the send queue is smaller than 1MiB
-        if (sendQueueSize < 1 * 1024 * 1024)
+        if (alwaysSend || sendQueueSize < 1 * 1024 * 1024)
         {
-            uint8_t data[] = {1};
-
             try
             {
-                m_customDataChannel.SendData(data, true);
+                m_customDataChannel.SendData(winrt::array_view<const uint8_t>{answer.data(), static_cast<uint32_t>(answer.size())}, true);
             }
             catch (...)
             {

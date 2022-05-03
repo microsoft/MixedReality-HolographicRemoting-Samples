@@ -16,7 +16,7 @@
 
 #include <DeviceResourcesD3D11.h>
 
-#include <winrt/Microsoft.MixedReality.SceneUnderstanding.h>
+#include <Microsoft.MixedReality.SceneUnderstanding.h>
 #include <winrt/Windows.Perception.Spatial.h>
 
 class SceneUnderstandingRenderer : public std::enable_shared_from_this<SceneUnderstandingRenderer>
@@ -26,7 +26,7 @@ public:
     ~SceneUnderstandingRenderer();
 
     void SetScene(
-        winrt::Microsoft::MixedReality::SceneUnderstanding::Scene scene,
+        std::shared_ptr<Microsoft::MixedReality::SceneUnderstanding::Scene> scene,
         winrt::Windows::Perception::Spatial::SpatialStationaryFrameOfReference lastUpdateLocation);
 
     std::future<void> CreateDeviceDependentResources();
@@ -63,16 +63,13 @@ private:
         winrt::Windows::Perception::Spatial::SpatialStationaryFrameOfReference lastUpdateLocation);
 
     void AddSceneQuadsVertices(
-        const winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObject& object,
-        const winrt::Windows::Foundation::Numerics::float3& color);
+        const Microsoft::MixedReality::SceneUnderstanding::SceneObject& object, const winrt::Windows::Foundation::Numerics::float3& color);
 
     void AddSceneQuadLabelVertices(
-        const winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObject& object,
-        const winrt::Windows::Foundation::Numerics::float3& color);
+        const Microsoft::MixedReality::SceneUnderstanding::SceneObject& object, const winrt::Windows::Foundation::Numerics::float3& color);
 
     void AddSceneMeshVertices(
-        const winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObject& object,
-        const winrt::Windows::Foundation::Numerics::float3& color);
+        const Microsoft::MixedReality::SceneUnderstanding::SceneObject& object, const winrt::Windows::Foundation::Numerics::float3& color);
 
     void RenderSceneMesh(bool isStereo);
     void RenderSceneQuads(bool isStereo);
@@ -93,7 +90,7 @@ private:
     std::vector<VertexPositionUVColor> m_quadVertices;
 
     // The vertices for the same SceneObjectKind are stored in the same collection.
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, std::vector<VertexPositionUVColor>> m_quadLabelsVertices;
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, std::vector<VertexPositionUVColor>> m_quadLabelsVertices;
 
     // The vertices for the scene mesh.
     std::vector<VertexPositionUVColor> m_meshVertices;
@@ -103,7 +100,7 @@ private:
 
     // Direct3D resources.
     winrt::com_ptr<ID3D11Buffer> m_quadVerticesBuffer;
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11Buffer>> m_quadLabelsVerticesBuffer;
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11Buffer>> m_quadLabelsVerticesBuffer;
     winrt::com_ptr<ID3D11Buffer> m_meshVerticesBuffer;
     winrt::com_ptr<ID3D11InputLayout> m_inputLayout = nullptr;
     winrt::com_ptr<ID3D11VertexShader> m_vertexShader = nullptr;
@@ -120,7 +117,7 @@ private:
     std::atomic<bool> m_loadingComplete = false;
 
     // The scene understanding scene.
-    winrt::Microsoft::MixedReality::SceneUnderstanding::Scene m_scene = nullptr;
+    std::shared_ptr<Microsoft::MixedReality::SceneUnderstanding::Scene> m_scene = nullptr;
     winrt::Windows::Perception::Spatial::SpatialStationaryFrameOfReference m_sceneLastUpdateLocation = nullptr;
     // True if the scene was updated but the vertices for the rendering are not created yet.
     bool m_verticesOutdated = false;
@@ -130,14 +127,13 @@ private:
     std::mutex m_mutex;
 
     // DirectX resources for text rendering.
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11Texture2D>> m_textTextures;
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11ShaderResourceView>>
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11Texture2D>> m_textTextures;
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11ShaderResourceView>>
         m_textShaderResourceViews;
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11RenderTargetView>>
-        m_textRenderTargets;
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID2D1RenderTarget>> m_d2dTextRenderTargets;
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID2D1SolidColorBrush>> m_brushes;
-    std::map<winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<IDWriteTextLayout>> m_layouts;
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID3D11RenderTargetView>> m_textRenderTargets;
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID2D1RenderTarget>> m_d2dTextRenderTargets;
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<ID2D1SolidColorBrush>> m_brushes;
+    std::map<Microsoft::MixedReality::SceneUnderstanding::SceneObjectKind, winrt::com_ptr<IDWriteTextLayout>> m_layouts;
 
     winrt::com_ptr<IDWriteTextFormat> m_textFormat = nullptr;
     winrt::com_ptr<ID3D11SamplerState> m_textSamplerState = nullptr;

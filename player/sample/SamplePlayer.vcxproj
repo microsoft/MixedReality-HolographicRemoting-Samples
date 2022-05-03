@@ -95,6 +95,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <SDLCheck>true</SDLCheck>
+      <SupportJustMyCode>true</SupportJustMyCode>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
@@ -240,7 +241,7 @@
     <ClInclude Include=".\SamplePlayerMain.h" />
     <ClCompile Include=".\SamplePlayerMain.cpp" />
     <ClInclude Include="..\common\IpAddressUpdater.h" />
-    <ClCompile Include="..\common\IpAddressUpdater.cpp" />
+    <ClCompile Include="..\common\IpAddressUpdaterWindows.cpp" />
     <ClInclude Include="..\common\PlayerFrameStatisticsHelper.h" />
     <ClCompile Include="..\common\PlayerFrameStatisticsHelper.cpp" />
     <ClInclude Include="..\common\PlayerUtil.h" />
@@ -377,6 +378,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.7.2\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.7.2\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.8.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.8.0\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>

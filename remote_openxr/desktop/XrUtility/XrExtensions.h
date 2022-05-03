@@ -30,6 +30,31 @@
 #define FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_)
 #endif
 
+#if XR_MSFT_scene_understanding
+#define FOR_EACH_SCENE_UNDERSTANDING_FUNCTION(_) \
+    _(xrEnumerateSceneComputeFeaturesMSFT)       \
+    _(xrCreateSceneObserverMSFT)                 \
+    _(xrDestroySceneObserverMSFT)                \
+    _(xrCreateSceneMSFT)                         \
+    _(xrDestroySceneMSFT)                        \
+    _(xrComputeNewSceneMSFT)                     \
+    _(xrGetSceneComputeStateMSFT)                \
+    _(xrGetSceneComponentsMSFT)                  \
+    _(xrLocateSceneComponentsMSFT)               \
+    _(xrGetSceneMeshBuffersMSFT)
+#else
+#define FOR_EACH_SCENE_UNDERSTANDING_FUNCTION(_)
+#endif
+
+#if XR_MSFT_scene_understanding_serialization
+#define FOR_EACH_SCENE_UNDERSTANDING_SERIALIZATION_FUNCTION(_) \
+    _(xrDeserializeSceneMSFT)                                  \
+    _(xrGetSerializedSceneFragmentDataMSFT)
+
+#else
+#define FOR_EACH_SCENE_UNDERSTANDING_SERIALIZATION_FUNCTION(_)
+#endif
+
 #if XR_MSFT_holographic_remoting
 #define FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_) \
     _(xrRemotingSetContextPropertiesMSFT)               \
@@ -56,10 +81,12 @@
 #define FOR_EACH_HAR_EXPERIMENTAL_SPEECH_EXTENSION_FUNCTION(_)
 #endif
 
-#define FOR_EACH_SAMPLE_EXTENSION_FUNCTION(_)       \
-    FOR_EACH_D3D11_EXTENSION_FUNCTION(_)            \
-    FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_)             \
-    FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_) \
+#define FOR_EACH_SAMPLE_EXTENSION_FUNCTION(_)              \
+    FOR_EACH_D3D11_EXTENSION_FUNCTION(_)                   \
+    FOR_EACH_SPATIAL_ANCHOR_FUNCTION(_)                    \
+    FOR_EACH_SCENE_UNDERSTANDING_FUNCTION(_)               \
+    FOR_EACH_SCENE_UNDERSTANDING_SERIALIZATION_FUNCTION(_) \
+    FOR_EACH_HAR_EXPERIMENTAL_EXTENSION_FUNCTION(_)        \
     FOR_EACH_HAR_EXPERIMENTAL_SPEECH_EXTENSION_FUNCTION(_)
 
 #define GET_INSTANCE_PROC_ADDRESS(name) \

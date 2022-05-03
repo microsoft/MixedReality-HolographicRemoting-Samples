@@ -9,6 +9,8 @@
 //
 //*********************************************************
 
+#include <pch.h>
+
 #include <holographic/FrustumCulling.h>
 
 using namespace FrustumCulling;

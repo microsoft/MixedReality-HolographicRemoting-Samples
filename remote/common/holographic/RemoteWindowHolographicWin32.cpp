@@ -128,7 +128,7 @@ LRESULT CALLBACK wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         case WM_CHAR:
         {
-            const int key = tolower(static_cast<int>(wParam));
+            const int key = static_cast<int>(wParam);
             s_sampleHostWindow->OnKeyPress(static_cast<char>(key));
         }
         break;
