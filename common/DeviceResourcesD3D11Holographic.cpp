@@ -221,7 +221,23 @@ void DeviceResourcesD3D11Holographic::Present(HolographicFrame frame)
                                                            ? HolographicFramePresentWaitBehavior::WaitForFrameToFinish
                                                            : HolographicFramePresentWaitBehavior::DoNotWaitForFrameToFinish;
 
-    HolographicFramePresentResult presentResult = frame.PresentUsingCurrentPrediction(waitBehavior);
+    HolographicFramePresentResult presentResult;
+    try
+    {
+        presentResult = frame.PresentUsingCurrentPrediction(waitBehavior);
+    }
+    catch (winrt::hresult_error& err)
+    {
+        switch (err.code())
+        {
+            case RO_E_CLOSED:
+                return; // Connection closed already. Do not present.
+
+            default:
+                throw;
+        }
+    }
+
     m_firstFramePresented = true;
 
     if (presentResult != HolographicFramePresentResult::Success)

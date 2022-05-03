@@ -87,7 +87,7 @@ private:
     void UpdateStatusDisplay();
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
-    void OnCustomDataChannelDataReceived();
+    void OnCustomDataChannelDataReceived(winrt::array_view<const uint8_t> dataView);
     void OnCustomDataChannelClosed();
 #endif
 
@@ -147,7 +147,7 @@ private:
     winrt::hstring m_deviceIp = L"127.0.0.1";
 
     // Monitors and provides the IP address of the device the player is running on
-    IpAddressUpdater m_ipAddressUpdater;
+    std::shared_ptr<IIpAddressUpdater> m_ipAddressUpdater;
 
     // Accumulates and provides remote frame statistics
     PlayerFrameStatisticsHelper m_statisticsHelper;

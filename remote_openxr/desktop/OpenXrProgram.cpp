@@ -15,8 +15,10 @@
 //*********************************************************
 
 #include "pch.h"
-#include "OpenXrProgram.h"
-#include "DxUtility.h"
+
+#include <OpenXrProgram.h>
+#include <DxUtility.h>
+#include <SecureConnectionCallbacks.h>
 
 #include <filesystem>
 #include <fstream>
@@ -39,7 +41,14 @@ namespace {
                                const sample::AppOptions& options)
             : m_applicationName(std::move(applicationName))
             , m_graphicsPlugin(std::move(graphicsPlugin))
-            , m_options(options) {
+            , m_options(options)
+            , m_secureConnectionCallbacks(m_options.authenticationToken,
+                                          m_options.allowCertificateNameMismatch,
+                                          m_options.allowUnverifiedCertificateChain,
+                                          m_options.keyPassphrase,
+                                          m_options.subjectName,
+                                          m_options.certificateStore,
+                                          m_options.listen) {
         }
 
         void Run() override {
@@ -47,7 +56,9 @@ namespace {
                 m_usingRemotingRuntime = EnableRemotingXR();
 
                 if (m_usingRemotingRuntime) {
-                    PrepareRemotingEnvironment();
+                    if (m_options.secureConnection) {
+                        m_secureConnectionCallbacks.InitializeSecureConnection();
+                    }
                 } else {
                     DEBUG_PRINT("RemotingXR runtime not available. Running with default OpenXR runtime.");
                 }
@@ -129,7 +140,7 @@ namespace {
                 }
 
                 DEBUG_PRINT("Holographic Remoting: SendDataViaUserDataChannel.");
-                uint8_t data[] = {17};
+                uint8_t data[] = {1};
 
                 XrRemotingDataChannelSendDataInfoMSFT sendInfo{
                     static_cast<XrStructureType>(XR_TYPE_REMOTING_DATA_CHANNEL_SEND_DATA_INFO_MSFT)};
@@ -155,36 +166,6 @@ namespace {
             }
 
             return false;
-        }
-
-        void PrepareRemotingEnvironment() {
-            if (!m_options.secureConnection) {
-                return;
-            }
-
-            if (m_options.authenticationToken.empty()) {
-                throw std::logic_error("Authentication token must be specified for secure connections.");
-            }
-
-            if (m_options.listen) {
-                if (m_options.certificateStore.empty() || m_options.subjectName.empty()) {
-                    throw std::logic_error("Certificate store and subject name must be specified for secure listening.");
-                }
-
-                constexpr size_t maxCertStoreSize = 1 << 20;
-                std::ifstream certStoreStream(m_options.certificateStore, std::ios::binary);
-                certStoreStream.seekg(0, std::ios_base::end);
-                const size_t certStoreSize = certStoreStream.tellg();
-                if (!certStoreStream.good() || certStoreSize == 0 || certStoreSize > maxCertStoreSize) {
-                    throw std::logic_error("Error reading certificate store.");
-                }
-                certStoreStream.seekg(0, std::ios_base::beg);
-                m_certificateStore.resize(certStoreSize);
-                certStoreStream.read(reinterpret_cast<char*>(m_certificateStore.data()), certStoreSize);
-                if (certStoreStream.fail()) {
-                    throw std::logic_error("Error reading certificate store.");
-                }
-            }
         }
 
         bool LoadGrammarFile(std::vector<uint8_t>& grammarFileContent) {
@@ -380,108 +361,6 @@ namespace {
             }
         }
 
-        XrResult AuthenticationRequestCallback(XrRemotingAuthenticationTokenRequestMSFT* authenticationTokenRequest) {
-            const std::string tokenUtf8 = m_options.authenticationToken;
-            const uint32_t tokenSize = static_cast<uint32_t>(tokenUtf8.size() + 1); // for null-termination
-            if (authenticationTokenRequest->tokenCapacityIn >= tokenSize) {
-                memcpy(authenticationTokenRequest->tokenBuffer, tokenUtf8.c_str(), tokenSize);
-                authenticationTokenRequest->tokenSizeOut = tokenSize;
-                return XR_SUCCESS;
-            } else {
-                authenticationTokenRequest->tokenSizeOut = tokenSize;
-                return XR_ERROR_SIZE_INSUFFICIENT;
-            }
-        }
-
-        static XrResult XRAPI_CALL
-        AuthenticationRequestCallbackStatic(XrRemotingAuthenticationTokenRequestMSFT* authenticationTokenRequest) {
-            if (!authenticationTokenRequest->context) {
-                return XR_ERROR_RUNTIME_FAILURE;
-            }
-
-            return reinterpret_cast<ImplementOpenXrProgram*>(authenticationTokenRequest->context)
-                ->AuthenticationRequestCallback(authenticationTokenRequest);
-        }
-
-        XrResult AuthenticationValidationCallback(XrRemotingAuthenticationTokenValidationMSFT* authenticationTokenValidation) {
-            const std::string tokenUtf8 = m_options.authenticationToken;
-            authenticationTokenValidation->tokenValidOut =
-                (authenticationTokenValidation->token != nullptr && tokenUtf8 == authenticationTokenValidation->token);
-            return XR_SUCCESS;
-        }
-
-        static XrResult XRAPI_CALL
-        AuthenticationValidationCallbackStatic(XrRemotingAuthenticationTokenValidationMSFT* authenticationTokenValidation) {
-            if (!authenticationTokenValidation->context) {
-                return XR_ERROR_RUNTIME_FAILURE;
-            }
-
-            return reinterpret_cast<ImplementOpenXrProgram*>(authenticationTokenValidation->context)
-                ->AuthenticationValidationCallback(authenticationTokenValidation);
-        }
-
-        XrResult CertificateRequestCallback(XrRemotingServerCertificateRequestMSFT* serverCertificateRequest) {
-            const std::string subjectNameUtf8 = m_options.subjectName;
-            const std::string passPhraseUtf8 = m_options.keyPassphrase;
-
-            const uint32_t certStoreSize = static_cast<uint32_t>(m_certificateStore.size());
-            const uint32_t subjectNameSize = static_cast<uint32_t>(subjectNameUtf8.size() + 1); // for null-termination
-            const uint32_t passPhraseSize = static_cast<uint32_t>(passPhraseUtf8.size() + 1);   // for null-termination
-
-            serverCertificateRequest->certStoreSizeOut = certStoreSize;
-            serverCertificateRequest->subjectNameSizeOut = subjectNameSize;
-            serverCertificateRequest->keyPassphraseSizeOut = passPhraseSize;
-            if (serverCertificateRequest->certStoreCapacityIn < certStoreSize ||
-                serverCertificateRequest->subjectNameCapacityIn < subjectNameSize ||
-                serverCertificateRequest->keyPassphraseCapacityIn < passPhraseSize) {
-                return XR_ERROR_SIZE_INSUFFICIENT;
-            }
-
-            // All buffers have sufficient size, so fill in the data
-            memcpy(serverCertificateRequest->certStoreBuffer, m_certificateStore.data(), certStoreSize);
-            memcpy(serverCertificateRequest->subjectNameBuffer, subjectNameUtf8.c_str(), subjectNameSize);
-            memcpy(serverCertificateRequest->keyPassphraseBuffer, passPhraseUtf8.c_str(), passPhraseSize);
-
-            return XR_SUCCESS;
-        }
-
-        static XrResult XRAPI_CALL CertificateValidationCallbackStatic(XrRemotingServerCertificateRequestMSFT* serverCertificateRequest) {
-            if (!serverCertificateRequest->context) {
-                return XR_ERROR_RUNTIME_FAILURE;
-            }
-
-            return reinterpret_cast<ImplementOpenXrProgram*>(serverCertificateRequest->context)
-                ->CertificateRequestCallback(serverCertificateRequest);
-        }
-
-        XrResult CertificateValidationCallback(XrRemotingServerCertificateValidationMSFT* serverCertificateValidation) {
-            if (!serverCertificateValidation->systemValidationResult) {
-                return XR_ERROR_RUNTIME_FAILURE; // We requested system validation to be performed
-            }
-
-            serverCertificateValidation->validationResultOut = *serverCertificateValidation->systemValidationResult;
-            if (m_options.allowCertificateNameMismatch && serverCertificateValidation->validationResultOut.nameValidationResult ==
-                                                              XR_REMOTING_CERTIFICATE_NAME_VALIDATION_RESULT_MISMATCH_MSFT) {
-                serverCertificateValidation->validationResultOut.nameValidationResult =
-                    XR_REMOTING_CERTIFICATE_NAME_VALIDATION_RESULT_MATCH_MSFT;
-            }
-            if (m_options.allowUnverifiedCertificateChain) {
-                serverCertificateValidation->validationResultOut.trustedRoot = true;
-            }
-
-            return XR_SUCCESS;
-        }
-
-        static XrResult XRAPI_CALL
-        CertificateValidationCallbackStatic(XrRemotingServerCertificateValidationMSFT* serverCertificateValidation) {
-            if (!serverCertificateValidation->context) {
-                return XR_ERROR_RUNTIME_FAILURE;
-            }
-
-            return reinterpret_cast<ImplementOpenXrProgram*>(serverCertificateValidation->context)
-                ->CertificateValidationCallback(serverCertificateValidation);
-        }
-
         void Disconnect() {
             XrRemotingDisconnectInfoMSFT disconnectInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_DISCONNECT_INFO_MSFT)};
             CHECK_XRCMD(m_extensions.xrRemotingDisconnectMSFT(m_instance.Get(), m_systemId, &disconnectInfo));
@@ -506,16 +385,19 @@ namespace {
                 contextProperties.enableAudio = false;
                 contextProperties.maxBitrateKbps = 20000;
                 contextProperties.videoCodec = XR_REMOTING_VIDEO_CODEC_H265_MSFT;
+
                 contextProperties.depthBufferStreamResolution = XR_REMOTING_DEPTH_BUFFER_STREAM_RESOLUTION_HALF_MSFT;
                 CHECK_XRCMD(m_extensions.xrRemotingSetContextPropertiesMSFT(m_instance.Get(), m_systemId, &contextProperties));
             }
 
             if (m_options.listen) {
                 if (m_options.secureConnection) {
-                    XrRemotingSecureConnectionServerCallbacksMSFT serverCallbacks;
-                    serverCallbacks.context = this;
-                    serverCallbacks.requestServerCertificateCallback = CertificateValidationCallbackStatic;
-                    serverCallbacks.validateAuthenticationTokenCallback = AuthenticationValidationCallbackStatic;
+                    XrRemotingSecureConnectionServerCallbacksMSFT serverCallbacks{
+                        static_cast<XrStructureType>(XR_TYPE_REMOTING_SECURE_CONNECTION_SERVER_CALLBACKS_MSFT)};
+                    serverCallbacks.context = &m_secureConnectionCallbacks;
+                    serverCallbacks.requestServerCertificateCallback = SecureConnectionCallbacks::RequestServerCertificateStaticCallback;
+                    serverCallbacks.validateAuthenticationTokenCallback =
+                        SecureConnectionCallbacks::ValidateAuthenticationTokenStaticCallback;
                     serverCallbacks.authenticationRealm = m_options.authenticationRealm.c_str();
                     CHECK_XRCMD(
                         m_extensions.xrRemotingSetSecureConnectionServerCallbacksMSFT(m_instance.Get(), m_systemId, &serverCallbacks));
@@ -527,12 +409,15 @@ namespace {
                 listenInfo.transportListenPort = m_options.transportPort != 0 ? m_options.transportPort : 8266;
                 listenInfo.secureConnection = m_options.secureConnection;
                 CHECK_XRCMD(m_extensions.xrRemotingListenMSFT(m_instance.Get(), m_systemId, &listenInfo));
+
             } else {
                 if (m_options.secureConnection) {
-                    XrRemotingSecureConnectionClientCallbacksMSFT clientCallbacks;
-                    clientCallbacks.context = this;
-                    clientCallbacks.requestAuthenticationTokenCallback = AuthenticationRequestCallbackStatic;
-                    clientCallbacks.validateServerCertificateCallback = CertificateValidationCallbackStatic;
+                    XrRemotingSecureConnectionClientCallbacksMSFT clientCallbacks{
+                        static_cast<XrStructureType>(XR_TYPE_REMOTING_SECURE_CONNECTION_CLIENT_CALLBACKS_MSFT)};
+                    clientCallbacks.context = &m_secureConnectionCallbacks;
+                    clientCallbacks.requestAuthenticationTokenCallback =
+                        SecureConnectionCallbacks::RequestAuthenticationTokenStaticCallback;
+                    clientCallbacks.validateServerCertificateCallback = SecureConnectionCallbacks::ValidateServerCertificateStaticCallback;
                     clientCallbacks.performSystemValidation = true;
 
                     CHECK_XRCMD(
@@ -908,6 +793,7 @@ namespace {
                 case XR_TYPE_REMOTING_EVENT_DATA_DISCONNECTED_MSFT: {
                     DEBUG_PRINT("Holographic Remoting: Disconnected - Reason: %d",
                                 reinterpret_cast<const XrRemotingEventDataDisconnectedMSFT*>(&eventData)->disconnectReason);
+
                     break;
                 }
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
@@ -1209,8 +1095,8 @@ namespace {
 
 #ifdef ENABLE_USER_COORDINATE_SYSTEM_SAMPLE
             {
-                // Initialize a colored cube that's 20 centimeters wide. The cube is aligned on top of the blue cube which is rendered by
-                // the player.
+                // Initialize a colored cube that's 20 centimeters wide. The cube is aligned on top of the blue cube which is rendered
+                // by the player.
                 Hologram hologram{};
                 hologram.Cube.Scale = {0.2f, 0.2f, 0.2f};
                 hologram.Cube.Space = createReferenceSpace(static_cast<XrReferenceSpaceType>(XR_REMOTING_REFERENCE_SPACE_TYPE_USER_MSFT),
@@ -1551,7 +1437,9 @@ namespace {
         std::vector<const char*> m_dictionaryEntries;
         XrVector3f m_cubeColorFilter{1, 1, 1};
         float m_rotationDirection = 1.0f;
-    }; // namespace
+
+        SecureConnectionCallbacks m_secureConnectionCallbacks;
+    };
 } // namespace
 
 namespace sample {

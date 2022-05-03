@@ -36,7 +36,6 @@ using namespace concurrency;
 using namespace std::chrono_literals;
 
 using namespace winrt::Microsoft::Holographic::AppRemoting;
-using namespace winrt::Microsoft::MixedReality::SceneUnderstanding;
 using namespace winrt::Microsoft::MixedReality::QR;
 using namespace winrt::Windows::Foundation::Numerics;
 using namespace winrt::Windows::Graphics::Holographic;
@@ -45,6 +44,7 @@ using namespace winrt::Windows::Perception::People;
 using namespace winrt::Windows::Perception::Spatial;
 using namespace winrt::Windows::UI::Input;
 using namespace winrt::Windows::Security::Authorization::AppCapabilityAccess;
+using namespace Microsoft::MixedReality::SceneUnderstanding;
 
 namespace
 {
@@ -82,7 +82,7 @@ void SampleRemoteApp::SetWindow(RemoteWindowHolographic* window)
 {
     m_window = window;
 
-    if (window != nullptr)
+    if (m_window != nullptr)
     {
         m_deviceResources = std::make_shared<DXHelper::DeviceResourcesD3D11Holographic>();
         m_deviceResources->RegisterDeviceNotify(this);
@@ -267,6 +267,12 @@ void SampleRemoteApp::ParseLaunchArguments(std::wstring_view arguments)
                     }
                     argIndex++;
                 }
+                continue;
+            }
+
+            if (param == L"noaudio")
+            {
+                options.enableAudio = false;
                 continue;
             }
         }
@@ -489,7 +495,7 @@ HolographicFrame SampleRemoteApp::Update()
                             winrt::array_view<const uint8_t>(
                                 reinterpret_cast<const uint8_t*>(&data), reinterpret_cast<const uint8_t*>(&data + 1)),
                             true);
-                        OutputDebugString(TEXT("Request Sent.\n"));
+                        OutputDebugString(TEXT("Custom Data Channel: Request Sent.\n"));
                     }
                     catch (...)
                     {
@@ -669,7 +675,7 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
 
         // Create the RemoteContext
         // IMPORTANT: This must be done before creating the HolographicSpace (or any other call to the Holographic API).
-        HRESULT hr = CreateRemoteContext(m_remoteContext, 20000, true, PreferredVideoCodec::Any);
+        HRESULT hr = CreateRemoteContext(m_remoteContext, 20000, m_options.enableAudio, PreferredVideoCodec::Any);
 
         if (hr != S_OK)
         {
@@ -791,6 +797,8 @@ void SampleRemoteApp::CreateHolographicSpaceAndDeviceResources()
 #endif
 
     m_sceneUnderstandingRenderer = std::make_shared<SceneUnderstandingRenderer>(m_deviceResources);
+    m_sceneFactory = PerceptionSceneFactory::CreatePerceptionSceneFactory();
+
     m_qrCodeRenderer = std::make_unique<QRCodeRenderer>(m_deviceResources);
 
     m_locator = SpatialLocator::GetDefault();
@@ -1049,38 +1057,39 @@ void SampleRemoteApp::RequestEyesPoseAccess()
     }
 }
 
-winrt::fire_and_forget SampleRemoteApp::RequestSceneObserverAccess()
+void SampleRemoteApp::RequestSceneObserverAccess()
 {
-    co_await winrt::resume_background();
-
     m_hasSceneObserverAccess = false;
 
-    try
+    if (!m_sceneFactory->IsSupported())
     {
-        if (!SceneObserver::IsSupported())
-        {
-            OutputDebugStringA("SceneObserver Unsupported\n");
-            co_return;
-        }
-
-        auto keepAlive = shared_from_this();
-        SceneObserverAccessStatus accessStatus = co_await SceneObserver::RequestAccessAsync();
-
-        if (accessStatus == winrt::Microsoft::MixedReality::SceneUnderstanding::SceneObserverAccessStatus::Allowed)
-        {
-            OutputDebugStringA("SceneObserver Access Allowed\n");
-            m_hasSceneObserverAccess = true;
-        }
-        else
-        {
-            OutputDebugStringA("SceneObserver Access Denied\n");
-            m_hasSceneObserverAccess = false;
-        }
+        OutputDebugStringA("SceneObserver Unsupported\n");
+        return;
     }
-    catch (...)
-    {
-        OutputDebugStringA("SceneObserver Access Failed\n");
-    }
+
+    m_sceneFactory->RequestAccessAsync(
+        [&, weakThis = weak_from_this()](Status status, PerceptionSceneFactoryAccessStatus accessStatus) mutable {
+            if (auto strongThis = weakThis.lock())
+            {
+                if (status != Status::OK)
+                {
+                    OutputDebugStringA("SceneObserver Access Failed\n");
+                    m_hasSceneObserverAccess = false;
+                    return;
+                }
+
+                if (accessStatus == PerceptionSceneFactoryAccessStatus::Allowed)
+                {
+                    OutputDebugStringA("SceneObserver Access Allowed\n");
+                    m_hasSceneObserverAccess = true;
+                }
+                else
+                {
+                    OutputDebugStringA("SceneObserver Access Denied\n");
+                    m_hasSceneObserverAccess = false;
+                }
+            }
+        });
 }
 
 void SampleRemoteApp::ToggleSceneUnderstanding()
@@ -1098,22 +1107,20 @@ void SampleRemoteApp::ToggleSceneUnderstanding()
     querySettings.EnableWorldMesh = true;                                    // Requests a static version of the spatial mapping mesh.
     querySettings.RequestedMeshLevelOfDetail = SceneMeshLevelOfDetail::Fine; // Requests the finest LOD of the static spatial mapping mesh.
 
-    SceneObserver::ComputeAsync(querySettings, 10.0f)
-        .Completed([&, weakThis = weak_from_this()](winrt::Windows::Foundation::IAsyncOperation<Scene> result, auto asyncStatus) {
-            if (result.Status() != winrt::Windows::Foundation::AsyncStatus::Completed)
-            {
-                return;
-            }
+    m_sceneFactory->ComputeAsync(querySettings, 10.f, [&, weakThis = weak_from_this()](Status status, std::shared_ptr<Scene> scene) {
+        if (status != Status::OK)
+        {
+            return;
+        }
 
-            if (auto strongThis = weakThis.lock())
-            {
-                SpatialStationaryFrameOfReference updateLocation = m_locator.CreateStationaryFrameOfReferenceAtCurrentLocation();
-                Scene scene = result.GetResults();
+        if (auto strongThis = weakThis.lock())
+        {
+            SpatialStationaryFrameOfReference updateLocation = m_locator.CreateStationaryFrameOfReferenceAtCurrentLocation();
 
-                m_sceneUnderstandingRenderer->SetScene(scene, updateLocation);
-                m_sceneUnderstandingRenderer->ToggleRenderingType();
-            }
-        });
+            m_sceneUnderstandingRenderer->SetScene(scene, updateLocation);
+            m_sceneUnderstandingRenderer->ToggleRenderingType();
+        }
+    });
 }
 
 winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
@@ -1128,27 +1135,30 @@ winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
             co_return;
         }
 
-        auto keepAlive = shared_from_this();
+        auto weakThis = weak_from_this();
         QRCodeWatcherAccessStatus accessStatus = co_await QRCodeWatcher::RequestAccessAsync();
 
         if (accessStatus == winrt::Microsoft::MixedReality::QR::QRCodeWatcherAccessStatus::Allowed)
         {
             OutputDebugStringA("QRCodeWatcher Access Allowed\n");
 
-            m_qrWatcher = QRCodeWatcher();
+            if (auto strongThis = weakThis.lock())
+            {
+                m_qrWatcher = QRCodeWatcher();
 
-            m_qrUpdatedRevoker = m_qrWatcher.Updated(
-                winrt::auto_revoke,
-                [weakThis = weak_from_this()](
-                    const winrt::Microsoft::MixedReality::QR::QRCodeWatcher&,
-                    const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args) {
-                    if (auto strongThis = weakThis.lock())
-                    {
-                        strongThis->m_qrCodeRenderer->OnUpdatedQRCode(args.Code());
-                    }
-                });
+                m_qrUpdatedRevoker = m_qrWatcher.Updated(
+                    winrt::auto_revoke,
+                    [weakThis = weak_from_this()](
+                        const winrt::Microsoft::MixedReality::QR::QRCodeWatcher&,
+                        const winrt::Microsoft::MixedReality::QR::QRCodeUpdatedEventArgs& args) {
+                        if (auto strongThis = weakThis.lock())
+                        {
+                            strongThis->m_qrCodeRenderer->OnUpdatedQRCode(args.Code());
+                        }
+                    });
 
-            m_qrWatcher.Start();
+                m_qrWatcher.Start();
+            }
         }
         else
         {
@@ -1479,8 +1489,17 @@ void SampleRemoteApp::WindowUpdateTitle()
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
 void SampleRemoteApp::OnCustomDataChannelDataReceived(winrt::array_view<const uint8_t> dataView)
 {
-    // TODO: React on data received via the custom data channel here.
-    OutputDebugString(TEXT("Response Received.\n"));
+    const uint8_t packetType = (dataView.size() > 0) ? dataView[0] : 1;
+    switch (packetType)
+    {
+        case 1: // legacy ping; ignore any message content
+            OutputDebugString(TEXT("Custom Data Channel: Response Received.\n"));
+            break;
+
+        default:
+            OutputDebugString(TEXT("Custom Data Channel: Unknown Response Received.\n"));
+            break;
+    }
 }
 
 void SampleRemoteApp::OnCustomDataChannelClosed()

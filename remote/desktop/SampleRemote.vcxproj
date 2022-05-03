@@ -89,6 +89,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <SDLCheck>true</SDLCheck>
+      <SupportJustMyCode>true</SupportJustMyCode>
       <UseFullPaths>false</UseFullPaths>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>UNICODE;_UNICODE;_WINDOWS;Win32</PreprocessorDefinitions>
@@ -113,9 +114,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>lib/Debug/SampleRemote.lib</ImportLibrary>
       <OptimizeReferences>false</OptimizeReferences>
-      <ProgramDataBaseFile>bin/Debug/SampleRemote.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -164,8 +163,6 @@
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>lib/Release/SampleRemote.lib</ImportLibrary>
-      <ProgramDataBaseFile>bin/Release/SampleRemote.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -213,9 +210,7 @@
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>lib/RelWithDebInfo/SampleRemote.lib</ImportLibrary>
       <OptimizeReferences>false</OptimizeReferences>
-      <ProgramDataBaseFile>bin/RelWithDebInfo/SampleRemote.pdb</ProgramDataBaseFile>
       <SubSystem>Windows</SubSystem>
     </Link>
     <ProjectReference>
@@ -257,6 +252,7 @@
     <ClInclude Include="..\..\common\DeviceResourcesD3D11.h" />
     <ClCompile Include="..\..\common\DeviceResourcesD3D11Holographic.cpp" />
     <ClInclude Include="..\..\common\DeviceResourcesD3D11Holographic.h" />
+    <ClCompile Include="..\..\common\DirectXHelper.cpp" />
     <ClInclude Include="..\..\common\DirectXHelper.h" />
     <ClInclude Include="..\..\common\DirectXSdkLayerSupport.h" />
     <ClInclude Include="..\..\common\SimpleColor_ShaderStructures.h" />
@@ -329,14 +325,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.props" />
-  <Import Project="packages\Microsoft.MixedReality.QR.0.5.3013\build\native\Microsoft.MixedReality.QR.props" />
+  <Import Project="packages\Microsoft.MixedReality.QR.0.5.3013\build\native\Microsoft.MixedReality.QR.props" Condition="Exists('packages\Microsoft.MixedReality.QR.0.5.3013\build\native\Microsoft.MixedReality.QR.props')" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.VCRTForwarders.140.1.0.7\build\native\Microsoft.VCRTForwarders.140.targets" Condition="Exists('packages\Microsoft.VCRTForwarders.140.1.0.7\build\native\Microsoft.VCRTForwarders.140.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
-    <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets" Condition="Exists('packages\Microsoft.MixedReality.SceneUnderstanding.0.5.2069\build\native\Microsoft.MixedReality.SceneUnderstanding.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
+    <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.1.0.14\build\native\Microsoft.MixedReality.SceneUnderstanding.targets" Condition="Exists('packages\Microsoft.MixedReality.SceneUnderstanding.1.0.14\build\native\Microsoft.MixedReality.SceneUnderstanding.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
     <Import Project="packages\Microsoft.MixedReality.QR.0.5.3013\build\native\Microsoft.MixedReality.QR.targets" Condition="Exists('packages\Microsoft.MixedReality.QR.0.5.3013\build\native\Microsoft.MixedReality.QR.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='RelWithDebInfo')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.7.2\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.7.2\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.8.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.8.0\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>

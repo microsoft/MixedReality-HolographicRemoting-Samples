@@ -43,6 +43,8 @@ void SpatialInputRenderer::Update(
     m_transforms.clear();
     m_joints.clear();
 
+    m_coloredTransforms.clear();
+
     auto coordinateSystem = m_referenceFrame.GetStationaryCoordinateSystemAtTimestamp(timestamp);
 
     auto spatialPointerPose = winrt::Windows::UI::Input::Spatial::SpatialPointerPose::TryGetAtTimestamp(coordinateSystem, timestamp);
@@ -63,6 +65,10 @@ void SpatialInputRenderer::Update(
     auto states = m_interactionManager.GetDetectedSourcesAtTimestamp(timestamp);
 
     m_transforms.reserve(states.Size());
+
+    constexpr uint32_t c_typicalControllerElementCount = 9;
+    const uint32_t maxControllerCount = std::min(states.Size(), 2u);
+    m_coloredTransforms.reserve(c_typicalControllerElementCount * maxControllerCount);
 
     for (const auto& state : states)
     {
@@ -134,9 +140,128 @@ void SpatialInputRenderer::Update(
                     m_joints.push_back(
                         {jointPoses[jointIndex].Position,
                          jointPoses[jointIndex].Orientation,
-                         jointPoses[jointIndex].Radius * 3,
+                         jointPoses[jointIndex].Radius * 2,
                          jointPoses[jointIndex].Radius});
                 }
+            }
+        }
+
+        auto source = state.Source();
+        auto controller = source ? source.Controller() : nullptr;
+        auto controllerProps = controller ? state.ControllerProperties() : nullptr;
+        if (controllerProps)
+        {
+            using namespace DirectX;
+            auto handedness = source.Handedness();
+
+            float3 startPosition(
+                handedness == winrt::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness::Right ? -0.1f : 0.1f, 0.0f, -0.1f);
+            quaternion orientation;
+            XMStoreQuaternion(&orientation, currentTransform.m_orientation);
+
+            float3 position = startPosition;
+
+            // Main trigger
+            {
+                // Base
+                m_coloredTransforms.emplace_back(
+                    ColoredTransform(currentTransform.TransformPosition(position), orientation, {0.5f, 0.5f, 0.5f}));
+
+                // Trigger button
+                float3 triggerPosition = position;
+                float selectValue = float(state.SelectPressedValue());
+                triggerPosition.y += (1.0f - selectValue) * 0.025f + 0.001f;
+                XMFLOAT3 triggerColor =
+                    selectValue <= 0.0f ? XMFLOAT3(0, 1, 0) : (selectValue < 1.0f ? XMFLOAT3(1, 1, 0) : XMFLOAT3(1, 0, 0));
+                m_coloredTransforms.emplace_back(
+                    ColoredTransform(currentTransform.TransformPosition(triggerPosition), orientation, triggerColor));
+
+                // Select pressed indicator
+                triggerPosition = position;
+                triggerPosition.x -=
+                    handedness == winrt::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness::Right ? 0.025f : -0.025f;
+                triggerColor = state.IsSelectPressed() ? XMFLOAT3(1, 0, 0) : XMFLOAT3(0, 1, 0);
+                m_coloredTransforms.emplace_back(
+                    ColoredTransform(currentTransform.TransformPosition(triggerPosition), orientation, triggerColor));
+            }
+
+            // Grasp button
+            {
+                position.z += 0.05f;
+                XMFLOAT3 graspColor(0.5f, 0.5f, 0.5f);
+                if (source.IsGraspSupported())
+                {
+                    bool grasped = state.IsGrasped();
+                    graspColor = grasped ? XMFLOAT3(1, 0, 0) : XMFLOAT3(0, 1, 0);
+                }
+                m_coloredTransforms.emplace_back(ColoredTransform(currentTransform.TransformPosition(position), orientation, graspColor));
+            }
+
+            // Menu button
+            {
+                position.z += 0.05f;
+                XMFLOAT3 menuPressedColor(0.25f, 0.25f, 0.25f);
+                if (source.IsMenuSupported())
+                {
+                    bool menuPressed = state.IsMenuPressed();
+                    menuPressedColor = menuPressed ? XMFLOAT3(1, 0, 0) : XMFLOAT3(0, 1, 0);
+                }
+                m_coloredTransforms.emplace_back(
+                    ColoredTransform(currentTransform.TransformPosition(position), orientation, menuPressedColor));
+            }
+
+            // Thumbstick
+            position = startPosition;
+            {
+                // Base
+                position.x +=
+                    handedness == winrt::Windows::UI::Input::Spatial::SpatialInteractionSourceHandedness::Right ? 0.075f : -0.075f;
+                m_coloredTransforms.emplace_back(
+                    ColoredTransform(currentTransform.TransformPosition(position), orientation, {0.5f, 0.5f, 0.5f}));
+
+                // Thumbstick
+                float3 stickPosition = position;
+                XMFLOAT3 stickColor(0.25f, 0.25f, 0.25f);
+                if (controller.HasThumbstick())
+                {
+                    float thumbstickX = float(controllerProps.ThumbstickX());
+                    float thumbstickY = float(controllerProps.ThumbstickY());
+                    bool thumbstickPressed = controllerProps.IsThumbstickPressed();
+
+                    stickPosition.y += 0.01f;
+                    stickPosition.x += thumbstickX * 0.025f;
+                    stickPosition.z -= thumbstickY * 0.025f;
+                    stickColor = thumbstickPressed ? XMFLOAT3(1, 0, 0) : XMFLOAT3(0, 1, 0);
+                }
+
+                m_coloredTransforms.emplace_back(
+                    ColoredTransform(currentTransform.TransformPosition(stickPosition), orientation, stickColor));
+            }
+
+            // Touchpad
+            {
+                // Base
+                position.z += 0.08f;
+                m_coloredTransforms.emplace_back(
+                    ColoredTransform(currentTransform.TransformPosition(position), orientation, {0.5f, 0.5f, 0.5f}));
+
+                // Touchpad
+                float3 padPosition = position;
+                XMFLOAT3 padColor(0.25f, 0.25f, 0.25f);
+                if (controller.HasTouchpad())
+                {
+                    float touchpadX = float(controllerProps.TouchpadX());
+                    float touchpadY = float(controllerProps.TouchpadY());
+                    bool touchpadPressed = controllerProps.IsTouchpadPressed();
+                    bool touchpadTouched = controllerProps.IsTouchpadTouched();
+
+                    padPosition.y += 0.01f;
+                    padPosition.x += touchpadX * 0.025f;
+                    padPosition.z -= touchpadY * 0.025f;
+                    padColor = touchpadPressed ? XMFLOAT3(1, 0, 0) : (touchpadTouched ? XMFLOAT3(1, 1, 0) : XMFLOAT3(0, 1, 0));
+                }
+
+                m_coloredTransforms.emplace_back(ColoredTransform(currentTransform.TransformPosition(padPosition), orientation, padColor));
             }
         }
     }

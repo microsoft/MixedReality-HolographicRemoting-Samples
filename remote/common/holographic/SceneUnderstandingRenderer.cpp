@@ -25,7 +25,7 @@ using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Numerics;
 using namespace winrt::Windows::Perception::Spatial;
 
-using namespace winrt::Microsoft::MixedReality::SceneUnderstanding;
+using namespace Microsoft::MixedReality::SceneUnderstanding;
 
 namespace
 {
@@ -60,6 +60,14 @@ namespace
         {SceneObjectKind::World, SceneObjectLabel{L"World", {100, 255, 255}}} // Cyan'ish
     };
 
+    float4x4 GetLocationAsFloat4x4(const SceneObject& object)
+    {
+        Matrix4x4 locationSrc = const_cast<SceneObject&>(object).GetLocationAsMatrix();
+
+        float4x4 locationDst;
+        memcpy_s(&locationDst, sizeof(locationDst), &locationSrc, sizeof(locationSrc));
+        return locationDst;
+    }
 } // namespace
 
 SceneUnderstandingRenderer::SceneUnderstandingRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources)
@@ -265,7 +273,7 @@ void SceneUnderstandingRenderer::ReleaseDeviceDependentResources()
     m_blendState = nullptr;
 }
 
-void SceneUnderstandingRenderer::SetScene(Scene scene, SpatialStationaryFrameOfReference lastUpdateLocation)
+void SceneUnderstandingRenderer::SetScene(std::shared_ptr<Scene> scene, SpatialStationaryFrameOfReference lastUpdateLocation)
 {
     // While the vertices are updated asynchronously the scene cannot be set.
     std::lock_guard lock(m_mutex);
@@ -302,7 +310,8 @@ void SceneUnderstandingRenderer::Update(SpatialCoordinateSystem renderingCoordin
         {
             try
             {
-                m_coordinateSystem = Preview::SpatialGraphInteropPreview::CreateCoordinateSystemForNode(m_scene.OriginSpatialGraphNodeId());
+                m_coordinateSystem =
+                    Preview::SpatialGraphInteropPreview::CreateCoordinateSystemForNode(m_scene->GetOriginSpatialGraphNodeId());
             }
             catch (winrt::hresult_error const&)
             {
@@ -351,10 +360,10 @@ winrt::fire_and_forget SceneUnderstandingRenderer::CreateVerticesAsync(
         m_meshVertices.clear();
 
         // Collect all scene objects, then iterate to find quad entities
-        for (const SceneObject& object : m_scene.SceneObjects())
+        for (const std::shared_ptr<SceneObject> object : m_scene->GetSceneObjects())
         {
             // Check if the object is in the quads labels.
-            auto quadLabelPos = m_sceneQuadsLabels.find(object.Kind());
+            auto quadLabelPos = m_sceneQuadsLabels.find(object->GetKind());
             if (quadLabelPos != m_sceneQuadsLabels.end())
             {
                 const SceneObjectLabel& label = quadLabelPos->second;
@@ -363,14 +372,14 @@ winrt::fire_and_forget SceneUnderstandingRenderer::CreateVerticesAsync(
 
                 // Adds the quads to the vertex buffer for rendering, using the color indicated by the label dictionary for the quad's owner
                 // entity's type.
-                AddSceneQuadsVertices(object, color);
+                AddSceneQuadsVertices(*object, color);
 
                 // Adds the label quads to the vertex buffer for rendering.
-                AddSceneQuadLabelVertices(object, color);
+                AddSceneQuadLabelVertices(*object, color);
             }
 
             // Check if the object is in the mesh labels.
-            auto meshLabelPos = m_sceneMeshLabels.find(object.Kind());
+            auto meshLabelPos = m_sceneMeshLabels.find(object->GetKind());
             if (meshLabelPos != m_sceneMeshLabels.end())
             {
                 const SceneObjectLabel& label = meshLabelPos->second;
@@ -379,7 +388,7 @@ winrt::fire_and_forget SceneUnderstandingRenderer::CreateVerticesAsync(
 
                 // Adds the sceneMeshes to the vertex buffer for rendering, using the color indicated by the label dictionary for the quad's
                 // owner entity's type.
-                AddSceneMeshVertices(object, color);
+                AddSceneMeshVertices(*object, color);
             }
         }
 
@@ -430,66 +439,64 @@ winrt::fire_and_forget SceneUnderstandingRenderer::CreateVerticesAsync(
 
 void SceneUnderstandingRenderer::AddSceneQuadsVertices(const SceneObject& object, const float3& color)
 {
-    float4x4 objectToSceneTransform = object.GetLocationAsMatrix();
-    for (const SceneQuad& quad : object.Quads())
+    float4x4 objectToSceneTransform = GetLocationAsFloat4x4(object);
+    const std::shared_ptr<SceneQuad> quad = object.GetQuad();
+    // Create the quad's corner points in object space.
+    const float width = quad->GetExtents().X;
+    const float height = quad->GetExtents().Y;
+    float3 positions[4] = {
+        {-width / 2, -height / 2, 0.0f}, {width / 2, -height / 2, 0.0f}, {-width / 2, height / 2, 0.0f}, {width / 2, height / 2, 0.0f}};
+
+    // Transform the vertices to scene space.
+    for (int i = 0; i < 4; ++i)
     {
-        // Create the quad's corner points in object space.
-        const float width = quad.Extents().x;
-        const float height = quad.Extents().y;
-        float3 positions[4] = {
-            {-width / 2, -height / 2, 0.0f}, {width / 2, -height / 2, 0.0f}, {-width / 2, height / 2, 0.0f}, {width / 2, height / 2, 0.0f}};
-
-        // Transform the vertices to scene space.
-        for (int i = 0; i < 4; ++i)
-        {
-            positions[i] = transform(positions[i], objectToSceneTransform);
-        }
-
-        // Create uv coordinates so that the checkerboard pattern becomes uniformly.
-        float2 uvs[4] = {{0, 0}, {0, width}, {height, 0}, {height, width}};
-
-        // Create the vertices with uv coordinates for the quad.
-        AppendQuad(positions, uvs, height, width, color, m_quadVertices);
+        positions[i] = transform(positions[i], objectToSceneTransform);
     }
+
+    // Create uv coordinates so that the checkerboard pattern becomes uniformly.
+    float2 uvs[4] = {{0, 0}, {0, width}, {height, 0}, {height, width}};
+
+    // Create the vertices with uv coordinates for the quad.
+    AppendQuad(positions, uvs, height, width, color, m_quadVertices);
 }
 
 void SceneUnderstandingRenderer::AddSceneQuadLabelVertices(const SceneObject& object, const float3& color)
 {
-    float4x4 objectToSceneTransform = object.GetLocationAsMatrix();
-    for (const SceneQuad& quad : object.Quads())
+    float4x4 objectToSceneTransform = GetLocationAsFloat4x4(object);
+    const std::shared_ptr<SceneQuad> quad = object.GetQuad();
+    // Create the quad's corner points in object space with a slight offset in the z-direction.
+    float3 positions[4] = {
+        {-LabelQuadWidth / 2, -LabelQuadHeight / 2, 0.01f},
+        {LabelQuadWidth / 2, -LabelQuadHeight / 2, 0.01f},
+        {-LabelQuadWidth / 2, LabelQuadHeight / 2, 0.01f},
+        {LabelQuadWidth / 2, LabelQuadHeight / 2, 0.01f}};
+
+    // Transform the vertices to scene space.
+    for (int i = 0; i < 4; ++i)
     {
-        // Create the quad's corner points in object space with a slight offset in the z-direction.
-        float3 positions[4] = {
-            {-LabelQuadWidth / 2, -LabelQuadHeight / 2, 0.01f},
-            {LabelQuadWidth / 2, -LabelQuadHeight / 2, 0.01f},
-            {-LabelQuadWidth / 2, LabelQuadHeight / 2, 0.01f},
-            {LabelQuadWidth / 2, LabelQuadHeight / 2, 0.01f}};
-
-        // Transform the vertices to scene space.
-        for (int i = 0; i < 4; ++i)
-        {
-            positions[i] = transform(positions[i], objectToSceneTransform);
-        }
-        // Create uv coordinates.
-        float2 uvs[4] = {{0, 1}, {1, 1}, {0, 0}, {1, 0}};
-
-        // Create the vertices with uv coordinates for the quad labels.
-        AppendQuad(positions, uvs, LabelQuadHeight, LabelQuadWidth, color, m_quadLabelsVertices[object.Kind()]);
+        positions[i] = transform(positions[i], objectToSceneTransform);
     }
+    // Create uv coordinates.
+    float2 uvs[4] = {{0, 1}, {1, 1}, {0, 0}, {1, 0}};
+
+    // Create the vertices with uv coordinates for the quad labels.
+    AppendQuad(positions, uvs, LabelQuadHeight, LabelQuadWidth, color, m_quadLabelsVertices[object.GetKind()]);
 }
 
 void SceneUnderstandingRenderer::AddSceneMeshVertices(const SceneObject& object, const float3& color)
 {
-    float4x4 objectToSceneTransform = object.GetLocationAsMatrix();
-    for (const SceneMesh& mesh : object.Meshes())
+    float4x4 objectToSceneTransform = GetLocationAsFloat4x4(object);
+    for (const std::shared_ptr<SceneMesh> mesh : object.GetMeshes())
     {
-        auto indicesCount = mesh.TriangleIndexCount();
+        const uint32_t indicesCount = mesh->GetTriangleIndexCount();
         std::vector<uint32_t> indices(indicesCount);
-        mesh.GetTriangleIndices(indices);
+        mesh->GetTriangleIndices(indices);
 
         // Get the mesh's vertices in object space.
-        std::vector<float3> vertices(mesh.VertexCount());
-        mesh.GetVertexPositions(vertices);
+        uint32_t vertexCount = mesh->GetVertexCount();
+        std::vector<float3> vertices(vertexCount);
+        float3* ptr = vertices.data();
+        mesh->GetVertexPositions(ptr, vertexCount);
 
         // Transform the vertices to scene space and create the triangles.
         for (uint32_t i = 0; i < indices.size(); i += 3)

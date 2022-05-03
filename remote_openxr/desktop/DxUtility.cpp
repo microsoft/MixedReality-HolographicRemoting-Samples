@@ -18,6 +18,13 @@
 #include <D3Dcompiler.h>
 #pragma comment(lib, "D3DCompiler.lib")
 
+// Export symbols to get the high performance gpu as first adapter in IDXGIFactory::EnumAdapters().
+// This can be also necessary for the IMFActivate::ActivateObject method if no windows graphic settings are present.
+extern "C" {
+_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+_declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
+}
+
 namespace sample::dx {
     winrt::com_ptr<IDXGIAdapter1> GetAdapter(LUID adapterId) {
         // Create the DXGI factory.

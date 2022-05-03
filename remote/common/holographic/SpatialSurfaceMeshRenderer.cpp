@@ -57,10 +57,13 @@ std::future<void> SpatialSurfaceMeshRenderer::CreateDeviceDependentResources()
     asyncAccess.Completed([this](auto handler, auto asyncStatus) {
         m_surfaceObserver = Surfaces::SpatialSurfaceObserver();
 
-        m_observedSurfaceChangedToken = m_surfaceObserver.ObservedSurfacesChanged(
-            [this](Surfaces::SpatialSurfaceObserver, winrt::Windows::Foundation::IInspectable const& handler) {
-                OnObservedSurfaceChanged();
-            });
+        if (m_surfaceObserver)
+        {
+            m_observedSurfaceChangedToken = m_surfaceObserver.ObservedSurfacesChanged(
+                [this](Surfaces::SpatialSurfaceObserver, winrt::Windows::Foundation::IInspectable const& handler) {
+                    OnObservedSurfaceChanged();
+                });
+        }
     });
 
     std::vector<byte> vertexShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SRMesh_VertexShader.cso");
