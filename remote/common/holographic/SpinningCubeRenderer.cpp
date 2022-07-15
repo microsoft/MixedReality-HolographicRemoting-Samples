@@ -209,14 +209,8 @@ void SpinningCubeRenderer::Render(bool isStereo, winrt::Windows::Foundation::IRe
     });
 }
 
-std::future<void> SpinningCubeRenderer::CreateDeviceDependentResources()
+void SpinningCubeRenderer::CreateDeviceDependentResources()
 {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-    std::wstring fileNamePrefix = L"";
-#else
-    std::wstring fileNamePrefix = L"ms-appx:///";
-#endif
-
     m_usingVprtShaders = m_deviceResources->GetDeviceSupportsVprt();
 
     // On devices that do support the D3D11_FEATURE_D3D11_OPTIONS3::
@@ -226,8 +220,7 @@ std::future<void> SpinningCubeRenderer::CreateDeviceDependentResources()
     // incurred by setting the geometry shader stage.
 
     std::wstring vertexShaderFileName = m_usingVprtShaders ? L"SimpleColor_VertexShaderVprt.cso" : L"SimpleColor_VertexShader.cso";
-
-    std::vector<byte> vertexShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + vertexShaderFileName);
+    std::vector<byte> vertexShaderFileData = DXHelper::ReadFromFile(vertexShaderFileName);
     winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateVertexShader(
         vertexShaderFileData.data(), vertexShaderFileData.size(), nullptr, m_vertexShader.put()));
 
@@ -244,7 +237,7 @@ std::future<void> SpinningCubeRenderer::CreateDeviceDependentResources()
         static_cast<UINT>(vertexShaderFileData.size()),
         m_inputLayout.put()));
 
-    std::vector<byte> pixelShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SimpleColor_PixelShader.cso");
+    std::vector<byte> pixelShaderFileData = DXHelper::ReadFromFile(L"SimpleColor_PixelShader.cso");
     winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreatePixelShader(
         pixelShaderFileData.data(), pixelShaderFileData.size(), nullptr, m_pixelShader.put()));
 
@@ -261,7 +254,7 @@ std::future<void> SpinningCubeRenderer::CreateDeviceDependentResources()
     if (!m_usingVprtShaders)
     {
         // Load the pass-through geometry shader.
-        std::vector<byte> geometryShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SimpleColor_GeometryShader.cso");
+        std::vector<byte> geometryShaderFileData = DXHelper::ReadFromFile(L"SimpleColor_GeometryShader.cso");
 
         // After the pass-through geometry shader file is loaded, create the shader.
         winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateGeometryShader(

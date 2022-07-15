@@ -182,7 +182,7 @@ namespace {
                 return false;
             }
 
-            std::string grammarFilePath{filename.generic_u8string()};
+            std::string grammarFilePath{filename.generic_string()};
             std::ifstream grammarFileStream(grammarFilePath, std::ios::binary);
             const size_t grammarFileSize = std::filesystem::file_size(filename);
             if (!grammarFileStream.good() || grammarFileSize == 0) {

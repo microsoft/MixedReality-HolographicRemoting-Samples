@@ -103,14 +103,16 @@ namespace xr::math {
             static_assert(sizeof(X) == sizeof(Y), "Incorrect cast between types with different sizes.");
             return reinterpret_cast<X&>(value);
         }
+
+        template <typename...>
+        using always_false = std::false_type;
+
     } // namespace detail
 
-#ifdef _MSC_VER
     template <typename X, typename Y>
     constexpr const X& cast(const Y& value) {
-        static_assert(false, "Undefined cast from Y to type X");
+        static_assert(detail::always_false<X, Y>::value, "Undefined cast from Y to type X");
     }
-#endif
 
 #define DEFINE_CAST(X, Y)                             \
     template <>                                       \

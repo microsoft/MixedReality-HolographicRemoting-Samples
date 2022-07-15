@@ -29,7 +29,7 @@ public:
         std::shared_ptr<Microsoft::MixedReality::SceneUnderstanding::Scene> scene,
         winrt::Windows::Perception::Spatial::SpatialStationaryFrameOfReference lastUpdateLocation);
 
-    std::future<void> CreateDeviceDependentResources();
+    void CreateDeviceDependentResources();
 
     void ReleaseDeviceDependentResources();
 
