@@ -25,7 +25,7 @@ public:
     SpinningCubeRenderer(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
 
     void CreateWindowSizeDependentResources();
-    std::future<void> CreateDeviceDependentResources();
+    void CreateDeviceDependentResources();
     void ReleaseDeviceDependentResources();
     void Update(
         float totalSeconds,

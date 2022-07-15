@@ -100,12 +100,14 @@ namespace DXHelper
         immediateContext->IASetIndexBuffer(indexBuffer.get(), indexBufferFormat, indexBufferOffset);
     }
 
-    // Function that reads from a binary file asynchronously.
-    inline std::future<std::vector<byte>> ReadDataAsync(const std::wstring_view& filename)
+    // Function that reads from a binary file as a blocking operation.
+    // This is based on https://docs.microsoft.com/en-us/windows/win32/fileio/opening-a-file-for-reading-or-writing.
+    // Modifications were made to ensure this works on Win10 UWP, based on information from
+    // https://walbourn.github.io/dual-use-coding-techniques-for-games-part-2/.
+    inline std::vector<byte> ReadFromFile(const std::wstring& fileName)
     {
-        using namespace winrt::Windows::Storage;
-        using namespace winrt::Windows::Storage::Streams;
 
+// Need to use absolute filepath on Desktop
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 
         wchar_t moduleFullyQualifiedFilename[MAX_PATH] = {};
@@ -113,21 +115,52 @@ namespace DXHelper
         moduleFullyQualifiedFilename[moduleFileNameLength] = L'\0';
 
         std::filesystem::path modulePath = moduleFullyQualifiedFilename;
-        // winrt::hstring moduleFilename = modulePath.filename().c_str();
-        modulePath.replace_filename(filename);
-        winrt::hstring absoluteFilename = modulePath.c_str();
-
-        IBuffer fileBuffer = co_await PathIO::ReadBufferAsync(absoluteFilename);
+        modulePath.replace_filename(fileName);
+        std::wstring filePath = modulePath.c_str();
 #else
-        IBuffer fileBuffer = co_await PathIO::ReadBufferAsync(filename);
+        std::wstring filePath = fileName;
 #endif
+        // Use RAII for managing the handle, as shown in https://walbourn.github.io/dual-use-coding-techniques-for-games-part-1/
+        struct HandleCloser
+        {
+            void operator()(HANDLE h)
+            {
+                if (h != INVALID_HANDLE_VALUE)
+                {
+                    CloseHandle(h);
+                }
+            }
+        };
 
-        std::vector<byte> returnBuffer;
-        returnBuffer.resize(fileBuffer.Length());
-        DataReader::FromBuffer(fileBuffer).ReadBytes(winrt::array_view<uint8_t>(returnBuffer));
-        return returnBuffer;
+        std::unique_ptr<void, HandleCloser> hFile(CreateFile2(filePath.c_str(), GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, nullptr));
+
+        // In case of error, provide a customized message that includes the filePath and error code
+        auto generateErrorMessage = [&filePath](const std::wstring& message) {
+            throw winrt::hresult_error(
+                GetLastError(),
+                message + L" at" + filePath +
+                    L".\nYou can find more information under https://docs.microsoft.com/en-us/windows/win32/debug/");
+        };
+
+        if (hFile.get() == INVALID_HANDLE_VALUE)
+        {
+            generateErrorMessage(L"Failed to access file");
+        }
+
+        LARGE_INTEGER fileSize;
+        if (GetFileSizeEx(hFile.get(), &fileSize) == false)
+        {
+            generateErrorMessage(L"Failed to read file size");
+        }
+
+        std::vector<byte> fileData(fileSize.QuadPart, 0);
+        if (ReadFile(hFile.get(), &fileData[0], (DWORD)fileSize.QuadPart, 0, nullptr) == false)
+        {
+            generateErrorMessage(L"Failed to read file");
+        }
+
+        return fileData;
     }
-
     // Converts a length in device-independent pixels (DIPs) to a length in physical pixels.
     inline float ConvertDipsToPixels(float dips, float dpi)
     {

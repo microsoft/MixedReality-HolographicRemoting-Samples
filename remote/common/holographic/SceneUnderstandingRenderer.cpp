@@ -81,14 +81,8 @@ SceneUnderstandingRenderer::~SceneUnderstandingRenderer()
     ReleaseDeviceDependentResources();
 }
 
-std::future<void> SceneUnderstandingRenderer::CreateDeviceDependentResources()
+void SceneUnderstandingRenderer::CreateDeviceDependentResources()
 {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-    std::wstring fileNamePrefix = L"";
-#else
-    std::wstring fileNamePrefix = L"ms-appx:///";
-#endif
-
     // Create the resources for label texture rendering before any thread switch occurs.
     {
         // Create texture description.
@@ -163,7 +157,7 @@ std::future<void> SceneUnderstandingRenderer::CreateDeviceDependentResources()
 
     // Vertex shader.
     {
-        std::vector<byte> vertexShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SU_VertexShader.cso");
+        std::vector<byte> vertexShaderFileData = DXHelper::ReadFromFile(L"SU_VertexShader.cso");
         winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateVertexShader(
             vertexShaderFileData.data(), vertexShaderFileData.size(), nullptr, m_vertexShader.put()));
 
@@ -183,28 +177,28 @@ std::future<void> SceneUnderstandingRenderer::CreateDeviceDependentResources()
 
     // Pixel shader for scene quads.
     {
-        std::vector<byte> pixelShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SUQuads_PixelShader.cso");
+        std::vector<byte> pixelShaderFileData = DXHelper::ReadFromFile(L"SUQuads_PixelShader.cso");
         winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreatePixelShader(
             pixelShaderFileData.data(), pixelShaderFileData.size(), nullptr, m_quadsPixelShader.put()));
     }
 
     // Pixel shader for scene quad labels.
     {
-        std::vector<byte> pixelShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SULabel_PixelShader.cso");
+        std::vector<byte> pixelShaderFileData = DXHelper::ReadFromFile(L"SULabel_PixelShader.cso");
         winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreatePixelShader(
             pixelShaderFileData.data(), pixelShaderFileData.size(), nullptr, m_labelPixelShader.put()));
     }
 
     // Pixel shader for scene mesh.
     {
-        std::vector<byte> pixelShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SUMesh_PixelShader.cso");
+        std::vector<byte> pixelShaderFileData = DXHelper::ReadFromFile(L"SUMesh_PixelShader.cso");
         winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreatePixelShader(
             pixelShaderFileData.data(), pixelShaderFileData.size(), nullptr, m_meshPixelShader.put()));
     }
 
     // Geometry shader.
     {
-        std::vector<byte> geometryShaderFileData = co_await DXHelper::ReadDataAsync(fileNamePrefix + L"SU_GeometryShader.cso");
+        std::vector<byte> geometryShaderFileData = DXHelper::ReadFromFile(L"SU_GeometryShader.cso");
 
         winrt::check_hresult(m_deviceResources->GetD3DDevice()->CreateGeometryShader(
             geometryShaderFileData.data(), geometryShaderFileData.size(), nullptr, m_geometryShader.put()));

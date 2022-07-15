@@ -24,7 +24,7 @@ public:
     RenderableObject(const std::shared_ptr<DXHelper::DeviceResourcesD3D11>& deviceResources);
     virtual ~RenderableObject();
 
-    virtual std::future<void> CreateDeviceDependentResources();
+    virtual void CreateDeviceDependentResources();
     virtual void ReleaseDeviceDependentResources();
 
     void Render(
@@ -36,8 +36,6 @@ protected:
     virtual void Draw(
         unsigned int numInstances,
         winrt::Windows::Foundation::IReference<winrt::Windows::Perception::Spatial::SpatialBoundingFrustum> cullingFrustum) = 0;
-
-    std::future<void> CreateDeviceDependentResourcesInternal();
 
     static void AppendColoredTriangle(
         DirectX::XMFLOAT3 p0,
@@ -55,8 +53,6 @@ protected:
 
     // Cached pointer to device resources.
     std::shared_ptr<DXHelper::DeviceResourcesD3D11> m_deviceResources;
-
-    std::future<void> m_deviceResourcesCreated;
 
 private:
     // Direct3D resources for geometry.

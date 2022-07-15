@@ -95,7 +95,7 @@ public:
 
     void Render(bool isStereo);
 
-    std::future<void> CreateDeviceDependentResources();
+    void CreateDeviceDependentResources();
     void ReleaseDeviceDependentResources();
 
 private:

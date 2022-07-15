@@ -28,7 +28,7 @@ public:
         winrt::Windows::Foundation::Numerics::float3 position,
         winrt::Windows::Foundation::Numerics::float3 color);
 
-    std::future<void> CreateDeviceDependentResources();
+    void CreateDeviceDependentResources();
 
     void ReleaseDeviceDependentResources();
 
