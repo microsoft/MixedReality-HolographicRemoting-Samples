@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include <DeviceResourcesD3D11.h>
-#include <SimpleColor_ShaderStructures.h>
+#include <ShaderStructures.h>
 
+#include <DeviceResourcesD3D11.h>
 #include <string>
 
 #include <winrt\Windows.Networking.Connectivity.h>

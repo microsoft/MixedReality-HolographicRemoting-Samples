@@ -48,17 +48,6 @@ void QRCodeRenderer::OnUpdatedQRCode(const winrt::Microsoft::MixedReality::QR::Q
     }
 
     m_qrCodes.insert({code, nullptr});
-
-    {
-        wchar_t lastDetectedTimeLog[128];
-        swprintf_s(
-            lastDetectedTimeLog,
-            L"QR code %s was last seen %s\n",
-            winrt::to_hstring(code.Id()).c_str(),
-            formatter.Format(code.LastDetectedTime()).c_str());
-
-        OutputDebugStringW(lastDetectedTimeLog);
-    }
 }
 
 void QRCodeRenderer::Update(winrt::Windows::Perception::Spatial::SpatialCoordinateSystem renderingCoordinateSystem)

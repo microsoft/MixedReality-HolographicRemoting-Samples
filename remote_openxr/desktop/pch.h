@@ -39,15 +39,17 @@
 #define XR_USE_GRAPHICS_API_D3D11
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
+#include <openxr/openxr_reflection.h>
 
 #include <openxr/openxr_msft_holographic_remoting.h>
 #include <openxr/openxr_msft_remoting_frame_mirroring.h>
 #include <openxr/openxr_msft_remoting_speech.h>
 
+#define ENABLE_GLOBAL_XR_DISPATCH_TABLE
+#include <XrUtility/XrDispatchTable.h>
 #include <XrUtility/XrError.h>
 #include <XrUtility/XrHandle.h>
 #include <XrUtility/XrMath.h>
 #include <XrUtility/XrString.h>
-#include <XrUtility/XrExtensions.h>
 
 #include <winrt/base.h> // winrt::com_ptr

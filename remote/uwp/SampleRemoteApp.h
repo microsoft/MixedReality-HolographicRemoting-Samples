@@ -57,6 +57,7 @@ public:
         bool listen = false;
         bool autoReconnect = true;
         bool enableAudio = true;
+        uint32_t maxBitrateKbps = 20000;
     };
 
 public:
@@ -103,8 +104,8 @@ public:
     virtual void OnDeviceLost();
     virtual void OnDeviceRestored();
 
-    // Initializes the RemoteContext and starts connecting or listening to the currently set network address
-    void InitializeRemoteContextAndConnectOrListen();
+    // Creates and configures the remote context if one doesn't already exist
+    void EnsureRemoteContextInitialized();
 
 private:
     // Initializes the HolographicSpace and creates graphics device dependent resources

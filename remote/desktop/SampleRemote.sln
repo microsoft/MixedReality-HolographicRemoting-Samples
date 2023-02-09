@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29806.167
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRemote", "SampleRemote.vcxproj", "{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRemote", "SampleRemote.vcxproj", "{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,15 +12,15 @@ Global
 		RelWithDebInfo|x64 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.Debug|x64.ActiveCfg = Debug|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.Debug|x64.Build.0 = Debug|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.Debug|x64.Deploy.0 = Debug|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.Release|x64.ActiveCfg = Release|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.Release|x64.Build.0 = Release|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.Release|x64.Deploy.0 = Release|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
-		{E0FC2257-7EE9-3969-9E77-CE87E3C87A9C}.RelWithDebInfo|x64.Deploy.0 = RelWithDebInfo|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.Debug|x64.ActiveCfg = Debug|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.Debug|x64.Build.0 = Debug|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.Debug|x64.Deploy.0 = Debug|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.Release|x64.ActiveCfg = Release|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.Release|x64.Build.0 = Release|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.Release|x64.Deploy.0 = Release|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{A47CF89B-06B5-32EA-A17C-2332DCCA0F6F}.RelWithDebInfo|x64.Deploy.0 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

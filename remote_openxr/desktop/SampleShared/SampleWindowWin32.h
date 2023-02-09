@@ -29,7 +29,7 @@ namespace sample {
 
         void SetWindowTitle(std::wstring title);
 
-        ID3D11Texture2D* GetNextSwapchainTexture();
+        winrt::com_ptr<ID3D11Texture2D> GetNextSwapchainTexture();
         void PresentSwapchain();
 
         void OnClosed();
