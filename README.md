@@ -65,7 +65,7 @@ Visual Studio 2022 with
 For ARM builds additionally
 - Individual components
     - MSVC v143 - VS 2022 C++ ARM64 build tools (Latest)
-    - MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (lLtest)
+    - MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
     - C++ Universal Windows Platform support for v143 build tools (ARM64)
 
 
