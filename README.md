@@ -16,7 +16,7 @@ products:
 
 | Holographic Remoting version |
 :-----------------: |
-|2.8.1 |
+| 2.9.0 |
 
 The [Holographic Remoting Samples](https://github.com/microsoft/MixedReality-HolographicRemoting-Samples) repository hosts sample applications for [Holographic Remoting](https://docs.microsoft.com/en-us/windows/mixed-reality/holographic-remoting-player). The two remote samples show how to write an application for streaming content to a Microsoft HoloLens 2 or a PC running Windows Mixed Reality.
 
@@ -47,25 +47,26 @@ The player sample shows how to write an application running on your Microsoft Ho
 
 ## Prerequisites
 
-Visual Studio 2019 with
+Visual Studio 2022 with
 
 - Workloads:
     - Desktop development with C++
     - Universal Windows Platform development
 - Individual components
-    - Windows 10 SDK (10.0.19041.0)
-    - MSVC v142 - VS 2019 C++ x64/x86 build tools (newest)
-    - MSVC v142 - VS 2019 C++ x64/x86 Spectre-mitigated libs (newest)
-    - Net Native
-    - .Net Framework 4.5 targeting pack
+    - Windows 10 SDK (10.0.22621.0)
+    - MSVC v143 - VS 2022 C++ x64/x86 build tools (Latest)
+    - MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)
+    - .NET Native
+    - .NET Framework 4.8 targeting pack
+    - .NET 6.0 Runtime
     - Nuget Package manager        
-    - C++ 2019 Redistributable Update
+    - C++ 2022 Redistributable Update
 
 For ARM builds additionally
 - Individual components
-    - MSVC v142 - VS 2019 C++ ARM64 build tools (newest)
-    - MSVC v142 - VS 2019 C++ ARM64 Spectre-mitigated libs (newest)
-    - C++ Universal Windows Platform support for v142 build tools (ARM64)
+    - MSVC v143 - VS 2022 C++ ARM64 build tools (Latest)
+    - MSVC v143 - VS 2022 C++ ARM64 Spectre-mitigated libs (Latest)
+    - C++ Universal Windows Platform support for v143 build tools (ARM64)
 
 
 ## Setup
