@@ -445,9 +445,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header" style="max-width: 100;">
 <h1>OpenXR Remoting Extensions</h1>
 <div class="details">
-<span id="author" class="author">Copyright (c) 2021 Microsoft. All rights reserved.</span><br>
-<span id="revnumber">version 2.7.0,</span>
-<span id="revdate">Tue, 28 Sep 2021</span>
+<span id="author" class="author">Copyright (c) 2023 Microsoft. All rights reserved.</span><br>
+<span id="revnumber">version 2.9.0,</span>
+<span id="revdate">Mo, 13 Feb 2023 08:10:10 +0000</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -482,7 +482,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </dd>
 <dt class="hdlist1"><strong>Revision</strong></dt>
 <dd>
-<p>3</p>
+<p>5</p>
 </dd>
 <dt class="hdlist1"><strong>Extension and Version Dependencies</strong></dt>
 <dd>
@@ -500,7 +500,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <dl>
 <dt class="hdlist1"><strong>Last Modified Date</strong></dt>
 <dd>
-<p>2021-09-28</p>
+<p>2023-02-13</p>
 </dd>
 <dt class="hdlist1"><strong>IP Status</strong></dt>
 <dd>
@@ -513,12 +513,13 @@ Florian Bagar, Microsoft<br>
 Sohini Banerjee, Microsoft<br>
 Felix Reeh, Microsoft<br>
 Hanaa Elghobashi, Microsoft<br>
-Vincent Musch, Microsoft<br></p>
+Vincent Musch, Microsoft<br>
+Sebastian Schumm, Microsoft<br></p>
 </dd>
 </dl>
 </div>
 <div class="sect3">
-<h4 id="_overview_5"><a class="anchor" href="#_overview_5"></a>1.1.1. Overview</h4>
+<h4 id="_overview_7"><a class="anchor" href="#_overview_7"></a>1.1.1. Overview</h4>
 <div class="paragraph">
 <p>This extension enables addition of Holographic Remoting capability to OpenXR applications and games.</p>
 </div>
@@ -568,7 +569,8 @@ before enumerating the device properties.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRemotingSetContextPropertiesMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRemotingSetContextPropertiesMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     const XrRemotingRemoteContextPropertiesMSFT* contextProperties);</code></pre>
@@ -669,7 +671,8 @@ before enumerating the device properties.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingRemoteContextPropertiesMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingRemoteContextPropertiesMSFT {
     XrStructureType                              type;
     void*                                        next;
     uint32_t                                     maxBitrateKbps;
@@ -689,8 +692,7 @@ before enumerating the device properties.</p>
 </li>
 <li>
 <p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
-chain.
-No such structures are defined in core OpenXR or this extension.</p>
+chain.</p>
 </li>
 <li>
 <p><code>maxBitrateKbps</code> is the max bitrate to use for the connection.</p>
@@ -744,7 +746,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingVideoCodecMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingVideoCodecMSFT {
     XR_REMOTING_VIDEO_CODEC_ANY_MSFT = 0,
     XR_REMOTING_VIDEO_CODEC_H264_MSFT = 1,
     XR_REMOTING_VIDEO_CODEC_H265_MSFT = 2,
@@ -782,7 +785,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDepthBufferStreamResolutionMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingDepthBufferStreamResolutionMSFT {
     XR_REMOTING_DEPTH_BUFFER_STREAM_RESOLUTION_HALF_MSFT = 0,
     XR_REMOTING_DEPTH_BUFFER_STREAM_RESOLUTION_FULL_MSFT = 1,
     XR_REMOTING_DEPTH_BUFFER_STREAM_RESOLUTION_QUARTER_MSFT = 2,
@@ -827,7 +831,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRemotingConnectMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRemotingConnectMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     const XrRemotingConnectInfoMSFT*            connectInfo);</code></pre>
@@ -925,9 +930,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingConnectInfoMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingConnectInfoMSFT {
     XrStructureType    type;
-    void*              next;
+    const void*        next;
     const char*        remoteHostName;
     uint16_t           remotePort;
     XrBool32           secureConnection;
@@ -996,7 +1002,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRemotingListenMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRemotingListenMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     const XrRemotingListenInfoMSFT*             listenInfo);</code></pre>
@@ -1094,9 +1101,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingListenInfoMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingListenInfoMSFT {
     XrStructureType    type;
-    void*              next;
+    const void*        next;
     const char*        listenInterface;
     uint16_t           handshakeListenPort;
     uint16_t           transportListenPort;
@@ -1169,7 +1177,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRemotingDisconnectMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRemotingDisconnectMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     const XrRemotingDisconnectInfoMSFT*         disconnectInfo);</code></pre>
@@ -1267,7 +1276,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingDisconnectInfoMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingDisconnectInfoMSFT {
     XrStructureType    type;
     const void*        next;
 } XrRemotingDisconnectInfoMSFT;</code></pre>
@@ -1323,7 +1333,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRemotingGetConnectionStateMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRemotingGetConnectionStateMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     XrRemotingConnectionStateMSFT*              connectionState,
@@ -1428,7 +1439,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingConnectionStateMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingConnectionStateMSFT {
     XR_REMOTING_CONNECTION_STATE_DISCONNECTED_MSFT = 0,
     XR_REMOTING_CONNECTION_STATE_CONNECTING_MSFT = 1,
     XR_REMOTING_CONNECTION_STATE_CONNECTED_MSFT = 2,
@@ -1470,7 +1482,8 @@ all communication channels established (Client/Server).</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDisconnectReasonMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingDisconnectReasonMSFT {
     XR_REMOTING_DISCONNECT_REASON_NONE_MSFT = 0,
     XR_REMOTING_DISCONNECT_REASON_UNKNOWN_MSFT = 1,
     XR_REMOTING_DISCONNECT_REASON_NO_SERVER_CERTIFICATE_MSFT = 2,
@@ -1654,7 +1667,8 @@ that the handshake could not be opened due to insufficient permissions (Client).
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingEventDataListeningMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingEventDataListeningMSFT {
     XrStructureType    type;
     const void*        next;
     uint16_t           listeningPort;
@@ -1711,7 +1725,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingEventDataConnectedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingEventDataConnectedMSFT {
     XrStructureType    type;
     const void*        next;
 } XrRemotingEventDataConnectedMSFT;</code></pre>
@@ -1764,7 +1779,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingEventDataDisconnectedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingEventDataDisconnectedMSFT {
     XrStructureType                   type;
     const void*                       next;
     XrRemotingDisconnectReasonMSFT    disconnectReason;
@@ -1827,7 +1843,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRemotingSetSecureConnectionClientCallbacksMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRemotingSetSecureConnectionClientCallbacksMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     const XrRemotingSecureConnectionClientCallbacksMSFT* secureConnectionClientCallbacks);</code></pre>
@@ -1926,7 +1943,8 @@ structure, which contains the callback pointers which need to be passed for the 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingSecureConnectionClientCallbacksMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingSecureConnectionClientCallbacksMSFT {
     XrStructureType                                         type;
     void*                                                   next;
     void*                                                   context;
@@ -2059,7 +2077,8 @@ It <strong class="purple">may</strong> become invalid afterwards.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingAuthenticationTokenRequestMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingAuthenticationTokenRequestMSFT {
     XrStructureType    type;
     const void*        next;
     void*              context;
@@ -2163,7 +2182,8 @@ It <strong class="purple">may</strong> become invalid afterwards.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingServerCertificateValidationMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingServerCertificateValidationMSFT {
     XrStructureType                               type;
     const void*                                   next;
     void*                                         context;
@@ -2262,7 +2282,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingCertificateDataMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingCertificateDataMSFT {
     XrStructureType    type;
     const void*        next;
     uint32_t           size;
@@ -2326,7 +2347,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingCertificateValidationResultMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingCertificateValidationResultMSFT {
     XrStructureType                                  type;
     const void*                                      next;
     XrBool32                                         trustedRoot;
@@ -2412,7 +2434,8 @@ or if the name match cannot be reliably determined.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingCertificateNameValidationResultMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingCertificateNameValidationResultMSFT {
     XR_REMOTING_CERTIFICATE_NAME_VALIDATION_RESULT_NOT_CHECKED_MSFT = 0,
     XR_REMOTING_CERTIFICATE_NAME_VALIDATION_RESULT_MATCH_MSFT = 1,
     XR_REMOTING_CERTIFICATE_NAME_VALIDATION_RESULT_MISMATCH_MSFT = 2,
@@ -2456,7 +2479,8 @@ host presenting the certificate does not match the certificate subject.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRemotingSetSecureConnectionServerCallbacksMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRemotingSetSecureConnectionServerCallbacksMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     const XrRemotingSecureConnectionServerCallbacksMSFT* secureConnectionServerCallbacks);</code></pre>
@@ -2554,7 +2578,8 @@ host presenting the certificate does not match the certificate subject.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingSecureConnectionServerCallbacksMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingSecureConnectionServerCallbacksMSFT {
     XrStructureType                                          type;
     void*                                                    next;
     void*                                                    context;
@@ -2690,7 +2715,8 @@ It <strong class="purple">may</strong> become invalid afterwards.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingServerCertificateRequestMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingServerCertificateRequestMSFT {
     XrStructureType    type;
     const void*        next;
     void*              context;
@@ -2830,7 +2856,8 @@ It <strong class="purple">may</strong> become invalid afterwards.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingAuthenticationTokenValidationMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingAuthenticationTokenValidationMSFT {
     XrStructureType    type;
     const void*        next;
     void*              context;
@@ -2913,7 +2940,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrCreateRemotingDataChannelMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrCreateRemotingDataChannelMSFT(
     XrInstance                                  instance,
     XrSystemId                                  systemId,
     const XrRemotingDataChannelCreateInfoMSFT*  channelInfo,
@@ -3027,9 +3055,10 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingDataChannelCreateInfoMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingDataChannelCreateInfoMSFT {
     XrStructureType                      type;
-    void*                                next;
+    const void*                          next;
     XrRemotingDataChannelPriorityMSFT    channelPriority;
     uint8_t                              channelId;
 } XrRemotingDataChannelCreateInfoMSFT;</code></pre>
@@ -3092,7 +3121,8 @@ For the creation, valid channel IDs on the remote side are from 0 up to and incl
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDataChannelPriorityMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingDataChannelPriorityMSFT {
     XR_REMOTING_DATA_CHANNEL_PRIORITY_LOW_MSFT = 0,
     XR_REMOTING_DATA_CHANNEL_PRIORITY_MEDIUM_MSFT = 1,
     XR_REMOTING_DATA_CHANNEL_PRIORITY_HIGH_MSFT = 2,
@@ -3145,7 +3175,8 @@ For the creation, valid channel IDs on the remote side are from 0 up to and incl
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelCreatedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrEventDataRemotingDataChannelCreatedMSFT {
     XrStructureType              type;
     void*                        next;
     uint8_t                      channelId;
@@ -3209,7 +3240,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelOpenedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrEventDataRemotingDataChannelOpenedMSFT {
     XrStructureType              type;
     void*                        next;
     XrRemotingDataChannelMSFT    channel;
@@ -3272,7 +3304,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrSendRemotingDataMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrSendRemotingDataMSFT(
     XrRemotingDataChannelMSFT                   channel,
     XrRemotingDataChannelSendDataInfoMSFT*      sendDataInfo);</code></pre>
 </div>
@@ -3375,10 +3408,11 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingDataChannelSendDataInfoMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingDataChannelSendDataInfoMSFT {
     XrStructureType    type;
-    void*              next;
-    uint8_t*           data;
+    const void*        next;
+    const uint8_t*     data;
     uint32_t           size;
     XrBool32           guaranteedDelivery;
 } XrRemotingDataChannelSendDataInfoMSFT;</code></pre>
@@ -3420,7 +3454,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><a id="VUID-XrRemotingDataChannelSendDataInfoMSFT-next-next" href="#VUID-XrRemotingDataChannelSendDataInfoMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
 </li>
 <li>
-<p><a id="VUID-XrRemotingDataChannelSendDataInfoMSFT-data-parameter" href="#VUID-XrRemotingDataChannelSendDataInfoMSFT-data-parameter"></a> <code>data</code> <strong class="purple">must</strong> be a pointer to a <code>uint8_t</code> value</p>
+<p><a id="VUID-XrRemotingDataChannelSendDataInfoMSFT-data-parameter" href="#VUID-XrRemotingDataChannelSendDataInfoMSFT-data-parameter"></a> <code>data</code> <strong class="purple">must</strong> be a pointer to a valid <code>uint8_t</code> value</p>
 </li>
 </ul>
 </div>
@@ -3432,7 +3466,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><strong>Retrieve data with custom data channels</strong></p>
 </div>
 <div class="paragraph">
-<p>Every time data arrives via a data channel, the <a href="#XrEventDataRemotingDataChannelDataReceivedMSFT">XrEventDataRemotingDataChannelDataReceivedMSFT</a> event structure is placed into the event queue. The event structure is defined as:</p>
+<p>Every time data arrives via a data channel, an <a href="#XrEventDataRemotingDataChannelDataReceivedMSFT">XrEventDataRemotingDataChannelDataReceivedMSFT</a> event structure is placed into the event queue. The event structure is defined as:</p>
 </div>
 <div class="openblock">
 <div class="content">
@@ -3444,7 +3478,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelDataReceivedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrEventDataRemotingDataChannelDataReceivedMSFT {
     XrStructureType              type;
     void*                        next;
     XrRemotingDataChannelMSFT    channel;
@@ -3533,12 +3568,13 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRetrieveRemotingDataMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrRetrieveRemotingDataMSFT(
     XrRemotingDataChannelMSFT                   channel,
     XrRemotingPacketIdMSFT                      packetId,
     uint32_t                                    dataBytesCapacityInput,
     uint32_t*                                   dataBytesCountOutput,
-    uint8_t*                                    data);</code></pre>
+    uint8_t*                                    dataBytess);</code></pre>
 </div>
 </div>
 <div class="sidebarblock">
@@ -3583,7 +3619,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><a id="VUID-xrRetrieveRemotingDataMSFT-dataBytesCountOutput-parameter" href="#VUID-xrRetrieveRemotingDataMSFT-dataBytesCountOutput-parameter"></a> <code>dataBytesCountOutput</code> <strong class="purple">must</strong> be a pointer to a <code>uint32_t</code> value</p>
 </li>
 <li>
-<p><a id="VUID-xrRetrieveRemotingDataMSFT-data-parameter" href="#VUID-xrRetrieveRemotingDataMSFT-data-parameter"></a> <code>data</code> <strong class="purple">must</strong> be a pointer to a <code>uint8_t</code> value</p>
+<p><a id="VUID-xrRetrieveRemotingDataMSFT-dataBytess-parameter" href="#VUID-xrRetrieveRemotingDataMSFT-dataBytess-parameter"></a> If <code>dataBytesCapacityInput</code> is not <code>0</code>, <code>dataBytess</code> <strong class="purple">must</strong> be a pointer to an array of <code>dataBytesCapacityInput</code> <code>uint8_t</code> values</p>
 </li>
 <li>
 <p><a id="VUID-xrRetrieveRemotingDataMSFT-commonparent" href="#VUID-xrRetrieveRemotingDataMSFT-commonparent"></a> Both of <code>channel</code> and <code>packetId</code> <strong class="purple">must</strong> have been created, allocated, or retrieved from the same <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a></p>
@@ -3663,7 +3699,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrGetRemotingDataChannelStateMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrGetRemotingDataChannelStateMSFT(
     XrRemotingDataChannelMSFT                   channel,
     XrRemotingDataChannelStateMSFT*             channelState);</code></pre>
 </div>
@@ -3757,7 +3794,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingDataChannelStateMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingDataChannelStateMSFT {
     XrStructureType                    type;
     void*                              next;
     uint32_t                           sendQueueSize;
@@ -3816,7 +3854,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDataChannelStatusMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingDataChannelStatusMSFT {
     XR_REMOTING_DATA_CHANNEL_STATUS_OPEN_PENDING_MSFT = 0,
     XR_REMOTING_DATA_CHANNEL_STATUS_OPENED_MSFT = 1,
     XR_REMOTING_DATA_CHANNEL_STATUS_CLOSED_MSFT = 2,
@@ -3857,7 +3896,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingDataChannelClosedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrEventDataRemotingDataChannelClosedMSFT {
     XrStructureType                          type;
     void*                                    next;
     XrRemotingDataChannelMSFT                channel;
@@ -3924,7 +3964,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingDataChannelClosedReasonMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingDataChannelClosedReasonMSFT {
     XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_PROTOCOL_MSFT = 0,
     XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_ERROR_MSFT = 1,
     XR_REMOTING_DATA_CHANNEL_CLOSED_REASON_MAX_ENUM_MSFT = 0x7FFFFFFF
@@ -3964,7 +4005,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrDestroyRemotingDataChannelMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrDestroyRemotingDataChannelMSFT(
     XrRemotingDataChannelMSFT                   channel);</code></pre>
 </div>
 </div>
@@ -4067,6 +4109,390 @@ With that both the player app and remote app can transform spatial data into a c
 <div class="paragraph">
 <p>As long as the <code>REMOTING_USER_MSFT</code> reference space was not set by the custom player app, calls to <a href="#xrLocateSpace">xrLocateSpace</a> will return an invalid <a href="#XrSpaceLocation">XrSpaceLocation</a> indicated by the empty <a href="#XrSpaceLocationFlags">XrSpaceLocationFlags</a>.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_timestamp_conversion"><a class="anchor" href="#_timestamp_conversion"></a>1.1.4. Timestamp Conversion</h4>
+<div class="paragraph">
+<p>Timestamp conversion can be used to convert timestamps between Player and Remote.</p>
+</div>
+<div class="paragraph">
+<p>The conversion functions need an established connection. After connecting, it takes some time until the correlation between Player and Remote clock has been determined.
+The event <code>XR_TYPE_EVENT_DATA_REMOTING_TIMESTAMP_CONVERSION_READY_MSFT</code> is raised as soon as the conversion is ready. When calling a convert method before, it returns <code>XR_ERROR_REMOTING_TIMESTAMP_CONVERSION_NOT_READY_MSFT</code>.
+Once the timestamp conversion has become ready, it will stay ready until the session is destroyed or lost.</p>
+</div>
+<div class="paragraph">
+<p>Timestamps correspond to ticks in the QueryPerformanceCounter epoch.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrEventDataRemotingTimestampConversionReadyMSFT">XrEventDataRemotingTimestampConversionReadyMSFT</a> will be placed in the event queue as soon as the timestamp conversion becomes ready after a new connection has been established.
+The <a href="#XrEventDataRemotingTimestampConversionReadyMSFT">XrEventDataRemotingTimestampConversionReadyMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrEventDataRemotingTimestampConversionReadyMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrEventDataRemotingTimestampConversionReadyMSFT {
+    XrStructureType    type;
+    void*              next;
+} XrEventDataRemotingTimestampConversionReadyMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR or this extension.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrEventDataRemotingTimestampConversionReadyMSFT-extension-notenabled" href="#VUID-XrEventDataRemotingTimestampConversionReadyMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrEventDataRemotingTimestampConversionReadyMSFT">XrEventDataRemotingTimestampConversionReadyMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingTimestampConversionReadyMSFT-type-type" href="#VUID-XrEventDataRemotingTimestampConversionReadyMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_EVENT_DATA_REMOTING_TIMESTAMP_CONVERSION_READY_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrEventDataRemotingTimestampConversionReadyMSFT-next-next" href="#VUID-XrEventDataRemotingTimestampConversionReadyMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <a href="#xrConvertTimestampPlayerToRemoteMSFT">xrConvertTimestampPlayerToRemoteMSFT</a> function is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="xrConvertTimestampPlayerToRemoteMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrConvertTimestampPlayerToRemoteMSFT(
+    XrSession                                   session,
+    int64_t                                     playerTicksSinceEpoch,
+    int64_t*                                    remoteTicksSinceEpoch);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>session</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
+</li>
+<li>
+<p><code>playerTicksSinceEpoch</code> are the input ticks as returned by QueryPerformanceCounter on the Player.</p>
+</li>
+<li>
+<p><code>remoteTicksSinceEpoch</code> are the resulting ticks converted to Remote clock.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrConvertTimestampPlayerToRemoteMSFT-extension-notenabled" href="#VUID-xrConvertTimestampPlayerToRemoteMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrConvertTimestampPlayerToRemoteMSFT">xrConvertTimestampPlayerToRemoteMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrConvertTimestampPlayerToRemoteMSFT-session-parameter" href="#VUID-xrConvertTimestampPlayerToRemoteMSFT-session-parameter"></a> <code>session</code> <strong class="purple">must</strong> be a valid <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrConvertTimestampPlayerToRemoteMSFT-remoteTicksSinceEpoch-parameter" href="#VUID-xrConvertTimestampPlayerToRemoteMSFT-remoteTicksSinceEpoch-parameter"></a> <code>remoteTicksSinceEpoch</code> <strong class="purple">must</strong> be a pointer to an <code>int64_t</code> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_TIMESTAMP_CONVERSION_NOT_READY_MSFT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The <a href="#xrConvertTimestampRemoteToPlayerMSFT">xrConvertTimestampRemoteToPlayerMSFT</a> function is defined as:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="xrConvertTimestampRemoteToPlayerMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+XrResult xrConvertTimestampRemoteToPlayerMSFT(
+    XrSession                                   session,
+    int64_t                                     remoteTicksSinceEpoch,
+    int64_t*                                    playerTicksSinceEpoch);</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Parameter Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>session</code> is an <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle previously created with <a href="#xrCreateSession">xrCreateSession</a>.</p>
+</li>
+<li>
+<p><code>remoteTicksSinceEpoch</code> are the input ticks as returned by QueryPerformanceCounter on the Remote.</p>
+</li>
+<li>
+<p><code>playerTicksSinceEpoch</code> are the resulting ticks converted to Player clock.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-xrConvertTimestampRemoteToPlayerMSFT-extension-notenabled" href="#VUID-xrConvertTimestampRemoteToPlayerMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to calling <a href="#xrConvertTimestampRemoteToPlayerMSFT">xrConvertTimestampRemoteToPlayerMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-xrConvertTimestampRemoteToPlayerMSFT-session-parameter" href="#VUID-xrConvertTimestampRemoteToPlayerMSFT-session-parameter"></a> <code>session</code> <strong class="purple">must</strong> be a valid <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrSession">XrSession</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-xrConvertTimestampRemoteToPlayerMSFT-playerTicksSinceEpoch-parameter" href="#VUID-xrConvertTimestampRemoteToPlayerMSFT-playerTicksSinceEpoch-parameter"></a> <code>playerTicksSinceEpoch</code> <strong class="purple">must</strong> be a pointer to an <code>int64_t</code> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-successcodes">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_SUCCESS</code></p>
+</li>
+<li>
+<p><code>XR_SESSION_LOSS_PENDING</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#fundamentals-errorcodes">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_ERROR_HANDLE_INVALID</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_INSTANCE_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_SESSION_LOST</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_FUNCTION_UNSUPPORTED</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_TIMESTAMP_CONVERSION_NOT_READY_MSFT</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_audio_output_capture"><a class="anchor" href="#_audio_output_capture"></a>1.1.5. Audio Output capture</h4>
+<div class="paragraph">
+<p>Audio output capture allows the user to capture remote audio and stream it to the player.</p>
+</div>
+<div class="paragraph">
+<p>Audio capture settings are only supported if the remote application runs on Windows 10 build 20348 or later. The default behavior with older Windows builds is capturing the entire system audio, regardless of the audio output capture mode specified. Furthermore, <code>enableAudio</code> on the <a href="#XrRemotingRemoteContextPropertiesMSFT">XrRemotingRemoteContextPropertiesMSFT</a> structure must be enabled, if not, the runtime must return <code>XR_ERROR_REMOTING_AUDIO_OUTPUT_NOT_ENABLED_MSFT</code>.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingAudioOutputCaptureSettingsMSFT">XrRemotingAudioOutputCaptureSettingsMSFT</a> structure is defined as:</p>
+</div>
+<div id="XrRemotingAudioOutputCaptureSettingsMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef struct XrRemotingAudioOutputCaptureSettingsMSFT {
+    XrStructureType                         type;
+    void*                                   next;
+    XrRemotingAudioOutputCaptureModeMSFT    audioOutputCaptureMode;
+} XrRemotingAudioOutputCaptureSettingsMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Member Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>type</code> is the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#XrStructureType">XrStructureType</a> of this structure.</p>
+</li>
+<li>
+<p><code>next</code> is <code>NULL</code> or a pointer to the next structure in a structure
+chain.
+No such structures are defined in core OpenXR.</p>
+</li>
+<li>
+<p><code>audioOutputCaptureMode</code> is the audio output capture mode for this remoting context.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-XrRemotingAudioOutputCaptureSettingsMSFT-extension-notenabled" href="#VUID-XrRemotingAudioOutputCaptureSettingsMSFT-extension-notenabled"></a> The <code><a href="#XR_MSFT_holographic_remoting">XR_MSFT_holographic_remoting</a></code> extension <strong class="purple">must</strong> be enabled prior to using <a href="#XrRemotingAudioOutputCaptureSettingsMSFT">XrRemotingAudioOutputCaptureSettingsMSFT</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingAudioOutputCaptureSettingsMSFT-type-type" href="#VUID-XrRemotingAudioOutputCaptureSettingsMSFT-type-type"></a> <code>type</code> <strong class="purple">must</strong> be <code>XR_TYPE_REMOTING_AUDIO_OUTPUT_CAPTURE_SETTINGS_MSFT</code></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingAudioOutputCaptureSettingsMSFT-next-next" href="#VUID-XrRemotingAudioOutputCaptureSettingsMSFT-next-next"></a> <code>next</code> <strong class="purple">must</strong> be <code>NULL</code> or a valid pointer to the <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#valid-usage-for-structure-pointer-chains">next structure in a structure chain</a></p>
+</li>
+<li>
+<p><a id="VUID-XrRemotingAudioOutputCaptureSettingsMSFT-audioOutputCaptureMode-parameter" href="#VUID-XrRemotingAudioOutputCaptureSettingsMSFT-audioOutputCaptureMode-parameter"></a> <code>audioOutputCaptureMode</code> <strong class="purple">must</strong> be a valid <a href="#XrRemotingAudioOutputCaptureModeMSFT">XrRemotingAudioOutputCaptureModeMSFT</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p><a href="#XrRemotingAudioOutputCaptureSettingsMSFT">XrRemotingAudioOutputCaptureSettingsMSFT</a> contains the information which specifies at which level audio is being captured.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="#XrRemotingAudioOutputCaptureSettingsMSFT">XrRemotingAudioOutputCaptureSettingsMSFT</a> structure can be applied by applications to the <a href="#XrRemotingRemoteContextPropertiesMSFT">XrRemotingRemoteContextPropertiesMSFT</a>::next list.</p>
+</div>
+<div class="paragraph">
+<p>Setting <code>enableAudio</code> to true without applying an <a href="#XrRemotingAudioOutputCaptureSettingsMSFT">XrRemotingAudioOutputCaptureSettingsMSFT</a> structure to the <a href="#XrRemotingRemoteContextPropertiesMSFT">XrRemotingRemoteContextPropertiesMSFT</a>::next list will capture the entire system audio.</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#XrRemotingAudioOutputCaptureModeMSFT">XrRemotingAudioOutputCaptureModeMSFT</a> describes the audio ouptput capture mode to use for the connection.</p>
+</div>
+<div id="XrRemotingAudioOutputCaptureModeMSFT" class="paragraph">
+<p></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting
+typedef enum XrRemotingAudioOutputCaptureModeMSFT {
+    XR_REMOTING_AUDIO_OUTPUT_CAPTURE_MODE_SYSTEM_WIDE_MSFT = 0,
+    XR_REMOTING_AUDIO_OUTPUT_CAPTURE_MODE_APP_ONLY_MSFT = 1,
+    XR_REMOTING_AUDIO_OUTPUT_CAPTURE_MODE_MAX_ENUM_MSFT = 0x7FFFFFFF
+} XrRemotingAudioOutputCaptureModeMSFT;</code></pre>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Enumerant Descriptions</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>XR_REMOTING_AUDIO_OUTPUT_CAPTURE_MODE_SYSTEM_WIDE_MSFT</code> capture and remote all the audio playing on the system during a connection. This is the default audio capture mode if no audio capture settings were specified.</p>
+</li>
+<li>
+<p><code>XR_REMOTING_AUDIO_OUTPUT_CAPTURE_MODE_APP_ONLY_MSFT</code> capture and remote only the audio playing per the remote app process during a connection.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_appendix_2"><a class="anchor" href="#_appendix_2"></a>1.1.6. Appendix</h4>
 <div class="paragraph">
 <p><strong>New Object Types</strong></p>
 </div>
@@ -4147,6 +4573,12 @@ With that both the player app and remote app can transform spatial data into a c
 <li>
 <p><code>XR_TYPE_REMOTING_DATA_CHANNEL_SEND_DATA_INFO_MSFT</code></p>
 </li>
+<li>
+<p><code>XR_TYPE_EVENT_DATA_REMOTING_TIMESTAMP_CONVERSION_READY_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_TYPE_REMOTING_AUDIO_OUTPUT_CAPTURE_SETTINGS_MSFT</code></p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -4183,6 +4615,12 @@ With that both the player app and remote app can transform spatial data into a c
 </li>
 <li>
 <p><code>XR_ERROR_REMOTING_DATA_CHANNEL_PACKET_EXPIRED_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_TIMESTAMP_CONVERSION_NOT_READY_MSFT</code></p>
+</li>
+<li>
+<p><code>XR_ERROR_REMOTING_AUDIO_OUTPUT_NOT_ENABLED_MSFT</code></p>
 </li>
 </ul>
 </div>
@@ -4234,6 +4672,9 @@ With that both the player app and remote app can transform spatial data into a c
 </li>
 <li>
 <p><a href="#XrRemotingDataChannelStatusMSFT">XrRemotingDataChannelStatusMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingAudioOutputCaptureModeMSFT">XrRemotingAudioOutputCaptureModeMSFT</a></p>
 </li>
 </ul>
 </div>
@@ -4308,6 +4749,12 @@ With that both the player app and remote app can transform spatial data into a c
 <li>
 <p><a href="#XrEventDataRemotingDataChannelClosedMSFT">XrEventDataRemotingDataChannelClosedMSFT</a></p>
 </li>
+<li>
+<p><a href="#XrEventDataRemotingTimestampConversionReadyMSFT">XrEventDataRemotingTimestampConversionReadyMSFT</a></p>
+</li>
+<li>
+<p><a href="#XrRemotingAudioOutputCaptureSettingsMSFT">XrRemotingAudioOutputCaptureSettingsMSFT</a></p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -4350,6 +4797,12 @@ With that both the player app and remote app can transform spatial data into a c
 </li>
 <li>
 <p><a href="#xrRetrieveRemotingDataMSFT">xrRetrieveRemotingDataMSFT</a></p>
+</li>
+<li>
+<p><a href="#xrConvertTimestampPlayerToRemoteMSFT">xrConvertTimestampPlayerToRemoteMSFT</a></p>
+</li>
+<li>
+<p><a href="#xrConvertTimestampRemoteToPlayerMSFT">xrConvertTimestampRemoteToPlayerMSFT</a></p>
 </li>
 </ul>
 </div>
@@ -4420,6 +4873,29 @@ With that both the player app and remote app can transform spatial data into a c
 </ul>
 </div>
 </li>
+<li>
+<p>Revision 4, 2022-05-25 (Sebastian Schumm)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Timestamp conversion between Player and Remote</p>
+</li>
+<li>
+<p>Added const to <a href="#XrRemotingDataChannelSendDataInfoMSFT">XrRemotingDataChannelSendDataInfoMSFT</a>::data</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Revision 5, 2022-09-27 (Hanaa Elghobashi)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Added audio output capture settings.</p>
+</li>
+</ul>
+</div>
+</li>
 </ul>
 </div>
 </div>
@@ -4477,7 +4953,7 @@ Felix Reeh, Microsoft<br></p>
 </dl>
 </div>
 <div class="sect3">
-<h4 id="_overview_6"><a class="anchor" href="#_overview_6"></a>1.2.1. Overview</h4>
+<h4 id="_overview_8"><a class="anchor" href="#_overview_8"></a>1.2.1. Overview</h4>
 <div class="paragraph">
 <p>This holographic remoting extension allows the remote app to react to speech commands recognized by the player app using the Windows Speech Recognition API.</p>
 </div>
@@ -4491,7 +4967,8 @@ Felix Reeh, Microsoft<br></p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrInitializeRemotingSpeechMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting_speech
+XrResult xrInitializeRemotingSpeechMSFT(
     XrSession                                   session,
     const XrRemotingSpeechInitInfoMSFT*         speechInitInfo);</code></pre>
 </div>
@@ -4592,9 +5069,10 @@ The remote app <strong class="purple">may</strong> re-initialize the speech reco
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingSpeechInitInfoMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting_speech
+typedef struct XrRemotingSpeechInitInfoMSFT {
     XrStructureType    type;
-    void*              next;
+    const void*        next;
     char               language[XR_MAX_SPEECH_LANGUAGE_NAME_SIZE_MSFT];
     uint32_t           grammarFileSize;
     uint8_t*           grammarFileContent;
@@ -4677,7 +5155,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingSpeechRecognizerStateChangedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting_speech
+typedef struct XrEventDataRemotingSpeechRecognizerStateChangedMSFT {
     XrStructureType                        type;
     void*                                  next;
     XrRemotingSpeechRecognizerStateMSFT    speechRecognizerState;
@@ -4744,7 +5223,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingSpeechRecognizerStateMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting_speech
+typedef enum XrRemotingSpeechRecognizerStateMSFT {
     XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZING_MSFT = 0,
     XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZED_MSFT = 1,
     XR_REMOTING_SPEECH_RECOGNIZER_STATE_INITIALIZATION_FAILED_MSFT = 2,
@@ -4790,7 +5270,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrEventDataRemotingSpeechRecognizedMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting_speech
+typedef struct XrEventDataRemotingSpeechRecognizedMSFT {
     XrStructureType                              type;
     void*                                        next;
     XrRemotingSpeechPacketIdMSFT                 packetId;
@@ -4876,7 +5357,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef enum XrRemotingSpeechRecognitionConfidenceMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting_speech
+typedef enum XrRemotingSpeechRecognitionConfidenceMSFT {
     XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_HIGH_MSFT = 0,
     XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_MEDIUM_MSFT = 1,
     XR_REMOTING_SPEECH_RECOGNITION_CONFIDENCE_LOW_MSFT = 2,
@@ -4908,7 +5390,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><strong>Retrieve recognized speech text</strong></p>
 </div>
 <div class="paragraph">
-<p>When the remote application is notified about a recognized speech, it <strong class="purple">can</strong> query the recognized speech text by calling <a href="#xrRetrieveRemotingSpeechRecognizedTextMSFT">xrRetrieveRemotingSpeechRecognizedTextMSFT</a>.</p>
+<p>When the remote application is notified about a recognized phrase, it <strong class="purple">can</strong> retrieve the recognized phrase by calling <a href="#xrRetrieveRemotingSpeechRecognizedTextMSFT">xrRetrieveRemotingSpeechRecognizedTextMSFT</a>.</p>
 </div>
 <div class="paragraph">
 <p>The <a href="#xrRetrieveRemotingSpeechRecognizedTextMSFT">xrRetrieveRemotingSpeechRecognizedTextMSFT</a> function is defined as:</p>
@@ -4920,12 +5402,13 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">XrResult xrRetrieveRemotingSpeechRecognizedTextMSFT(
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_holographic_remoting_speech
+XrResult xrRetrieveRemotingSpeechRecognizedTextMSFT(
     XrSession                                   session,
     XrRemotingSpeechPacketIdMSFT                packetId,
     uint32_t                                    dataBytesCapacityInput,
     uint32_t*                                   dataBytesCountOutput,
-    uint8_t*                                    data);</code></pre>
+    uint8_t*                                    dataBytess);</code></pre>
 </div>
 </div>
 <div class="sidebarblock">
@@ -4970,7 +5453,7 @@ No such structures are defined in core OpenXR or this extension.</p>
 <p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-dataBytesCountOutput-parameter" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-dataBytesCountOutput-parameter"></a> <code>dataBytesCountOutput</code> <strong class="purple">must</strong> be a pointer to a <code>uint32_t</code> value</p>
 </li>
 <li>
-<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-data-parameter" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-data-parameter"></a> <code>data</code> <strong class="purple">must</strong> be a pointer to a <code>uint8_t</code> value</p>
+<p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-dataBytess-parameter" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-dataBytess-parameter"></a> If <code>dataBytesCapacityInput</code> is not <code>0</code>, <code>dataBytess</code> <strong class="purple">must</strong> be a pointer to an array of <code>dataBytesCapacityInput</code> <code>uint8_t</code> values</p>
 </li>
 <li>
 <p><a id="VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-packetId-parent" href="#VUID-xrRetrieveRemotingSpeechRecognizedTextMSFT-packetId-parent"></a> <code>packetId</code> <strong class="purple">must</strong> have been created, allocated, or retrieved from <code>session</code></p>
@@ -5210,7 +5693,7 @@ Florian Bagar, Microsoft<br></p>
 </dl>
 </div>
 <div class="sect3">
-<h4 id="_overview_7"><a class="anchor" href="#_overview_7"></a>1.3.1. Overview</h4>
+<h4 id="_overview_9"><a class="anchor" href="#_overview_9"></a>1.3.1. Overview</h4>
 <div class="paragraph">
 <p>This extension allows the Holographic Remoting application to receive a copy of the final composited frame that was sent to the Holographic Player application
 and can be used for local display.</p>
@@ -5230,7 +5713,8 @@ Once <a target="_blank" href="https://www.khronos.org/registry/OpenXR/specs/1.0/
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingFrameMirrorImageInfoMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_remoting_frame_mirroring
+typedef struct XrRemotingFrameMirrorImageInfoMSFT {
     XrStructureType                                    type;
     const void*                                        next;
     const XrRemotingFrameMirrorImageBaseHeaderMSFT*    image;
@@ -5295,7 +5779,8 @@ graphics API-specific XrRemotingFrameMirrorImage* child structure. The type must
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingFrameMirrorImageBaseHeaderMSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_remoting_frame_mirroring
+typedef struct XrRemotingFrameMirrorImageBaseHeaderMSFT {
     XrStructureType    type;
     const void*        next;
 } XrRemotingFrameMirrorImageBaseHeaderMSFT;</code></pre>
@@ -5345,7 +5830,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingFrameMirrorImageD3D11MSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_remoting_frame_mirroring
+typedef struct XrRemotingFrameMirrorImageD3D11MSFT {
     XrStructureType     type;
     const void*         next;
     ID3D11Texture2D*    texture;
@@ -5424,7 +5910,8 @@ No such structures are defined in core OpenXR or this extension.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code data-lang="c++">typedef struct XrRemotingFrameMirrorImageD3D12MSFT {
+<pre class="prettyprint highlight"><code data-lang="c++">// Provided by XR_MSFT_remoting_frame_mirroring
+typedef struct XrRemotingFrameMirrorImageD3D12MSFT {
     XrStructureType          type;
     const void*              next;
     ID3D12Resource*          texture;

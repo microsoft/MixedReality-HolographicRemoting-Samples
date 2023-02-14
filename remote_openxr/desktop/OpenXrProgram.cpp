@@ -20,11 +20,12 @@
 #include <DxUtility.h>
 #include <SecureConnectionCallbacks.h>
 
-#include <filesystem>
 #include <fstream>
 #include <queue>
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#include <SampleShared/FileUtility.h>
+
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
 #include <SampleShared/SampleWindowWin32.h>
 #endif
 
@@ -89,7 +90,7 @@ namespace {
                             m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
 
                             if (!m_userDataChannelDestroyed && m_usingRemotingRuntime) {
-                                SendDataViaUserDataChannel(m_userDataChannel);
+                                SendPingViaUserDataChannel(m_userDataChannel);
                             }
                         }
 #endif
@@ -122,16 +123,17 @@ namespace {
             XrRemotingDataChannelCreateInfoMSFT channelInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_DATA_CHANNEL_CREATE_INFO_MSFT)};
             channelInfo.channelId = 0;
             channelInfo.channelPriority = XR_REMOTING_DATA_CHANNEL_PRIORITY_LOW_MSFT;
-            CHECK_XRCMD(m_extensions.xrCreateRemotingDataChannelMSFT(m_instance.Get(), m_systemId, &channelInfo, &m_userDataChannel));
+            CHECK_XRCMD(xrCreateRemotingDataChannelMSFT(m_instance.Get(), m_systemId, &channelInfo, &m_userDataChannel));
         }
 
         void DestroyUserDataChannel(XrRemotingDataChannelMSFT channelHandle) {
-            CHECK_XRCMD(m_extensions.xrDestroyRemotingDataChannelMSFT(channelHandle));
+            CHECK_XRCMD(xrDestroyRemotingDataChannelMSFT(channelHandle));
         }
 
-        void SendDataViaUserDataChannel(XrRemotingDataChannelMSFT channelHandle) {
+        template <size_t N>
+        void SendDataViaUserDataChannel(XrRemotingDataChannelMSFT channelHandle, const std::array<uint8_t, N>& data) {
             XrRemotingDataChannelStateMSFT channelState{static_cast<XrStructureType>(XR_TYPE_REMOTING_DATA_CHANNEL_STATE_MSFT)};
-            CHECK_XRCMD(m_extensions.xrGetRemotingDataChannelStateMSFT(channelHandle, &channelState));
+            CHECK_XRCMD(xrGetRemotingDataChannelStateMSFT(channelHandle, &channelState));
 
             if (channelState.connectionStatus == XR_REMOTING_DATA_CHANNEL_STATUS_OPENED_MSFT) {
                 // Only send the packet if the send queue is smaller than 1MiB
@@ -140,16 +142,20 @@ namespace {
                 }
 
                 DEBUG_PRINT("Holographic Remoting: SendDataViaUserDataChannel.");
-                uint8_t data[] = {1};
 
                 XrRemotingDataChannelSendDataInfoMSFT sendInfo{
                     static_cast<XrStructureType>(XR_TYPE_REMOTING_DATA_CHANNEL_SEND_DATA_INFO_MSFT)};
-                sendInfo.data = data;
-                sendInfo.size = sizeof(data);
+                sendInfo.data = data.data();
+                sendInfo.size = static_cast<uint32_t>(data.size());
                 sendInfo.guaranteedDelivery = true;
-                CHECK_XRCMD(m_extensions.xrSendRemotingDataMSFT(channelHandle, &sendInfo));
+                CHECK_XRCMD(xrSendRemotingDataMSFT(channelHandle, &sendInfo));
             }
         }
+
+        void SendPingViaUserDataChannel(XrRemotingDataChannelMSFT channelHandle) {
+            SendDataViaUserDataChannel(channelHandle, std::array<uint8_t, 1>{1});
+        }
+
 #endif
         bool EnableRemotingXR() {
             wchar_t executablePath[MAX_PATH];
@@ -168,39 +174,6 @@ namespace {
             return false;
         }
 
-        bool LoadGrammarFile(std::vector<uint8_t>& grammarFileContent) {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-            char executablePath[MAX_PATH];
-            if (GetModuleFileNameA(NULL, executablePath, ARRAYSIZE(executablePath)) == 0) {
-                return false;
-            }
-
-            std::filesystem::path filename(executablePath);
-            filename = filename.replace_filename("OpenXRSpeechGrammar.xml");
-
-            if (!std::filesystem::exists(filename)) {
-                return false;
-            }
-
-            std::string grammarFilePath{filename.generic_string()};
-            std::ifstream grammarFileStream(grammarFilePath, std::ios::binary);
-            const size_t grammarFileSize = std::filesystem::file_size(filename);
-            if (!grammarFileStream.good() || grammarFileSize == 0) {
-                return false;
-            }
-
-            grammarFileContent.resize(grammarFileSize);
-            grammarFileStream.read(reinterpret_cast<char*>(grammarFileContent.data()), grammarFileSize);
-            if (grammarFileStream.fail()) {
-                return false;
-            }
-
-            return true;
-#else
-            return false;
-#endif
-        }
-
         void InitializeSpeechRecognition(XrRemotingSpeechInitInfoMSFT& speechInitInfo) {
             // Specify the speech recognition language.
             strcpy_s(speechInitInfo.language, "en-US");
@@ -211,9 +184,12 @@ namespace {
             speechInitInfo.dictionaryEntriesCount = static_cast<uint32_t>(m_dictionaryEntries.size());
 
             // Initialize the grammar file if it exists.
-            if (LoadGrammarFile(m_grammarFileContent)) {
+            try {
+                m_grammarFileContent = sample::ReadFileBytes(sample::GetPathInAppFolder(L"OpenXRSpeechGrammar.xml"));
                 speechInitInfo.grammarFileSize = static_cast<uint32_t>(m_grammarFileContent.size());
                 speechInitInfo.grammarFileContent = m_grammarFileContent.data();
+            } catch (...) {
+                DEBUG_PRINT("A problem happened on trying to open the grammar file.");
             }
         }
 
@@ -231,9 +207,9 @@ namespace {
             createInfo.applicationInfo = {"SampleRemoteOpenXr", 1, "", 1, XR_CURRENT_API_VERSION};
             strcpy_s(createInfo.applicationInfo.applicationName, m_applicationName.c_str());
 
-            CHECK_XRCMD(xrCreateInstance(&createInfo, m_instance.Put()));
+            CHECK_XRCMD(xrCreateInstance(&createInfo, m_instance.Put(xrDestroyInstance)));
 
-            m_extensions.PopulateDispatchTable(m_instance.Get());
+            xr::g_dispatchTable.Initialize(m_instance.Get(), xrGetInstanceProcAddr);
         }
 
         std::vector<const char*> SelectExtensions() {
@@ -287,7 +263,7 @@ namespace {
                 XrActionSetCreateInfo actionSetInfo{XR_TYPE_ACTION_SET_CREATE_INFO};
                 strcpy_s(actionSetInfo.actionSetName, "place_hologram_action_set");
                 strcpy_s(actionSetInfo.localizedActionSetName, "Placement");
-                CHECK_XRCMD(xrCreateActionSet(m_instance.Get(), &actionSetInfo, m_actionSet.Put()));
+                CHECK_XRCMD(xrCreateActionSet(m_instance.Get(), &actionSetInfo, m_actionSet.Put(xrDestroyActionSet)));
             }
 
             // Create actions.
@@ -304,7 +280,7 @@ namespace {
                     strcpy_s(actionInfo.localizedActionName, "Place Hologram");
                     actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
                     actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_placeAction.Put()));
+                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_placeAction.Put(xrDestroyAction)));
                 }
 
                 // Create an input action getting the left and right hand poses.
@@ -315,7 +291,7 @@ namespace {
                     strcpy_s(actionInfo.localizedActionName, "Hand Pose");
                     actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
                     actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_poseAction.Put()));
+                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_poseAction.Put(xrDestroyAction)));
                 }
 
                 // Create an output action for vibrating the left and right controller.
@@ -326,7 +302,7 @@ namespace {
                     strcpy_s(actionInfo.localizedActionName, "Vibrate");
                     actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
                     actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_vibrateAction.Put()));
+                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_vibrateAction.Put(xrDestroyAction)));
                 }
 
                 // Create an input action to exit the session.
@@ -337,7 +313,7 @@ namespace {
                     strcpy_s(actionInfo.localizedActionName, "Exit session");
                     actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
                     actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_exitAction.Put()));
+                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_exitAction.Put(xrDestroyAction)));
                 }
             }
 
@@ -363,7 +339,7 @@ namespace {
 
         void Disconnect() {
             XrRemotingDisconnectInfoMSFT disconnectInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_DISCONNECT_INFO_MSFT)};
-            CHECK_XRCMD(m_extensions.xrRemotingDisconnectMSFT(m_instance.Get(), m_systemId, &disconnectInfo));
+            CHECK_XRCMD(xrRemotingDisconnectMSFT(m_instance.Get(), m_systemId, &disconnectInfo));
         }
 
         void ConnectOrListen() {
@@ -372,7 +348,7 @@ namespace {
             }
 
             XrRemotingConnectionStateMSFT connectionState;
-            CHECK_XRCMD(m_extensions.xrRemotingGetConnectionStateMSFT(m_instance.Get(), m_systemId, &connectionState, nullptr));
+            CHECK_XRCMD(xrRemotingGetConnectionStateMSFT(m_instance.Get(), m_systemId, &connectionState, nullptr));
             if (connectionState != XR_REMOTING_CONNECTION_STATE_DISCONNECTED_MSFT) {
                 return;
             }
@@ -387,7 +363,7 @@ namespace {
                 contextProperties.videoCodec = XR_REMOTING_VIDEO_CODEC_H265_MSFT;
 
                 contextProperties.depthBufferStreamResolution = XR_REMOTING_DEPTH_BUFFER_STREAM_RESOLUTION_HALF_MSFT;
-                CHECK_XRCMD(m_extensions.xrRemotingSetContextPropertiesMSFT(m_instance.Get(), m_systemId, &contextProperties));
+                CHECK_XRCMD(xrRemotingSetContextPropertiesMSFT(m_instance.Get(), m_systemId, &contextProperties));
             }
 
             if (m_options.listen) {
@@ -399,8 +375,7 @@ namespace {
                     serverCallbacks.validateAuthenticationTokenCallback =
                         SecureConnectionCallbacks::ValidateAuthenticationTokenStaticCallback;
                     serverCallbacks.authenticationRealm = m_options.authenticationRealm.c_str();
-                    CHECK_XRCMD(
-                        m_extensions.xrRemotingSetSecureConnectionServerCallbacksMSFT(m_instance.Get(), m_systemId, &serverCallbacks));
+                    CHECK_XRCMD(xrRemotingSetSecureConnectionServerCallbacksMSFT(m_instance.Get(), m_systemId, &serverCallbacks));
                 }
 
                 XrRemotingListenInfoMSFT listenInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_LISTEN_INFO_MSFT)};
@@ -408,7 +383,7 @@ namespace {
                 listenInfo.handshakeListenPort = m_options.port != 0 ? m_options.port : 8265;
                 listenInfo.transportListenPort = m_options.transportPort != 0 ? m_options.transportPort : 8266;
                 listenInfo.secureConnection = m_options.secureConnection;
-                CHECK_XRCMD(m_extensions.xrRemotingListenMSFT(m_instance.Get(), m_systemId, &listenInfo));
+                CHECK_XRCMD(xrRemotingListenMSFT(m_instance.Get(), m_systemId, &listenInfo));
 
             } else {
                 if (m_options.secureConnection) {
@@ -420,15 +395,14 @@ namespace {
                     clientCallbacks.validateServerCertificateCallback = SecureConnectionCallbacks::ValidateServerCertificateStaticCallback;
                     clientCallbacks.performSystemValidation = true;
 
-                    CHECK_XRCMD(
-                        m_extensions.xrRemotingSetSecureConnectionClientCallbacksMSFT(m_instance.Get(), m_systemId, &clientCallbacks));
+                    CHECK_XRCMD(xrRemotingSetSecureConnectionClientCallbacksMSFT(m_instance.Get(), m_systemId, &clientCallbacks));
                 }
 
                 XrRemotingConnectInfoMSFT connectInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_CONNECT_INFO_MSFT)};
                 connectInfo.remoteHostName = m_options.host.empty() ? "127.0.0.1" : m_options.host.c_str();
                 connectInfo.remotePort = m_options.port != 0 ? m_options.port : 8265;
                 connectInfo.secureConnection = m_options.secureConnection;
-                CHECK_XRCMD(m_extensions.xrRemotingConnectMSFT(m_instance.Get(), m_systemId, &connectInfo));
+                CHECK_XRCMD(xrRemotingConnectMSFT(m_instance.Get(), m_systemId, &connectInfo));
             }
         }
 
@@ -462,7 +436,7 @@ namespace {
 
             // Create the D3D11 device for the adapter associated with the system.
             XrGraphicsRequirementsD3D11KHR graphicsRequirements{XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR};
-            CHECK_XRCMD(m_extensions.xrGetD3D11GraphicsRequirementsKHR(m_instance.Get(), m_systemId, &graphicsRequirements));
+            CHECK_XRCMD(xrGetD3D11GraphicsRequirementsKHR(m_instance.Get(), m_systemId, &graphicsRequirements));
 
             // Create a list of feature levels which are both supported by the OpenXR runtime and this application.
             std::vector<D3D_FEATURE_LEVEL> featureLevels = {D3D_FEATURE_LEVEL_12_1,
@@ -492,7 +466,7 @@ namespace {
             createInfo.next = &graphicsBinding;
             createInfo.systemId = m_systemId;
 
-            CHECK_XRCMD(xrCreateSession(m_instance.Get(), &createInfo, m_session.Put()));
+            CHECK_XRCMD(xrCreateSession(m_instance.Get(), &createInfo, m_session.Put(xrDestroySession)));
 
             XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
             std::vector<XrActionSet> actionSets = {m_actionSet.Get()};
@@ -549,7 +523,7 @@ namespace {
                 XrReferenceSpaceCreateInfo spaceCreateInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
                 spaceCreateInfo.referenceSpaceType = m_appSpaceType;
                 spaceCreateInfo.poseInReferenceSpace = xr::math::Pose::Identity();
-                CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put()));
+                CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &spaceCreateInfo, m_appSpace.Put(xrDestroySpace)));
             }
 
             // Create a space for each hand pointer pose.
@@ -558,8 +532,9 @@ namespace {
                 createInfo.action = m_poseAction.Get();
                 createInfo.poseInActionSpace = xr::math::Pose::Identity();
                 createInfo.subactionPath = m_subactionPaths[side];
-                CHECK_XRCMD(xrCreateActionSpace(m_session.Get(), &createInfo, m_cubesInHand[side].Space.Put()));
+                CHECK_XRCMD(xrCreateActionSpace(m_session.Get(), &createInfo, m_cubesInHand[side].Space.Put(xrDestroySpace)));
             }
+
         }
 
         std::tuple<DXGI_FORMAT, DXGI_FORMAT> SelectSwapchainPixelFormats() {
@@ -683,7 +658,7 @@ namespace {
             swapchainCreateInfo.createFlags = createFlags;
             swapchainCreateInfo.usageFlags = usageFlags;
 
-            CHECK_XRCMD(xrCreateSwapchain(session, &swapchainCreateInfo, swapchain.Handle.Put()));
+            CHECK_XRCMD(xrCreateSwapchain(session, &swapchainCreateInfo, swapchain.Handle.Put(xrDestroySwapchain)));
 
             uint32_t chainLength;
             CHECK_XRCMD(xrEnumerateSwapchainImages(swapchain.Handle.Get(), 0, &chainLength, nullptr));
@@ -781,7 +756,7 @@ namespace {
                         XrRemotingSpeechInitInfoMSFT speechInitInfo{static_cast<XrStructureType>(XR_TYPE_REMOTING_SPEECH_INIT_INFO_MSFT)};
                         InitializeSpeechRecognition(speechInitInfo);
 
-                        CHECK_XRCMD(m_extensions.xrInitializeRemotingSpeechMSFT(m_session.Get(), &speechInitInfo));
+                        CHECK_XRCMD(xrInitializeRemotingSpeechMSFT(m_session.Get(), &speechInitInfo));
                     }
 
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
@@ -816,24 +791,24 @@ namespace {
                     auto dataReceivedEventData = reinterpret_cast<const XrEventDataRemotingDataChannelDataReceivedMSFT*>(&eventData);
                     std::vector<uint8_t> packet(dataReceivedEventData->size);
                     uint32_t dataBytesCount;
-                    CHECK_XRCMD(m_extensions.xrRetrieveRemotingDataMSFT(dataReceivedEventData->channel,
-                                                                        dataReceivedEventData->packetId,
-                                                                        static_cast<uint32_t>(packet.size()),
-                                                                        &dataBytesCount,
-                                                                        packet.data()));
+                    CHECK_XRCMD(xrRetrieveRemotingDataMSFT(dataReceivedEventData->channel,
+                                                           dataReceivedEventData->packetId,
+                                                           static_cast<uint32_t>(packet.size()),
+                                                           &dataBytesCount,
+                                                           packet.data()));
                     DEBUG_PRINT("Holographic Remoting: Custom data channel data received: %d", static_cast<uint32_t>(packet[0]));
+
                     break;
                 }
-
 #endif
                 case XR_TYPE_EVENT_DATA_REMOTING_SPEECH_RECOGNIZED_MSFT: {
                     auto speechEventData = reinterpret_cast<const XrEventDataRemotingSpeechRecognizedMSFT*>(&eventData);
                     std::string text;
                     uint32_t dataBytesCount = 0;
-                    CHECK_XRCMD(m_extensions.xrRetrieveRemotingSpeechRecognizedTextMSFT(
+                    CHECK_XRCMD(xrRetrieveRemotingSpeechRecognizedTextMSFT(
                         m_session.Get(), speechEventData->packetId, 0, &dataBytesCount, nullptr));
                     text.resize(dataBytesCount);
-                    CHECK_XRCMD(m_extensions.xrRetrieveRemotingSpeechRecognizedTextMSFT(
+                    CHECK_XRCMD(xrRetrieveRemotingSpeechRecognizedTextMSFT(
                         m_session.Get(), speechEventData->packetId, static_cast<uint32_t>(text.size()), &dataBytesCount, text.data()));
                     HandleRecognizedSpeechText(text);
                     break;
@@ -875,13 +850,12 @@ namespace {
                 createInfo.pose = poseInAppSpace;
                 createInfo.time = placementTime;
 
-                XrResult result = m_extensions.xrCreateSpatialAnchorMSFT(
-                    m_session.Get(), &createInfo, hologram.Anchor.Put(m_extensions.xrDestroySpatialAnchorMSFT));
+                XrResult result = xrCreateSpatialAnchorMSFT(m_session.Get(), &createInfo, hologram.Anchor.Put(xrDestroySpatialAnchorMSFT));
                 if (XR_SUCCEEDED(result)) {
                     XrSpatialAnchorSpaceCreateInfoMSFT createSpaceInfo{XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT};
                     createSpaceInfo.anchor = hologram.Anchor.Get();
                     createSpaceInfo.poseInAnchorSpace = xr::math::Pose::Identity();
-                    CHECK_XRCMD(m_extensions.xrCreateSpatialAnchorSpaceMSFT(m_session.Get(), &createSpaceInfo, hologram.Cube.Space.Put()));
+                    CHECK_XRCMD(xrCreateSpatialAnchorSpaceMSFT(m_session.Get(), &createSpaceInfo, hologram.Cube.Space.Put(xrDestroySpace)));
                 } else if (result == XR_ERROR_CREATE_SPATIAL_ANCHOR_FAILED_MSFT) {
                     DEBUG_PRINT("Anchor cannot be created, likely due to lost positional tracking.");
                 } else {
@@ -893,7 +867,7 @@ namespace {
                 XrReferenceSpaceCreateInfo createInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
                 createInfo.referenceSpaceType = m_appSpaceType;
                 createInfo.poseInReferenceSpace = poseInAppSpace;
-                CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &createInfo, hologram.Cube.Space.Put()));
+                CHECK_XRCMD(xrCreateReferenceSpace(m_session.Get(), &createInfo, hologram.Cube.Space.Put(xrDestroySpace)));
             }
             return hologram;
         }
@@ -1027,10 +1001,12 @@ namespace {
             frameEndInfo.layerCount = (uint32_t)layers.size();
             frameEndInfo.layers = layers.data();
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
+            winrt::com_ptr<ID3D11Texture2D> swapChainTexture = m_window->GetNextSwapchainTexture();
+
             XrRemotingFrameMirrorImageD3D11MSFT mirrorImageD3D11{
                 static_cast<XrStructureType>(XR_TYPE_REMOTING_FRAME_MIRROR_IMAGE_D3D11_MSFT)};
-            mirrorImageD3D11.texture = m_window->GetNextSwapchainTexture();
+            mirrorImageD3D11.texture = swapChainTexture.get();
 
             XrRemotingFrameMirrorImageInfoMSFT mirrorImageEndInfo{
                 static_cast<XrStructureType>(XR_TYPE_REMOTING_FRAME_MIRROR_IMAGE_INFO_MSFT)};
@@ -1041,7 +1017,7 @@ namespace {
 
             CHECK_XRCMD(xrEndFrame(m_session.Get(), &frameEndInfo));
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
             m_window->PresentSwapchain();
 #endif
         }
@@ -1064,7 +1040,7 @@ namespace {
                 XrReferenceSpaceCreateInfo createInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
                 createInfo.referenceSpaceType = referenceSpaceType;
                 createInfo.poseInReferenceSpace = poseInReferenceSpace;
-                CHECK_XRCMD(xrCreateReferenceSpace(session, &createInfo, space.Put()));
+                CHECK_XRCMD(xrCreateReferenceSpace(session, &createInfo, space.Put(xrDestroySpace)));
                 return space;
             };
 
@@ -1250,8 +1226,8 @@ namespace {
             m_session.Reset();
             m_sessionRunning = false;
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-            m_graphicsPlugin->ClearView(m_window->GetNextSwapchainTexture(), clearColor);
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
+            m_graphicsPlugin->ClearView(m_window->GetNextSwapchainTexture().get(), clearColor);
             m_window->PresentSwapchain();
 
             UpdateWindowTitleWin32();
@@ -1267,7 +1243,7 @@ namespace {
         }
 
         void CreateWindowWin32() {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
             m_window = std::make_unique<sample::SampleWindowWin32>(xr::utf8_to_wide(m_applicationName), m_device, 768, 512);
             m_window->SetKeyPressedHandler([&](wchar_t key) {
                 std::scoped_lock lock{m_keyPressedMutex};
@@ -1279,7 +1255,7 @@ namespace {
         }
 
         void ProcessWindowEventsWin32(bool* exitRenderLoop, bool* requestRestart) {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
             if (m_window->IsClosed()) {
                 *exitRenderLoop = true;
                 *requestRestart = false;
@@ -1339,7 +1315,7 @@ namespace {
         }
 
         void UpdateWindowTitleWin32() {
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
             std::string title = m_sessionRunning ? m_applicationName + " | Press D to Disconnect"
                                                  : m_applicationName + " | " + m_options.host + " | Press Space To Connect";
 
@@ -1355,12 +1331,12 @@ namespace {
         const sample::AppOptions m_options;
 
         bool m_usingRemotingRuntime{false};
+
         std::vector<uint8_t> m_certificateStore;
 
         xr::InstanceHandle m_instance;
         xr::SessionHandle m_session;
         uint64_t m_systemId{XR_NULL_SYSTEM_ID};
-        xr::ExtensionDispatchTable m_extensions;
 
         struct {
             bool DepthExtensionSupported{false};
@@ -1422,7 +1398,7 @@ namespace {
         bool m_sessionRunning{false};
         XrSessionState m_sessionState{XR_SESSION_STATE_UNKNOWN};
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
         std::unique_ptr<sample::SampleWindowWin32> m_window;
 
         std::mutex m_keyPressedMutex;
@@ -1430,7 +1406,7 @@ namespace {
 #endif
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
         std::chrono::high_resolution_clock::time_point m_customDataChannelSendTime = std::chrono::high_resolution_clock::now();
-        XrRemotingDataChannelMSFT m_userDataChannel;
+        XrRemotingDataChannelMSFT m_userDataChannel = XR_NULL_HANDLE;
         bool m_userDataChannelDestroyed = false;
 #endif
         std::vector<uint8_t> m_grammarFileContent;

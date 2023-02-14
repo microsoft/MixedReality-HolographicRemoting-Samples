@@ -93,7 +93,7 @@ namespace {
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
         desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        desc.BufferCount = 2;
+        desc.BufferCount = 3;
         desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
         desc.Flags = 0;
         desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
@@ -152,15 +152,15 @@ namespace sample {
         m_windowThread.join();
     }
 
-    ID3D11Texture2D* SampleWindowWin32::GetNextSwapchainTexture() {
-        ID3D11Texture2D* texture;
-        m_swapchain->GetBuffer(0, IID_PPV_ARGS(&texture));
+    winrt::com_ptr<ID3D11Texture2D> SampleWindowWin32::GetNextSwapchainTexture() {
+        winrt::com_ptr<ID3D11Texture2D> texture;
+        winrt::check_hresult(m_swapchain->GetBuffer(0, IID_PPV_ARGS(texture.put())));
 
         return texture;
     }
 
     void SampleWindowWin32::PresentSwapchain() {
-        m_swapchain->Present(0, 0);
+        winrt::check_hresult(m_swapchain->Present(0, 0));
     }
 
     void SampleWindowWin32::OnClosed() {

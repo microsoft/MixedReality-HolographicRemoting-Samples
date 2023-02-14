@@ -149,7 +149,8 @@ HolographicFrame SamplePlayerMain::Update(float deltaTimeInSeconds, const Hologr
         // Update the accumulated statistics with the statistics from the last frame.
         m_statisticsHelper.Update(m_playerContext.LastFrameStatistics());
 
-        if (m_statisticsHelper.StatisticsHaveChanged() || !m_firstRemoteFrameWasBlitted)
+        const bool updateStats = m_statisticsHelper.StatisticsHaveChanged() && m_playerOptions.m_showStatistics;
+        if (updateStats || !m_firstRemoteFrameWasBlitted)
         {
             UpdateStatusDisplay();
         }
@@ -311,6 +312,7 @@ void SamplePlayerMain::Render(const HolographicFrame& holographicFrame)
                         else
                         {
                             m_firstRemoteFrameWasBlitted = true;
+                            UpdateStatusDisplay();
                         }
 
                         // Render local content.
@@ -818,7 +820,7 @@ void SamplePlayerMain::UpdateStatusDisplay()
         {
             if (m_playerOptions.m_showStatistics)
             {
-                const std::wstring statisticsString = m_statisticsHelper.GetStatisticsString();
+                std::wstring statisticsString = m_statisticsHelper.GetStatisticsString();
 
                 StatusDisplay::Line line = {std::move(statisticsString), StatusDisplay::Medium, StatusDisplay::Yellow, 1.0f, true};
                 m_statusDisplay->AddLine(line);

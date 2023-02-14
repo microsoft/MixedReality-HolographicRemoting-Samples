@@ -1,22 +1,13 @@
-//*********************************************************
-//    Copyright (c) Microsoft. All rights reserved.
-//
-//    Apache 2.0 License
-//
-//    You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-//    Unless required by applicable law or agreed to in writing, software
-//    distributed under the License is distributed on an "AS IS" BASIS,
-//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-//    implied. See the License for the specific language governing
-//    permissions and limitations under the License.
-//
-//*********************************************************
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #pragma once
+
+#include <XrUtility/XrPlatformDependencies.h>
 
 #include <openxr/openxr.h>
 #include <openxr/openxr_reflection.h>
+#include <openxr/openxr_platform.h>
 
 #include <string>
 #include <vector>
@@ -45,7 +36,7 @@ namespace xr {
         std::vector<XrPath> paths;
 
         for (auto string : strings) {
-            paths.push_back(StringToPath(instance, string.c_str()));
+            paths.push_back(xr::StringToPath(instance, string.c_str()));
         }
 
         return paths;
@@ -64,7 +55,7 @@ namespace xr {
             return {};
         }
 
-        // MultiByteToWideChar returns number of chars of the input buffer, regardless of null terminitor
+        // MultiByteToWideChar returns number of chars of the input buffer, regardless of null terminator
         wideText.resize(wideLength, 0);
         const int length = ::MultiByteToWideChar(CP_UTF8, 0, utf8Text.data(), (int)utf8Text.size(), wideText.data(), wideLength);
         if (length != wideLength) {
@@ -87,7 +78,7 @@ namespace xr {
             return {};
         }
 
-        // WideCharToMultiByte returns number of chars of the input buffer, regardless of null terminitor
+        // WideCharToMultiByte returns number of chars of the input buffer, regardless of null terminator
         narrowText.resize(narrowLength, 0);
         const int length =
             ::WideCharToMultiByte(CP_UTF8, 0, wideText.data(), (int)wideText.size(), narrowText.data(), narrowLength, nullptr, nullptr);

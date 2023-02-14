@@ -105,7 +105,8 @@ void SampleRemoteApp::OnKeyPress(char key)
     switch (key)
     {
         case ' ':
-            InitializeRemoteContextAndConnectOrListen();
+            EnsureRemoteContextInitialized();
+            ConnectOrListen();
             break;
 
         case 'd':
@@ -275,6 +276,24 @@ void SampleRemoteApp::ParseLaunchArguments(std::wstring_view arguments)
                 options.enableAudio = false;
                 continue;
             }
+
+            if (param == L"maxbitrate")
+            {
+                if (argIndex + 1 < argCount)
+                {
+                    std::wstring maxBitrateStr = args[argIndex + 1];
+                    try
+                    {
+                        options.maxBitrateKbps = std::max<uint32_t>(1u, std::stoi(maxBitrateStr));
+                    }
+                    catch (const std::invalid_argument&)
+                    {
+                        // Ignore invalid bitrate arguments.
+                    }
+                    argIndex++;
+                }
+                continue;
+            }
         }
 
         options.hostname = Utils::SplitHostnameAndPortString(arg, options.port);
@@ -285,7 +304,8 @@ void SampleRemoteApp::ParseLaunchArguments(std::wstring_view arguments)
         ConfigureRemoting(options);
         if (noUserWait)
         {
-            InitializeRemoteContextAndConnectOrListen();
+            EnsureRemoteContextInitialized();
+            ConnectOrListen();
         }
     }
     else
@@ -613,7 +633,7 @@ void SampleRemoteApp::Render(HolographicFrame holographicFrame)
             //   * Holographic streamer
             //   * Renderer
             //   * Holographic space
-            // Call the InitializeRemoteContextAndConnectOrListen() function to recreate these resources.
+            // Call the EnsureRemoteContextInitialized() function to recreate these resources.
             ShutdownRemoteContext();
         }
 
@@ -666,7 +686,7 @@ void SampleRemoteApp::InitializeStandalone()
     InitializeAccessToFeatures();
 }
 
-void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
+void SampleRemoteApp::EnsureRemoteContextInitialized()
 {
     std::lock_guard remoteContextLock(m_remoteContextAccess);
 
@@ -675,7 +695,7 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
 
         // Create the RemoteContext
         // IMPORTANT: This must be done before creating the HolographicSpace (or any other call to the Holographic API).
-        HRESULT hr = CreateRemoteContext(m_remoteContext, 20000, m_options.enableAudio, PreferredVideoCodec::Any);
+        HRESULT hr = CreateRemoteContext(m_remoteContext, m_options.maxBitrateKbps, m_options.enableAudio, PreferredVideoCodec::Any);
 
         if (hr != S_OK)
         {
@@ -769,8 +789,6 @@ void SampleRemoteApp::InitializeRemoteContextAndConnectOrListen()
                 }
             });
 #endif
-
-        ConnectOrListen();
     }
 }
 
@@ -1125,6 +1143,8 @@ void SampleRemoteApp::ToggleSceneUnderstanding()
 
 winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
 {
+    auto weakThis = weak_from_this();
+
     co_await winrt::resume_background();
 
     try
@@ -1135,9 +1155,7 @@ winrt::fire_and_forget SampleRemoteApp::RequestQRCodeWatcherUpdates()
             co_return;
         }
 
-        auto weakThis = weak_from_this();
         QRCodeWatcherAccessStatus accessStatus = co_await QRCodeWatcher::RequestAccessAsync();
-
         if (accessStatus == winrt::Microsoft::MixedReality::QR::QRCodeWatcherAccessStatus::Allowed)
         {
             OutputDebugStringA("QRCodeWatcher Access Allowed\n");

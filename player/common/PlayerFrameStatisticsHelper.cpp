@@ -17,52 +17,40 @@
 
 using namespace winrt::Microsoft::Holographic::AppRemoting;
 
-std::wstring PlayerFrameStatisticsHelper::GetStatisticsString() const
+void StatisticsHelperSummary<PlayerFrameStatistics>::BeginUpdate()
 {
-    float timeSinceLastPresentAvg = 0.0f;
-    float timeSinceLastPresentMax = 0.0f;
-    uint32_t videoFramesSkipped = 0;
-    uint32_t videoFramesReused = 0;
-    uint32_t videoFramesReceived = 0;
-    float videoFrameMinDelta = 0.0f;
-    float videoFrameMaxDelta = 0.0f;
-    float latencyAvg = 0.0f;
-    uint32_t videoFramesDiscarded = 0;
+    frameStatsCount = 0;
+    timeSinceLastPresentAvg = 0.0f;
+    timeSinceLastPresentMax = 0.0f;
+    videoFramesSkipped = 0;
+    videoFramesReused = 0;
+    videoFramesReceived = 0;
+    videoFrameMinDelta = 0.0f;
+    videoFrameMaxDelta = 0.0f;
+    latencyAvg = 0.0f;
+    videoFramesDiscarded = 0;
+}
 
-    for (const PlayerFrameStatistics& frameStatistics : m_lastWindowFrameStats)
-    {
-        timeSinceLastPresentAvg += frameStatistics.TimeSinceLastPresent;
-        timeSinceLastPresentMax = std::max<>(timeSinceLastPresentMax, frameStatistics.TimeSinceLastPresent);
+void StatisticsHelperSummary<PlayerFrameStatistics>::UpdateAddFrame(
+    winrt::Microsoft::Holographic::AppRemoting::PlayerFrameStatistics const& frameStatistics)
+{
+    UpdateAddFrameTimeAndVideoInfo(frameStatistics);
+    latencyAvg += frameStatistics.Latency;
+}
 
-        videoFramesSkipped += frameStatistics.VideoFramesSkipped;
-        videoFramesReused += frameStatistics.VideoFrameReusedCount > 0 ? 1 : 0;
-        videoFramesReceived += frameStatistics.VideoFramesReceived;
-
-        if (frameStatistics.VideoFramesReceived > 0)
-        {
-            if (videoFrameMinDelta == 0.0f)
-            {
-                videoFrameMinDelta = frameStatistics.VideoFrameMinDelta;
-                videoFrameMaxDelta = frameStatistics.VideoFrameMaxDelta;
-            }
-            else
-            {
-                videoFrameMinDelta = std::min<>(videoFrameMinDelta, frameStatistics.VideoFrameMinDelta);
-                videoFrameMaxDelta = std::max<>(videoFrameMaxDelta, frameStatistics.VideoFrameMaxDelta);
-            }
-        }
-
-        latencyAvg += frameStatistics.Latency;
-        videoFramesDiscarded += frameStatistics.VideoFramesDiscarded;
-    }
-
-    const size_t frameStatsCount = m_lastWindowFrameStats.size();
+void StatisticsHelperSummary<PlayerFrameStatistics>::EndUpdate()
+{
     if (frameStatsCount > 0)
     {
         timeSinceLastPresentAvg /= static_cast<float>(frameStatsCount);
         latencyAvg /= static_cast<float>(frameStatsCount);
     }
 
+    videoFramesDiscardedTotal += videoFramesDiscarded;
+}
+
+std::wstring StatisticsHelperSummary<PlayerFrameStatistics>::ToWString() const
+{
     std::wstringstream statisticsStringStream;
     statisticsStringStream.precision(3);
     statisticsStringStream << L"Render: " << frameStatsCount << L" fps - " << timeSinceLastPresentAvg * 1000 << L" / "
@@ -72,37 +60,76 @@ std::wstring PlayerFrameStatisticsHelper::GetStatisticsString() const
                            << L"Video frames delta: " << videoFrameMinDelta * 1000 << L" / " << videoFrameMaxDelta * 1000
                            << L" ms (min/max)" << std::endl
                            << L"Latency: " << latencyAvg * 1000 << L" ms (avg)" << std::endl
-                           << L"Video frames discarded: " << videoFramesDiscarded << L" / " << m_videoFramesDiscardedTotal
+                           << L"Video frames discarded: " << videoFramesDiscarded << L" / " << videoFramesDiscardedTotal
                            << L" frames (last sec/total)" << std::endl;
 
     return statisticsStringStream.str();
 }
 
-void PlayerFrameStatisticsHelper::Update(const PlayerFrameStatistics& frameStatistics)
+template <class T2>
+void StatisticsHelperSummary<PlayerFrameStatistics>::UpdateAddFrameTimeAndVideoInfo(T2 const& frameStatistics)
 {
-    using namespace std::chrono;
+    frameStatsCount++;
 
-    m_statsHasChanged = false;
+    timeSinceLastPresentAvg += frameStatistics.TimeSinceLastPresent;
+    timeSinceLastPresentMax = std::max<>(timeSinceLastPresentMax, frameStatistics.TimeSinceLastPresent);
 
-    TimePoint now = Clock::now();
-    if (now > m_currWindowStartTime + 1s)
+    videoFramesSkipped += frameStatistics.VideoFramesSkipped;
+    videoFramesReused += frameStatistics.VideoFrameReusedCount > 0 ? 1 : 0;
+    videoFramesReceived += frameStatistics.VideoFramesReceived;
+
+    if (frameStatistics.VideoFramesReceived > 0)
     {
-        m_statsHasChanged = true;
-
-        m_lastWindowFrameStats.swap(m_currWindowFrameStats);
-        m_currWindowFrameStats.clear();
-
-        do
+        if (videoFrameMinDelta == 0.0f)
         {
-            m_currWindowStartTime += 1s;
-        } while (now > m_currWindowStartTime + 1s);
+            videoFrameMinDelta = frameStatistics.VideoFrameMinDelta;
+            videoFrameMaxDelta = frameStatistics.VideoFrameMaxDelta;
+        }
+        else
+        {
+            videoFrameMinDelta = std::min<>(videoFrameMinDelta, frameStatistics.VideoFrameMinDelta);
+            videoFrameMaxDelta = std::max<>(videoFrameMaxDelta, frameStatistics.VideoFrameMaxDelta);
+        }
     }
 
-    m_currWindowFrameStats.push_back(frameStatistics);
-    m_videoFramesDiscardedTotal += frameStatistics.VideoFramesDiscarded;
+    videoFramesDiscarded += frameStatistics.VideoFramesDiscarded;
 }
 
-bool PlayerFrameStatisticsHelper::StatisticsHaveChanged()
+// MakeDropCmd-StripStart
+
+#if defined(HAR_PLATFORM_WINDOWS)
+
+using namespace Microsoft::Holographic::AppRemoting;
+
+void StatisticsHelperSummary<HybridPlayerFrameStatistics>::BeginUpdate()
 {
-    return m_statsHasChanged;
+    StatisticsHelperSummary<PlayerFrameStatistics>::BeginUpdate();
+    latencyPoseToReceiveAvg = 0.0f;
+    latencyReceiveToPresentAvg = 0.0f;
+    latencyPresentToDisplayAvg = 0.0f;
 }
+
+void StatisticsHelperSummary<HybridPlayerFrameStatistics>::UpdateAddFrame(
+    Microsoft::Holographic::AppRemoting::HybridPlayerFrameStatistics const& frameStatistics)
+{
+    StatisticsHelperSummary<PlayerFrameStatistics>::UpdateAddFrameTimeAndVideoInfo(frameStatistics);
+    latencyPoseToReceiveAvg += frameStatistics.LatencyPoseToReceive;
+    latencyReceiveToPresentAvg += frameStatistics.LatencyReceiveToPresent;
+    latencyPresentToDisplayAvg += frameStatistics.LatencyPresentToDisplay;
+}
+
+void StatisticsHelperSummary<HybridPlayerFrameStatistics>::EndUpdate()
+{
+    if (frameStatsCount > 0)
+    {
+        latencyPoseToReceiveAvg /= static_cast<float>(frameStatsCount);
+        latencyReceiveToPresentAvg /= static_cast<float>(frameStatsCount);
+        latencyPresentToDisplayAvg /= static_cast<float>(frameStatsCount);
+    }
+    StatisticsHelperSummary<PlayerFrameStatistics>::EndUpdate();
+    latencyAvg = latencyPoseToReceiveAvg + latencyReceiveToPresentAvg + latencyPresentToDisplayAvg;
+}
+
+#endif
+
+// MakeDropCmd-StripEnd

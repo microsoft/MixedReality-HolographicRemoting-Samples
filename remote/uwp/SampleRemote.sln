@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29806.167
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRemote", "SampleRemote.vcxproj", "{96A1BF6A-CCF9-3D05-855B-BF48188EC489}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRemote", "SampleRemote.vcxproj", "{1141D418-4AA2-3D69-87AF-4DF0AD288D21}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,15 +12,15 @@ Global
 		RelWithDebInfo|x64 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.Debug|x64.ActiveCfg = Debug|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.Debug|x64.Build.0 = Debug|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.Debug|x64.Deploy.0 = Debug|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.Release|x64.ActiveCfg = Release|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.Release|x64.Build.0 = Release|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.Release|x64.Deploy.0 = Release|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
-		{96A1BF6A-CCF9-3D05-855B-BF48188EC489}.RelWithDebInfo|x64.Deploy.0 = RelWithDebInfo|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.Debug|x64.ActiveCfg = Debug|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.Debug|x64.Build.0 = Debug|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.Debug|x64.Deploy.0 = Debug|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.Release|x64.ActiveCfg = Release|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.Release|x64.Build.0 = Release|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.Release|x64.Deploy.0 = Release|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{1141D418-4AA2-3D69-87AF-4DF0AD288D21}.RelWithDebInfo|x64.Deploy.0 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
