@@ -378,6 +378,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.9.0\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.9.0\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.9.1\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.9.1\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>
