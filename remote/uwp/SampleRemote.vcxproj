@@ -389,6 +389,6 @@
     <Import Project="packages\Microsoft.MixedReality.SceneUnderstanding.1.0.14\build\native\Microsoft.MixedReality.SceneUnderstanding.targets" Condition="Exists('packages\Microsoft.MixedReality.SceneUnderstanding.1.0.14\build\native\Microsoft.MixedReality.SceneUnderstanding.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='RelWithDebInfo' Or '$(Configuration)'=='Release')" />
     <Import Project="packages\Microsoft.MixedReality.QR.0.5.3019\build\native\Microsoft.MixedReality.QR.targets" Condition="Exists('packages\Microsoft.MixedReality.QR.0.5.3019\build\native\Microsoft.MixedReality.QR.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='RelWithDebInfo' Or '$(Configuration)'=='Release')" />
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.220929.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Holographic.Remoting.2.9.1\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.9.1\build\native\Microsoft.Holographic.Remoting.targets')" />
+    <Import Project="packages\Microsoft.Holographic.Remoting.2.9.3\build\native\Microsoft.Holographic.Remoting.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.2.9.3\build\native\Microsoft.Holographic.Remoting.targets')" />
   </ImportGroup>
 </Project>
