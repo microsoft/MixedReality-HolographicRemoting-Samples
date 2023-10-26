@@ -534,7 +534,6 @@ namespace {
                 createInfo.subactionPath = m_subactionPaths[side];
                 CHECK_XRCMD(xrCreateActionSpace(m_session.Get(), &createInfo, m_cubesInHand[side].Space.Put(xrDestroySpace)));
             }
-
         }
 
         std::tuple<DXGI_FORMAT, DXGI_FORMAT> SelectSwapchainPixelFormats() {

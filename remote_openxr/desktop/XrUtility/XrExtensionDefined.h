@@ -89,6 +89,12 @@
 #define XR_MSFT_scene_understanding_DEFINED(_, defined, undefined) _(undefined)
 #endif
 
+#ifdef XR_MSFT_scene_marker
+#define XR_MSFT_scene_marker_DEFINED(_, defined, undefined) _(defined)
+#else
+#define XR_MSFT_scene_marker_DEFINED(_, defined, undefined) _(undefined)
+#endif
+
 #ifdef XR_MSFT_scene_understanding_serialization
 #define XR_MSFT_scene_understanding_serialization_DEFINED(_, defined, undefined) _(defined)
 #else

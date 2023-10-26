@@ -95,8 +95,7 @@
     _(xrCreateHandMeshSpaceMSFT)                        \
     _(xrUpdateHandMeshMSFT)
 
-#define XR_LIST_FUNCTIONS_XR_MSFT_spatial_graph_bridge(_) \
-    _(xrCreateSpatialGraphNodeSpaceMSFT)                  
+#define XR_LIST_FUNCTIONS_XR_MSFT_spatial_graph_bridge(_) _(xrCreateSpatialGraphNodeSpaceMSFT)
 
 #define XR_LIST_FUNCTIONS_XR_MSFT_holographic_remoting(_) \
     _(xrRemotingSetContextPropertiesMSFT)                 \
